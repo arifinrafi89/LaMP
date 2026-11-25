@@ -1,0 +1,131 @@
+{
+  "@@locale": "en",
+  "appTitle": "LaMP",
+  "@appTitle": {
+    "description": "App name, never translated"
+  },
+  "tabToday": "Today",
+  "tabScan": "Scan",
+  "tabCustomers": "Customers",
+  "tabAsk": "Ask",
+  "tabMore": "More",
+  "navStock": "Stock",
+  "navCash": "Cash",
+  "navPlan": "Plan",
+  "navApprovals": "Approvals",
+  "navCreditRecord": "Credit record",
+  "navPlus": "LaMP Plus",
+  "navHistory": "History",
+  "navSettings": "Settings",
+  "navHelp": "Help",
+  "screenComingSoon": "This screen is coming soon.",
+  "errOtpWrong": "That code isn't right.",
+  "errOtpExpired": "The code has expired. Send a new one.",
+  "errOtpTooMany": "Too many tries. Wait a while, then send a new code.",
+  "errNotBanglalink": "Use a Banglalink number.",
+  "errSessionExpired": "You've been signed out. Sign in again.",
+  "errPlusRequired": "This is part of LaMP Plus.",
+  "errScanLimitReached": "You've used this month's 10 free scans.",
+  "errAiBudgetReached": "You've used this month's AI allowance.",
+  "errUpdateRequired": "Update LaMP to keep going.",
+  "errRateLimited": "Too many tries. Wait a moment and try again.",
+  "errApplinkDown": "Banglalink isn't answering right now. Try again soon.",
+  "errChargeFailed": "The payment didn't go through. No money was taken.",
+  "errNotFound": "We couldn't find that.",
+  "errInvalid": "Something here isn't right. Check it and try again.",
+  "errOffline": "You're offline. Check your connection.",
+  "errUnknown": "Something went wrong. Try again.",
+  "themeDefault": "Default (light)",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "themeIs": "Theme: {mode}",
+  "@themeIs": {
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
+  "navSetup": "Set up your shop",
+  "welcomeTitle": "Welcome to LaMP",
+  "welcomeSubtitle": "Your shop's cash, stock and customer dues in one place.",
+  "languageLabel": "Language",
+  "languageEnglish": "English",
+  "languageBangla": "বাংলা",
+  "termsAgree": "I agree to LaMP's terms and privacy policy.",
+  "welcomeContinue": "Continue with my Banglalink number",
+  "phoneTitle": "Your Banglalink number",
+  "phoneSubtitle": "We'll send a code by SMS to check it's you.",
+  "phoneLabel": "Mobile number",
+  "phoneInvalid": "That doesn't look like a mobile number.",
+  "sendCode": "Send code",
+  "sending": "Sending…",
+  "codeTitle": "Enter the code",
+  "codeSentTo": "We sent a 6-digit code to {phone}.",
+  "@codeSentTo": {
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
+  "checking": "Checking…",
+  "continueLabel": "Continue",
+  "resendCode": "Send the code again",
+  "resendIn": "Send again in {seconds}s",
+  "@resendIn": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "back": "Back",
+  "todayAsOf": "As of {date}",
+  "@todayAsOf": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "todayCashNow": "Cash now",
+  "todayExpiring": "Expiring in 60 days",
+  "todayCanGoBack": "{amount} can go back",
+  "@todayCanGoBack": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "todayApprovals": "Steps waiting",
+  "todayShortOn": "Short {amount} on {date}",
+  "@todayShortOn": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "todayProblemOn": "Something needs you on {date}",
+  "@todayProblemOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "todayOneThing": "The one thing to do",
+  "oneApprove": "Approve the plan for the short day",
+  "oneReturn": "Send back stock that can still go back",
+  "oneScan": "Scan a supplier bill",
+  "oneSetup": "Finish setting up your shop",
+  "oneNothing": "Nothing urgent today.",
+  "todayOpen": "Open",
+  "todayAlerts": "Worth a look",
+  "retry": "Try again"
+}
