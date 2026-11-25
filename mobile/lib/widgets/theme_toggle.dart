@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../core/constants/palette.dart';
 import '../core/state/theme_controller.dart';
+import '../l10n/app_localizations.dart';
 
 /// Cycles light → dark → follow the phone.
 ///
@@ -16,18 +17,29 @@ class ThemeToggle extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = context.watch<ThemeController>();
     final c = context.lamp;
+    final l = L10n.of(context);
+    final label = switch (controller.mode) {
+      ThemeMode.system => l.themeDefault,
+      ThemeMode.light => l.themeLight,
+      ThemeMode.dark => l.themeDark,
+    };
 
     return IconButton(
-      tooltip: 'Theme — ${controller.label}',
+      tooltip: l.themeIs(label),
       icon: Icon(controller.icon, color: c.inkMuted),
       onPressed: () async {
         await controller.cycle();
         if (!context.mounted) return;
+        final now = switch (controller.mode) {
+          ThemeMode.system => l.themeDefault,
+          ThemeMode.light => l.themeLight,
+          ThemeMode.dark => l.themeDark,
+        };
         final messenger = ScaffoldMessenger.maybeOf(context);
         messenger?.hideCurrentSnackBar();
         messenger?.showSnackBar(
           SnackBar(
-            content: Text('Theme: ${controller.label.toLowerCase()}'),
+            content: Text(l.themeIs(now)),
             duration: const Duration(milliseconds: 1200),
           ),
         );
