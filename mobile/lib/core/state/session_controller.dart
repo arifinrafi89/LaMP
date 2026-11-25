@@ -68,9 +68,10 @@ class SessionController extends ChangeNotifier {
     try {
       final ok = await _rotate();
       _set(ok ? SessionStatus.signedIn : SessionStatus.signedOut);
-    } on ApiProblem catch (p) {
-      if (p.code != ApiProblem.offline) rethrow;
-      // Open with what was stored; the first request refreshes when back online.
+    } on ApiProblem {
+      // Offline, or the server in trouble (a free Render service waking up
+      // answers 502/503). Only a refused refresh token ends a session, so
+      // open with what was stored; the first request refreshes again.
       _set(SessionStatus.signedIn);
     }
   }
@@ -98,6 +99,10 @@ class SessionController extends ChangeNotifier {
   }
 
   /// For [ApiClient]'s 401 handling: one refresh however many requests ask.
+  ///
+  /// False only when the server refused the refresh token (signed out).
+  /// A refresh that could not be made at all (offline, server error) throws
+  /// its [ApiProblem], so the screen says what really happened.
   Future<bool> refreshNow() => _refreshing ??= _refreshOnce();
 
   Future<bool> _refreshOnce() async {
@@ -105,8 +110,6 @@ class SessionController extends ChangeNotifier {
       final ok = await _rotate();
       if (!ok) _set(SessionStatus.signedOut);
       return ok;
-    } on ApiProblem {
-      return false;
     } finally {
       _refreshing = null;
     }

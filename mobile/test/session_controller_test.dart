@@ -132,4 +132,26 @@ void main() {
     expect(s.pharmacy!.setupComplete, isTrue);
     expect((await store.read())!.pharmacy!.name, 'Green Life');
   });
+
+  test('a server error at launch opens with what was stored, never a stuck screen',
+      () async {
+    final s = await signedIn();
+    final ownerId = s.owner!.id;
+    auth.serverError = const ApiProblem('unknown', status: 503);
+    final again = session();
+    await again.restore();
+    expect(again.status, SessionStatus.signedIn);
+    expect(again.owner!.id, ownerId);
+    expect(await store.read(), isNotNull);
+  });
+
+  test('a refresh that fails for lack of network reports offline, not signed out',
+      () async {
+    final s = await signedIn();
+    auth.offline = true;
+    await expectLater(s.refreshNow(),
+        throwsA(isA<ApiProblem>().having((p) => p.code, 'code', 'offline')));
+    expect(s.status, SessionStatus.signedIn);
+    expect(await store.read(), isNotNull);
+  });
 }

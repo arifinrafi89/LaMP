@@ -16,6 +16,9 @@ class FakeAuthService implements AuthService {
   /// When true every call fails as if there were no network.
   bool offline = false;
 
+  /// When set, every call fails with it, as a server in trouble would.
+  ApiProblem? serverError;
+
   int codeRequests = 0;
   int refreshCalls = 0;
   int termsAccepted = 0;
@@ -26,6 +29,7 @@ class FakeAuthService implements AuthService {
 
   void _checkOnline() {
     if (offline) throw const ApiProblem(ApiProblem.offline);
+    if (serverError != null) throw serverError!;
   }
 
   /// Ends every session, as a sign-out from another device would.
