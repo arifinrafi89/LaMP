@@ -1,0 +1,58 @@
+name: lamp_shop
+description: "LaMP: the pharmacy owner's app (Android + web) for AppQuest 2.0."
+publish_to: 'none'
+
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.14.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  material_ui: ^1.1.0
+  intl: any
+  provider: ^6.1.2
+  shared_preferences: ^2.3.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+
+  # Carried over from lamp-flutter (cf5d520). Anek Latin + Anek Bangla are one
+  # superfamily, so Latin and Bengali share metrics on one line, and only the
+  # Bangla half carries the taka sign. Static 400/500/600 instances (OFL, see
+  # assets/fonts/Anek-OFL.txt): the only weights the type scale uses.
+  # Money and card codes are IBM Plex Mono so figures line up in a column.
+  fonts:
+    - family: AnekLatin
+      fonts:
+        - asset: assets/fonts/AnekLatin-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/AnekLatin-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/AnekLatin-SemiBold.ttf
+          weight: 600
+    - family: AnekBangla
+      fonts:
+        - asset: assets/fonts/AnekBangla-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/AnekBangla-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/AnekBangla-SemiBold.ttf
+          weight: 600
+    - family: IBMPlexMono
+      fonts:
+        - asset: assets/fonts/IBMPlexMono-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/IBMPlexMono-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/IBMPlexMono-SemiBold.ttf
+          weight: 600
