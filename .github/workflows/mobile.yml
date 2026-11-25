@@ -1,0 +1,81 @@
+name: mobile
+
+# The Flutter app in mobile/ (owner: Ayon). A required check on main (plan 8.3):
+# analyze, test, and the Android and web builds. iOS is not a target.
+
+on:
+  push:
+    branches: [main]
+    paths: ["mobile/**", ".github/workflows/mobile.yml"]
+  pull_request:
+    paths: ["mobile/**", ".github/workflows/mobile.yml"]
+  workflow_dispatch:
+
+concurrency:
+  group: mobile-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Pinned so CI builds with the same Flutter as the team's machines.
+  FLUTTER_VERSION: "3.50.1"
+
+defaults:
+  run:
+    working-directory: mobile
+
+jobs:
+  verify:
+    name: analyze + test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+      - run: flutter pub get
+      - name: Analyze
+        run: flutter analyze
+      - name: Test
+        # Includes design_lint_test: a screen that bypasses the design tokens
+        # fails here.
+        run: flutter test
+
+  android:
+    name: build APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Gradle needs a JDK it supports; the runner's default may be newer.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+      - run: flutter pub get
+      - name: Build APK (debug, unsigned)
+        run: flutter build apk --debug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lamp-shop-debug-apk
+          path: mobile/build/app/outputs/flutter-apk/app-debug.apk
+          retention-days: 7
+
+  web:
+    name: build web
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+      - run: flutter pub get
+      - name: Build web
+        run: flutter build web --release
