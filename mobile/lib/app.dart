@@ -1,20 +1,31 @@
+import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import 'core/api/api_client.dart';
+import 'core/api/api_config.dart';
+import 'core/auth/auth_service.dart';
+import 'core/auth/lamp_auth_service.dart';
+import 'core/auth/token_store.dart';
 import 'core/constants/app_theme.dart';
 import 'core/constants/palette.dart';
 import 'core/router.dart';
+import 'core/state/locale_controller.dart';
+import 'core/state/session_controller.dart';
 import 'core/state/theme_controller.dart';
 import 'l10n/app_localizations.dart';
 
 /// The owner's app: providers, router, theme and language.
 class LampApp extends StatefulWidget {
-  const LampApp({super.key, this.initialLocation = '/today', this.locale});
+  const LampApp({super.key, this.session, this.initialLocation = '/today', this.locale});
 
+  /// Injected by tests; built against the real server otherwise.
+  final SessionController? session;
   final String initialLocation;
 
-  /// Null follows the phone's language (Bangla or English, else English).
+  /// Pins the language (tests). Null: the stored choice, else the phone's.
   final Locale? locale;
 
   @override
@@ -22,26 +33,82 @@ class LampApp extends StatefulWidget {
 }
 
 class _LampAppState extends State<LampApp> {
-  late final GoRouter _router = buildRouter(initialLocation: widget.initialLocation);
   final _theme = ThemeController();
+  late final _locale = LocaleController(widget.locale);
+  late final ApiClient _api;
+  late final SessionController _session;
+  late final GoRouter _router;
+
+  @override
+  void initState() {
+    super.initState();
+    final injected = widget.session;
+    if (injected != null) {
+      _session = injected;
+      _api = _client(refresh: _session.refreshNow);
+    } else {
+      // The auth calls get their own client that never refreshes: the
+      // refresh call must not trigger another refresh.
+      _session = SessionController(
+        auth: LampAuthService(_client(refresh: () async => false)),
+        store: SecureTokenStore(),
+        device: _device,
+        cookieRefresh: kIsWeb,
+      );
+      _api = _client(refresh: _session.refreshNow);
+    }
+    _router = buildRouter(session: _session, initialLocation: widget.initialLocation);
+    if (_session.status == SessionStatus.restoring) _session.restore();
+  }
+
+  ApiClient _client({required Future<bool> Function() refresh}) => ApiClient(
+        baseUrl: lampApiUrl,
+        appVersion: lampAppVersion,
+        language: () => _locale.languageFor(null),
+        accessToken: () => _session.accessToken,
+        refresh: refresh,
+      );
+
+  static Future<DeviceInfo> _device() async {
+    const key = 'lamp.deviceId';
+    final prefs = await SharedPreferences.getInstance();
+    var id = prefs.getString(key);
+    if (id == null) {
+      id = newUuid();
+      await prefs.setString(key, id);
+    }
+    return DeviceInfo(
+      id: id,
+      name: kIsWeb ? 'Web browser' : 'Android phone',
+      os: kIsWeb ? 'web' : defaultTargetPlatform.name,
+      appVersion: lampAppVersion,
+    );
+  }
 
   @override
   void dispose() {
     _router.dispose();
     _theme.dispose();
+    _locale.dispose();
+    if (widget.session == null) _session.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider.value(
-      value: _theme,
-      child: Consumer<ThemeController>(
-        builder: (context, theme, _) => MaterialApp.router(
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider.value(value: _theme),
+        ChangeNotifierProvider.value(value: _locale),
+        ChangeNotifierProvider.value(value: _session),
+        Provider.value(value: _api),
+      ],
+      child: Consumer2<ThemeController, LocaleController>(
+        builder: (context, theme, locale, _) => MaterialApp.router(
           onGenerateTitle: (context) => L10n.of(context).appTitle,
           debugShowCheckedModeBanner: false,
           routerConfig: _router,
-          locale: widget.locale,
+          locale: locale.locale,
           supportedLocales: L10n.supportedLocales,
           // material_ui carries its own Material localizations; the generated
           // L10n.localizationsDelegates would pull in the deprecated ones.
@@ -60,10 +127,7 @@ class _LampAppState extends State<LampApp> {
             final media = MediaQuery.of(context);
             return MediaQuery(
               data: media.copyWith(
-                textScaler: media.textScaler.clamp(
-                  minScaleFactor: 0.9,
-                  maxScaleFactor: 1.3,
-                ),
+                textScaler: media.textScaler.clamp(minScaleFactor: 0.9, maxScaleFactor: 1.3),
               ),
               child: child ?? const SizedBox.shrink(),
             );

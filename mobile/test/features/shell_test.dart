@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:lamp_shop/app.dart';
+
+import '../helpers.dart';
 
 /// Plan 5.2: bottom navigation Today · Scan · Customers · Ask · More, with
 /// Stock, Cash, Plan, Approvals, Credit record, LaMP Plus, History, Settings
@@ -8,12 +9,7 @@ import 'package:lamp_shop/app.dart';
 void main() {
   Future<void> pumpApp(WidgetTester tester,
       {String at = '/today', Locale locale = const Locale('en')}) async {
-    tester.view.physicalSize = const Size(360, 800);
-    tester.view.devicePixelRatio = 1.0;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-    await tester.pumpWidget(LampApp(initialLocation: at, locale: locale));
-    await tester.pumpAndSettle();
+    await pumpLamp(tester, session: await signedInSession(), at: at, locale: locale);
   }
 
   NavigationBar bar(WidgetTester tester) =>

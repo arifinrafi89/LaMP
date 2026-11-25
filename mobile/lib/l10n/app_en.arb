@@ -45,5 +45,40 @@
         "type": "String"
       }
     }
-  }
+  },
+  "navSetup": "Set up your shop",
+  "welcomeTitle": "Welcome to LaMP",
+  "welcomeSubtitle": "Your shop's cash, stock and customer dues in one place.",
+  "languageLabel": "Language",
+  "languageEnglish": "English",
+  "languageBangla": "বাংলা",
+  "termsAgree": "I agree to LaMP's terms and privacy policy.",
+  "welcomeContinue": "Continue with my Banglalink number",
+  "phoneTitle": "Your Banglalink number",
+  "phoneSubtitle": "We'll send a code by SMS to check it's you.",
+  "phoneLabel": "Mobile number",
+  "phoneInvalid": "That doesn't look like a mobile number.",
+  "sendCode": "Send code",
+  "sending": "Sending…",
+  "codeTitle": "Enter the code",
+  "codeSentTo": "We sent a 6-digit code to {phone}.",
+  "@codeSentTo": {
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
+  "checking": "Checking…",
+  "continueLabel": "Continue",
+  "resendCode": "Send the code again",
+  "resendIn": "Send again in {seconds}s",
+  "@resendIn": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "back": "Back"
 }

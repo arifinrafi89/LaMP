@@ -4,7 +4,10 @@ import 'package:material_ui/material_ui.dart';
 import '../features/more/more_screen.dart';
 import '../features/placeholder/placeholder_screen.dart';
 import '../features/shell/app_shell.dart';
+import '../features/welcome/loading_screen.dart';
+import '../features/welcome/welcome_screen.dart';
 import '../l10n/app_localizations.dart';
+import 'state/session_controller.dart';
 
 /// A screen reachable from the bar or from More: its path and its title.
 class LampDestination {
@@ -42,10 +45,50 @@ GoRoute _placeholder(LampDestination d) => GoRoute(
       builder: (context, state) => PlaceholderScreen(destination: d),
     );
 
-GoRouter buildRouter({String initialLocation = '/today'}) => GoRouter(
+/// Shown until the owner names their shop (Y2.1 replaces it).
+final setupDestination =
+    LampDestination('/setup', Icons.storefront_outlined, (l) => l.navSetup);
+
+/// Where the session says this phone may be.
+///
+/// - Until the stored session is read: a holding screen, keeping the link.
+/// - Signed out: Welcome, whatever the link.
+/// - Signed in with no shop yet: Setup.
+/// - Signed in: anywhere but Welcome; the link given at launch is kept.
+String? sessionRedirect(SessionController session, Uri uri) {
+  final at = uri.path;
+  switch (session.status) {
+    case SessionStatus.restoring:
+      if (at == '/loading') return null;
+      return Uri(path: '/loading', queryParameters: {'from': uri.toString()}).toString();
+    case SessionStatus.signedOut:
+      return at == '/welcome' ? null : '/welcome';
+    case SessionStatus.signedIn:
+      final pharmacy = session.pharmacy;
+      if (pharmacy == null) return at == '/setup' ? null : '/setup';
+      if (at == '/welcome' || at == '/loading') {
+        final from = uri.queryParameters['from'];
+        if (!pharmacy.setupComplete) return '/setup';
+        if (from != null && from.startsWith('/') && !from.startsWith('/loading')) return from;
+        return '/today';
+      }
+      return null;
+  }
+}
+
+GoRouter buildRouter({
+  required SessionController session,
+  String initialLocation = '/today',
+}) =>
+    GoRouter(
       initialLocation: initialLocation,
+      refreshListenable: session,
+      redirect: (context, state) => sessionRedirect(session, state.uri),
       routes: [
         GoRoute(path: '/', redirect: (_, _) => '/today'),
+        GoRoute(path: '/loading', builder: (_, _) => const LoadingScreen()),
+        GoRoute(path: '/welcome', builder: (_, _) => const WelcomeScreen()),
+        _placeholder(setupDestination),
         StatefulShellRoute.indexedStack(
           builder: (context, state, shell) => AppShell(shell: shell),
           branches: [
