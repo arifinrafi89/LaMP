@@ -1,4 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lamp_shop/app.dart';
@@ -34,12 +36,22 @@ Future<void> pumpLamp(
   required SessionController session,
   String at = '/today',
   Locale? locale = const Locale('en'),
+  http.Client? http,
 }) async {
   SharedPreferences.setMockInitialValues({});
   tester.view.physicalSize = const Size(360, 800);
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
-  await tester.pumpWidget(LampApp(session: session, initialLocation: at, locale: locale));
+  await tester.pumpWidget(LampApp(
+    session: session,
+    initialLocation: at,
+    locale: locale,
+    // No real network in tests: an unanswered call reads as the server down.
+    httpClient: http ?? MockClient((_) async => _down),
+  ));
   await tester.pumpAndSettle();
 }
+
+final _down = http.Response('{"detail": "no server in this test"}', 503,
+    headers: {'content-type': 'application/json'});

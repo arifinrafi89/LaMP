@@ -56,5 +56,21 @@
   "continueLabel": "চালিয়ে যান",
   "resendCode": "আবার কোড পাঠান",
   "resendIn": "{seconds} সেকেন্ড পরে আবার পাঠান",
-  "back": "পেছনে"
+  "back": "পেছনে",
+  "todayAsOf": "{date} অনুযায়ী",
+  "todayCashNow": "এখন নগদ",
+  "todayExpiring": "৬০ দিনে মেয়াদ শেষ",
+  "todayCanGoBack": "{amount} ফেরত দেওয়া যায়",
+  "todayApprovals": "অপেক্ষায় থাকা ধাপ",
+  "todayShortOn": "{date} তারিখে {amount} কম পড়বে",
+  "todayProblemOn": "{date} তারিখে একটি বিষয় দেখতে হবে",
+  "todayOneThing": "আজকের একটি কাজ",
+  "oneApprove": "কম পড়ার দিনের পরিকল্পনা অনুমোদন করুন",
+  "oneReturn": "যে স্টক এখনও ফেরত যায় তা ফেরত পাঠান",
+  "oneScan": "সরবরাহকারীর একটি বিল স্ক্যান করুন",
+  "oneSetup": "দোকানের সেট আপ শেষ করুন",
+  "oneNothing": "আজ জরুরি কিছু নেই।",
+  "todayOpen": "খুলুন",
+  "todayAlerts": "দেখে নিন",
+  "retry": "আবার চেষ্টা করুন"
 }

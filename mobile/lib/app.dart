@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
+import 'package:http/http.dart' as http;
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -19,7 +20,13 @@ import 'l10n/app_localizations.dart';
 
 /// The owner's app: providers, router, theme and language.
 class LampApp extends StatefulWidget {
-  const LampApp({super.key, this.session, this.initialLocation = '/today', this.locale});
+  const LampApp({
+    super.key,
+    this.session,
+    this.initialLocation = '/today',
+    this.locale,
+    this.httpClient,
+  });
 
   /// Injected by tests; built against the real server otherwise.
   final SessionController? session;
@@ -27,6 +34,9 @@ class LampApp extends StatefulWidget {
 
   /// Pins the language (tests). Null: the stored choice, else the phone's.
   final Locale? locale;
+
+  /// The transport under every [ApiClient]; tests serve fixtures through it.
+  final http.Client? httpClient;
 
   @override
   State<LampApp> createState() => _LampAppState();
@@ -67,6 +77,7 @@ class _LampAppState extends State<LampApp> {
         language: () => _locale.languageFor(null),
         accessToken: () => _session.accessToken,
         refresh: refresh,
+        http: widget.httpClient,
       );
 
   static Future<DeviceInfo> _device() async {

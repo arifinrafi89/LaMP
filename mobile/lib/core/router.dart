@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import '../features/more/more_screen.dart';
 import '../features/placeholder/placeholder_screen.dart';
 import '../features/shell/app_shell.dart';
+import '../features/today/today_screen.dart';
 import '../features/welcome/loading_screen.dart';
 import '../features/welcome/welcome_screen.dart';
 import '../l10n/app_localizations.dart';
@@ -92,7 +93,10 @@ GoRouter buildRouter({
         StatefulShellRoute.indexedStack(
           builder: (context, state, shell) => AppShell(shell: shell),
           branches: [
-            for (final t in tabs.take(4))
+            StatefulShellBranch(routes: [
+              GoRoute(path: '/today', builder: (_, _) => const TodayScreen()),
+            ]),
+            for (final t in tabs.skip(1).take(3))
               StatefulShellBranch(routes: [_placeholder(t)]),
             StatefulShellBranch(routes: [
               GoRoute(

@@ -80,5 +80,52 @@
       }
     }
   },
-  "back": "Back"
+  "back": "Back",
+  "todayAsOf": "As of {date}",
+  "@todayAsOf": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "todayCashNow": "Cash now",
+  "todayExpiring": "Expiring in 60 days",
+  "todayCanGoBack": "{amount} can go back",
+  "@todayCanGoBack": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "todayApprovals": "Steps waiting",
+  "todayShortOn": "Short {amount} on {date}",
+  "@todayShortOn": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "todayProblemOn": "Something needs you on {date}",
+  "@todayProblemOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "todayOneThing": "The one thing to do",
+  "oneApprove": "Approve the plan for the short day",
+  "oneReturn": "Send back stock that can still go back",
+  "oneScan": "Scan a supplier bill",
+  "oneSetup": "Finish setting up your shop",
+  "oneNothing": "Nothing urgent today.",
+  "todayOpen": "Open",
+  "todayAlerts": "Worth a look",
+  "retry": "Try again"
 }
