@@ -1,0 +1,34 @@
+# Who must review a change (plan 0.5). To change someone else's file, open an
+# issue or leave a PR comment; never edit it.
+#   Ishmam @ishmam259 · Arifin @arifinrafi89 · Ayon @farhanIshraqAyon
+
+# Ishmam: AI, engines, data model, API, contract, docs (by default)
+*                                   @ishmam259
+
+# Arifin: Applink, sign-in, jobs, hosting, server CI, legal texts
+/backend/app/applink/               @arifinrafi89
+/backend/app/auth/                  @arifinrafi89
+/backend/app/jobs/                  @arifinrafi89
+/backend/migrations/versions/applink/ @arifinrafi89
+/tests/applink/                     @arifinrafi89
+/tests/auth/                        @arifinrafi89
+/tests/jobs/                        @arifinrafi89
+/render.yaml                        @arifinrafi89
+/deploy/                            @arifinrafi89
+/.env.example                       @arifinrafi89
+/docker-compose.yml                 @arifinrafi89
+/.github/workflows/server.yml       @arifinrafi89
+/.github/workflows/backup.yml       @arifinrafi89
+/.github/workflows/tick.yml         @arifinrafi89
+/docs/legal/                        @arifinrafi89
+/loadtest/                          @arifinrafi89
+
+# Ayon: the Flutter app, its CI and the Play listing
+/mobile/                            @farhanIshraqAyon
+/.github/workflows/mobile.yml       @farhanIshraqAyon
+/store/                             @farhanIshraqAyon
+/docs/PRIOR_WORK_FLUTTER.md         @farhanIshraqAyon
+
+# Ishmam: CODEOWNERS itself and the contract check
+/.github/CODEOWNERS                 @ishmam259
+/.github/workflows/contract.yml     @ishmam259
