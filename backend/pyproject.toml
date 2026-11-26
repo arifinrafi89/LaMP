@@ -16,10 +16,18 @@ dependencies = [
     "pillow>=10.4",
     "pypdfium2>=4.30",
     "pydantic-ai-slim[openai]>=2.57",
+    # Day 0 additions (build plan 8.5)
+    "alembic>=1.20",
+    "httpx>=0.27",
+    "PyJWT>=2.15",
+    "cryptography>=50",
+    "sentry-sdk>=3.0",
+    "fpdf2>=2.9",
+    "tzdata>=2026.1",
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8", "httpx>=0.27"]
+dev = ["pytest>=8", "schemathesis>=4.34", "time-machine>=3.6", "pytest-cov>=7.1"]
 
 [build-system]
 requires = ["setuptools>=69"]
