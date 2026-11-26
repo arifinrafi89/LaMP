@@ -12,11 +12,11 @@ from pathlib import Path
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from sqlalchemy import inspect
+from sqlalchemy import func, inspect, select
 
 from app.api.routes import router
 from app.config import registry_secret, settings
-from app.db.models import Base
+from app.db.models import Pharmacy
 from app.db.seed import load_seed
 from app.db.session import SessionLocal, engine, get_db
 from app.engines import logbus, mailer
@@ -24,25 +24,21 @@ from app.engines import logbus, mailer
 API_PREFIX = "/api/v1"
 
 
-def _schema_is_current() -> bool:
-    """True if every table and column of the models exists in the database."""
-    insp = inspect(engine)
-    for table in Base.metadata.sorted_tables:
-        if not insp.has_table(table.name):
-            return False
-        if {c.name for c in table.columns} - {c["name"] for c in insp.get_columns(table.name)}:
-            return False
-    return True
+def _seed_if_empty() -> None:
+    """The schema comes only from migrations (`alembic upgrade heads` in the start command,
+    build plan 4.4). A database with no shop yet gets the demo shop; nothing is ever wiped."""
+    if not inspect(engine).has_table("pharmacy"):
+        raise RuntimeError("The database has no tables. Run `alembic upgrade heads` from backend/ first.")
+    with SessionLocal() as db:
+        if db.scalar(select(func.count()).select_from(Pharmacy)) == 0:
+            load_seed(db, with_demo_captures=settings.demo_reset_with_captures)
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     try:
         registry_secret()  # refuse to start without a real REGISTRY_KEY (unless DEV_MODE)
-        # Empty database, or one left by an older version of the app: (re)load the seed pharmacy.
-        if not _schema_is_current():
-            with SessionLocal() as db:
-                load_seed(db, with_demo_captures=settings.demo_reset_with_captures)
+        _seed_if_empty()
     except Exception as exc:
         mailer.alert("startup", "[LaMP] API failed to start",
                      f"The API stopped during startup at {_now()}.\n\n{type(exc).__name__}: {exc}\n\n"
