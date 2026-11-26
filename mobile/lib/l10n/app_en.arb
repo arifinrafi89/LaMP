@@ -127,5 +127,91 @@
   "oneNothing": "Nothing urgent today.",
   "todayOpen": "Open",
   "todayAlerts": "Worth a look",
-  "retry": "Try again"
+  "retry": "Try again",
+  "setupStepOf": "Step {n} of {total}",
+  "@setupStepOf": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "setupSkip": "Skip",
+  "setupShopTitle": "Name your shop",
+  "setupShopSubtitle": "You can change it later.",
+  "setupShopName": "Shop name",
+  "setupShopCity": "Town",
+  "setupShopArea": "Area (optional)",
+  "setupShopNeeded": "Enter the shop's name and town.",
+  "setupSuppliersTitle": "Your main suppliers",
+  "setupSuppliersSubtitle": "The companies you buy from, and how many days each gives you to pay. You can add more later from scanned bills.",
+  "setupSuppliersNone": "No suppliers yet.",
+  "setupAddSupplier": "Add a supplier",
+  "supplierName": "Supplier name",
+  "supplierPhone": "Phone (optional)",
+  "supplierPaymentDays": "Days to pay",
+  "supplierReturnDays": "Days to send stock back",
+  "supplierTerms": "{pay} days to pay · {back} days to send back",
+  "@supplierTerms": {
+    "placeholders": {
+      "pay": {
+        "type": "String"
+      },
+      "back": {
+        "type": "String"
+      }
+    }
+  },
+  "supplierRemove": "Remove {name}",
+  "@supplierRemove": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "setupSave": "Save",
+  "setupCashTitle": "Cash in the drawer today",
+  "setupCashSubtitle": "Count the cash in the shop now. LaMP starts its figures from here.",
+  "setupCashLabel": "Cash now",
+  "setupAmountInvalid": "Enter an amount in taka, like 25000.",
+  "setupExpensesTitle": "Rent and salaries",
+  "setupExpensesSubtitle": "What the shop pays each month, and on which day. LaMP plans cash around them.",
+  "expenseRent": "Rent",
+  "expenseSalaries": "Salaries",
+  "expenseAmount": "Each month",
+  "expenseDay": "Day",
+  "setupDayInvalid": "Enter a day from 1 to 31.",
+  "setupWholeInvalid": "Enter a whole number.",
+  "setupStockTitle": "Your stock",
+  "setupStockSubtitle": "Scan your last 3 supplier bills and LaMP reads the stock from them. Or type it in.",
+  "setupScanBills": "Scan a bill",
+  "setupAddStock": "Type a stock line",
+  "setupFinish": "Finish",
+  "setupDone": "Your shop is set up.",
+  "stockProduct": "Medicine",
+  "stockStrength": "Strength (optional)",
+  "stockBatch": "Batch number",
+  "stockExpiry": "Expiry date",
+  "stockExpiryPick": "Pick a date",
+  "stockQty": "Quantity",
+  "stockUnitCost": "Cost of one",
+  "stockSupplier": "Supplier",
+  "stockSupplierNone": "Not set",
+  "stockLineSummary": "{qty} · expires {date}",
+  "@stockLineSummary": {
+    "placeholders": {
+      "qty": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "stockFieldsNeeded": "Fill in the medicine, batch, expiry, quantity and cost.",
+  "removeLine": "Remove"
 }

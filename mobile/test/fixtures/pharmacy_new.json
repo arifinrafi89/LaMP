@@ -1,0 +1,14 @@
+{
+  "id": "rahman-pharma",
+  "name": "Rahman Pharma",
+  "city": "Bogura",
+  "area": "Satmatha",
+  "kind": "real",
+  "setup_complete": false,
+  "card_prefix": "RP",
+  "settings": {
+    "gross_margin_pct": 12.0,
+    "cash_buffer": 0.0,
+    "expiry_buffer_days": 30
+  }
+}

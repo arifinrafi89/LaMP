@@ -138,6 +138,13 @@ void main() {
     expect(sent.first.headers['Content-Type'], startsWith('application/json'));
   });
 
+  test('a caller retrying the same save passes its own key', () async {
+    final api = client((_) async => json({'ok': true}, 201));
+    await api.post('/pharmacies/p1/opening', {'cash_on_hand': 5}, idempotencyKey: 'k-1');
+    await api.post('/pharmacies/p1/opening', {'cash_on_hand': 5}, idempotencyKey: 'k-1');
+    expect(sent.map((r) => r.headers['Idempotency-Key']), ['k-1', 'k-1']);
+  });
+
   test('an ordinary POST has no Idempotency-Key', () async {
     final api = client((_) async => json({}, 202));
     await api.post('/auth/otp/request', {'phone': 'x'});

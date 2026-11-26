@@ -72,3 +72,37 @@ String formatDay(DateTime day, {required bool bangla}) {
   return '${_bnDays[day.weekday - 1]} ${bnDigits('${day.day}')} '
       '${_bnMonths[day.month - 1]}';
 }
+
+/// Bangla digits back to English, for what the owner types.
+String enDigits(String s) =>
+    s.replaceAllMapped(RegExp('[০-৯]'), (m) => '${_bn.indexOf(m[0]!)}');
+
+final _amount = RegExp(r'^\d+(?:\.\d+)?$');
+
+/// An amount typed in either language: `25000`, `1,82,400`, `৳ ২,৫০০`.
+/// Null when it isn't a positive-or-zero number. Rounded to 2 decimals,
+/// the way money is sent to the server (D8).
+double? parseAmount(String typed) {
+  final s = enDigits(typed).replaceAll(RegExp(r'[৳,\s]'), '');
+  if (!_amount.hasMatch(s)) return null;
+  return (double.parse(s) * 100).round() / 100;
+}
+
+/// A whole number typed in either language (days, quantities).
+int? parseWhole(String typed) {
+  final s = enDigits(typed).trim();
+  if (!RegExp(r'^\d+$').hasMatch(s)) return null;
+  return int.parse(s);
+}
+
+/// Today's date in Dhaka (UTC+6, no daylight saving), whatever the phone's
+/// own time zone. [now] is for tests.
+DateTime dhakaToday([DateTime? now]) {
+  final d = (now ?? DateTime.now()).toUtc().add(const Duration(hours: 6));
+  return DateTime(d.year, d.month, d.day);
+}
+
+/// `2026-11-26`, the date format of every API field (plan 2.1).
+String apiDate(DateTime d) =>
+    '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-'
+    '${d.day.toString().padLeft(2, '0')}';

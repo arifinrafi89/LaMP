@@ -18,7 +18,7 @@ void main() {
   final server = MockClient((req) async => http.Response(today, 200,
       headers: {'content-type': 'application/json; charset=utf-8'}));
 
-  final screens = ['/welcome', '/today', '/customers', '/more', '/stock'];
+  final screens = ['/welcome', '/setup', '/today', '/customers', '/more', '/stock'];
 
   for (final theme in [ThemeMode.light, ThemeMode.dark]) {
     for (final scale in [1.0, 1.3]) {
@@ -32,9 +32,11 @@ void main() {
             addTearDown(tester.view.reset);
             addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
 
-            final session = at == '/welcome'
-                ? fakeSession(FakeAuthService())
-                : await signedInSession();
+            final session = switch (at) {
+              '/welcome' => fakeSession(FakeAuthService()),
+              '/setup' => await signedInSession(hasShop: false),
+              _ => await signedInSession(),
+            };
             await tester.pumpWidget(LampApp(
               session: session,
               initialLocation: at,

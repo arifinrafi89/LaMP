@@ -57,8 +57,17 @@ class ApiClient {
 
   Future<Object?> get(String path) => _send('GET', path, retry: true);
 
-  Future<Object?> post(String path, Object? body, {bool idempotent = false}) =>
-      _send('POST', path, body: body, idempotencyKey: idempotent ? newUuid() : null);
+  /// [idempotent] gives the call a fresh key, kept across the 401 replay.
+  /// A screen that lets the owner retry the same save after a failure passes
+  /// its own [idempotencyKey] instead, so the retry can't record it twice.
+  Future<Object?> post(
+    String path,
+    Object? body, {
+    bool idempotent = false,
+    String? idempotencyKey,
+  }) =>
+      _send('POST', path,
+          body: body, idempotencyKey: idempotencyKey ?? (idempotent ? newUuid() : null));
 
   Future<Object?> put(String path, Object? body) => _send('PUT', path, body: body);
 

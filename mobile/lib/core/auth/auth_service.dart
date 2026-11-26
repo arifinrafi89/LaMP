@@ -75,6 +75,12 @@ class PharmacyInfo {
   final String name;
   final bool setupComplete;
 
+  PharmacyInfo copyWith({String? name, bool? setupComplete}) => PharmacyInfo(
+        id: id,
+        name: name ?? this.name,
+        setupComplete: setupComplete ?? this.setupComplete,
+      );
+
   factory PharmacyInfo.fromJson(Map<String, dynamic> j) => PharmacyInfo(
         id: j['id'] as String,
         name: j['name'] as String,
