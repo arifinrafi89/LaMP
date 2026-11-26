@@ -1,7 +1,7 @@
 """Load seed/green_life.json, and apply confirmed captures (invoices, sales pages)."""
 
 import json
-from datetime import date
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 from sqlalchemy import select
@@ -74,13 +74,20 @@ def apply_extraction(db: Session, pid: str, extraction: dict, capture_id: str | 
 
 
 def load_seed(db: Session, with_demo_captures: bool = False, path: Path | None = None) -> str:
-    """Wipe every table and load the seed pharmacy. Returns the pharmacy id."""
+    """Wipe every table and load the seed pharmacy. Returns the pharmacy id.
+
+    Only for tests, a fresh database and the demo reset while Green Life is the only shop:
+    it empties every table. Re-seeding the demo shop alone, next to real shops, comes with
+    the nightly demo reseed job (build plan 0.6)."""
     m.Base.metadata.drop_all(db.get_bind())
     m.Base.metadata.create_all(db.get_bind())
     seed = json.loads((path or SEED_DIR / "green_life.json").read_text(encoding="utf-8"))
     p = seed["pharmacy"]
     pid = p["id"]
-    db.add(m.Pharmacy(id=pid, name=p["name"], city=p["city"], cash_on_hand=p["cash_on_hand"], settings=p["settings"]))
+    # Green Life is the demo shop (build plan 0.6): the only kind, with team_test, that keeps a fixed date.
+    db.add(m.Pharmacy(id=pid, name=p["name"], city=p["city"], cash_on_hand=p["cash_on_hand"], settings=p["settings"],
+                      kind=p.get("kind", "demo"), card_prefix=p.get("card_prefix", "GL"), setup_complete=True,
+                      created_at=datetime.now(timezone.utc).replace(tzinfo=None, microsecond=0)))
     for s in seed["suppliers"]:
         db.add(m.Supplier(pharmacy_id=pid, **s))
     db.flush()
