@@ -20,15 +20,15 @@ import '../../core/design/luma_press.dart';
 
 /// The standard content surface.
 ///
-/// Two things changed here on this branch, and both are Luma's.
+/// Two choices here come from Luma.
 ///
-/// The press is a transform now, not a ripple. A ripple on a card 340dp wide
+/// The press is a transform, not a ripple. A ripple on a card 340dp wide
 /// takes most of a second to cross it, so the acknowledgement lands well after
 /// the finger has already lifted; a 2.5% squeeze lands on contact. See
 /// [LumaPress] for the rest of that argument.
 ///
 /// The shadow is layered rather than single — see [LumaElevation]. A card at
-/// rest now casts something, which is what separates it from the page when the
+/// rest casts something, which is what separates it from the page when the
 /// hairline border is the same value as the background in dark mode.
 class LampCard extends StatelessWidget {
   final Widget child;
@@ -517,6 +517,24 @@ class LampEmpty extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// The plain-words error under a form or a step: nothing when [message] is
+/// null.
+class LampErrorText extends StatelessWidget {
+  final String? message;
+
+  const LampErrorText(this.message, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final m = message;
+    if (m == null) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: Gap.md),
+      child: Text(m, style: LaMPType.body.copyWith(color: context.lamp.dispute)),
     );
   }
 }
