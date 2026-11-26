@@ -7,6 +7,7 @@ payment: no money moves until the customer pays at the counter.
 
 import math
 import re
+from dataclasses import dataclass
 from datetime import date, timedelta
 
 from fastapi import HTTPException
@@ -97,3 +98,29 @@ def list_for_owner(db: Session, pid: str) -> list[PatientDueOut]:
     return [PatientDueOut(label=d.label, amount=r2(d.amount), since=d.since, days_outstanding=(today - d.since).days,
                           code=d.code, status="planned" if d.plan_parts else "no_plan", plan=_plan(d))
             for d in rows]
+
+
+# For Arifin's jobs (build plan 1.4 B, I1.4): the reminder job and the family SMS.
+
+@dataclass(frozen=True)
+class DuePart:
+    pharmacy_id: str
+    code: str
+    n: int
+    amount: float
+    due_on: date
+
+
+def find_by_code(db: Session, code: str) -> tuple[str, str] | None:
+    """(pharmacy id, label) for a card code in any spelling, or None. Never raises: an SMS
+    reply with a wrong code just gets the 'no such code' text."""
+    d = db.scalar(select(m.PatientDue).where(m.PatientDue.code == normalize_code(code)))
+    return (d.pharmacy_id, d.label) if d else None
+
+
+def parts_due(db: Session, due_on: date) -> list[DuePart]:
+    """Every plan part that falls due on `due_on`, across all shops, by shop then code."""
+    rows = db.scalars(select(m.PatientDue).where(m.PatientDue.plan_parts.is_not(None))
+                      .order_by(m.PatientDue.pharmacy_id, m.PatientDue.code))
+    return [DuePart(d.pharmacy_id, d.code, p.n, p.amount, p.due_on)
+            for d in rows if (plan := _plan(d)) for p in plan.schedule if p.due_on == due_on]
