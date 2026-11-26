@@ -64,6 +64,8 @@ Legend: **[I]** Ishmam · **[A]** Arifin · **[Y]** Ayon · **[ASK Q7]** not con
 
 ### 0.2 Defaults chosen (change any of them on Day 0; the rest of the plan follows)
 
+**Accepted as written by Ishmam on 26 Nov (I0.2).** D15's "Paid by" is still open.
+
 | # | Decision | Default, and why |
 |---|---|---|
 | D1 | Pricing [decided 25 Nov] | **Families are free.** Owners get a free plan: Today, Stock, Customers, 10 scans a month and the 8 AM SMS. **LaMP Plus is BDT 50 a month** and adds Cash, Plan, Approvals, Ask and scans without the monthly limit. The **credit record is BDT 10 once**, by CaaS. All prices are config values. |
