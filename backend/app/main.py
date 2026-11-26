@@ -49,9 +49,25 @@ async def lifespan(_: FastAPI):
                      "Check the backend logs (docker compose logs backend) and restart it.", background=False)
         raise
     auto = asyncio.create_task(_auto_reset()) if settings.dev_mode and settings.demo_auto_reset_minutes > 0 else None
+    # Arifin's job loop runs inside the web service (plan D6): app.jobs.runner.start() / stop().
+    runner = _optional("app.jobs.runner")
+    if runner is not None and hasattr(runner, "start"):
+        await runner.start()
     yield
+    if runner is not None and hasattr(runner, "stop"):
+        await runner.stop()
     if auto:
         auto.cancel()
+
+
+def _optional(module: str):
+    """A module that may not exist yet (Arifin's packages before A0.4)."""
+    try:
+        return importlib.import_module(module)
+    except ModuleNotFoundError as exc:
+        if module.startswith(exc.name or "?"):
+            return None
+        raise
 
 
 async def _auto_reset() -> None:
@@ -121,3 +137,31 @@ try:
     app.include_router(importlib.import_module("app.agents.router").router, prefix=API_PREFIX)
 except ImportError:
     pass
+
+
+# Arifin's modules (build plan 1.2, task I0.5). Each package mounts once it exists:
+#   app.<name>.routes.api_router   mounted under /api/v1 (sign-in, /demo/ussd, the tick endpoint)
+#   app.<name>.routes.root_router  mounted at the root (Applink's callbacks: /applink/{app}/{secret}/...)
+# A package that is missing, or has no routes module yet, is skipped, so main.py never needs editing.
+PLUGGED_IN = ("auth", "applink", "jobs")
+
+
+def _mount_plugged_in() -> list[str]:
+    mounted = []
+    for name in PLUGGED_IN:
+        try:
+            mod = importlib.import_module(f"app.{name}.routes")
+        except ModuleNotFoundError as exc:
+            if exc.name not in (f"app.{name}", f"app.{name}.routes"):
+                raise  # the module exists but imports something missing: a real error
+            continue
+        if (api := getattr(mod, "api_router", None)) is not None:
+            app.include_router(api, prefix=API_PREFIX)
+            mounted.append(f"{name}:api")
+        if (root := getattr(mod, "root_router", None)) is not None:
+            app.include_router(root)
+            mounted.append(f"{name}:root")
+    return mounted
+
+
+MOUNTED = _mount_plugged_in()
