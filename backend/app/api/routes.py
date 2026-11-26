@@ -190,7 +190,8 @@ def get_pharmacy(pid: str, db: Session = Depends(get_db)):
     ph = engines.get_pharmacy(db, pid)
     # Only the public fields: settings also holds the PIN hash, the PIN lockout and the Pause state.
     public = {k: v for k, v in (ph.settings or {}).items() if k in PharmacySettings.model_fields}
-    return {"id": ph.id, "name": ph.name, "city": ph.city, "settings": public, "asks_pin": settings.ask_owner_pin}
+    return {"id": ph.id, "name": ph.name, "city": ph.city, "settings": public, "asks_pin": settings.ask_owner_pin,
+            "kind": ph.kind, "setup_complete": ph.setup_complete, "card_prefix": ph.card_prefix}
 
 
 # --- Captures -------------------------------------------------------------------------

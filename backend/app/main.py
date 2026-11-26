@@ -161,3 +161,14 @@ def _mount_plugged_in() -> list[str]:
 
 
 MOUNTED = _mount_plugged_in()
+
+
+# Contract v1 (build plan 2.2): every Phase 1 route not built yet answers 501 not_built with
+# its real shapes, so contracts/openapi.json is the whole contract. Mounted last.
+def _served() -> set[tuple[str, str]]:
+    spec = app.openapi()
+    app.openapi_schema = None  # rebuilt with the contract routes below
+    return {(method.upper(), path.removeprefix(API_PREFIX)) for path, ops in spec["paths"].items() for method in ops}
+
+
+app.include_router(importlib.import_module("app.api.contract").build_router(_served()), prefix=API_PREFIX)
