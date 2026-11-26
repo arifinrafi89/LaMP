@@ -10,8 +10,8 @@
       "product_key": "wallet_loan"
     },
     "proposed_by": "owner",
-    "created_at": "2026-11-19T14:21:03.060335Z",
-    "decided_at": "2026-11-19T14:21:03.069747Z",
+    "created_at": "2026-11-26T03:29:39.132773Z",
+    "decided_at": "2026-11-26T03:29:39.152528Z",
     "result": {
       "application_id": "APP-0001",
       "summary": "Loan application sent to Wallet Lender."
@@ -27,8 +27,8 @@
       "amount": 9200
     },
     "proposed_by": "owner",
-    "created_at": "2026-11-19T14:21:03.013802Z",
-    "decided_at": "2026-11-19T14:21:03.025797Z",
+    "created_at": "2026-11-26T03:29:39.041003Z",
+    "decided_at": "2026-11-26T03:29:39.062432Z",
     "result": {
       "claim_id": "CLM-0001",
       "expected_credit": 9200.0,
