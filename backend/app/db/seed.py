@@ -1,7 +1,8 @@
 """Load seed/green_life.json, and apply confirmed captures (invoices, sales pages)."""
 
 import json
-from datetime import date, datetime, timezone
+import re
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 from sqlalchemy import select
@@ -73,15 +74,56 @@ def apply_extraction(db: Session, pid: str, extraction: dict, capture_id: str | 
         upsert_sales_days(db, pid, extraction["sales_page"]["days"])
 
 
-def load_seed(db: Session, with_demo_captures: bool = False, path: Path | None = None) -> str:
+_ISO_DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
+SEED_AS_OF = date(2026, 10, 16)  # the seed's own "today" (the golden numbers' date)
+
+
+def shift_dates(data, days: int):
+    """A copy of a seed or capture document with every YYYY-MM-DD value moved by `days`."""
+    if isinstance(data, dict):
+        return {k: shift_dates(v, days) for k, v in data.items()}
+    if isinstance(data, list):
+        return [shift_dates(v, days) for v in data]
+    if isinstance(data, str) and _ISO_DATE.fullmatch(data):
+        return (date.fromisoformat(data) + timedelta(days=days)).isoformat()
+    return data
+
+
+def weeks_towards(today: date, base: date = SEED_AS_OF) -> int:
+    """Whole weeks from the seed's date to `today` (rounded down), so a shifted demo shop
+    keeps its weekdays: the Friday holiday and every figure stay the same."""
+    return (today - base).days // 7
+
+
+def _shift_day(day_of_month: int, shift_weeks: int) -> int:
+    """A monthly cost (rent on the 1st) moves with the shop: its next date after the seed's
+    "today" is shifted like every other date, and the new day of the month is kept. Without
+    this, rent would fall on a different day of the story and the forecast would change."""
+    if shift_weeks == 0:
+        return day_of_month
+    nxt = SEED_AS_OF.replace(day=day_of_month)
+    if nxt < SEED_AS_OF:
+        nxt = (nxt.replace(day=1) + timedelta(days=32)).replace(day=day_of_month)
+    return (nxt + timedelta(weeks=shift_weeks)).day
+
+
+def _read(path: Path, shift_weeks: int):
+    return shift_dates(json.loads(path.read_text(encoding="utf-8")), 7 * shift_weeks)
+
+
+def load_seed(db: Session, with_demo_captures: bool = False, path: Path | None = None,
+              shift_weeks: int = 0) -> str:
     """Wipe every table and load the seed pharmacy. Returns the pharmacy id.
 
     Only for tests, a fresh database and the demo reset while Green Life is the only shop:
     it empties every table. Re-seeding the demo shop alone, next to real shops, comes with
-    the nightly demo reseed job (build plan 0.6)."""
+    the nightly demo reseed job (build plan 0.6).
+
+    `shift_weeks` moves every date in the seed (as_of_date too) by whole weeks, so the demo
+    shop can sit near today: `load_seed(db, shift_weeks=weeks_towards(dhaka_today()))`."""
     m.Base.metadata.drop_all(db.get_bind())
     m.Base.metadata.create_all(db.get_bind())
-    seed = json.loads((path or SEED_DIR / "green_life.json").read_text(encoding="utf-8"))
+    seed = _read(path or SEED_DIR / "green_life.json", shift_weeks)
     p = seed["pharmacy"]
     pid = p["id"]
     # Green Life is the demo shop (build plan 0.6): the only kind, with team_test, that keeps a fixed date.
@@ -95,7 +137,7 @@ def load_seed(db: Session, with_demo_captures: bool = False, path: Path | None =
         add_invoice(db, pid, inv, supplier_confirmed=inv["supplier_confirmed"], payment=inv["payment"])
     upsert_sales_days(db, pid, seed["sales_days"])
     for e in seed["expense_schedule"]:
-        db.add(m.ExpenseSchedule(pharmacy_id=pid, **e))
+        db.add(m.ExpenseSchedule(pharmacy_id=pid, **(e | {"day_of_month": _shift_day(e["day_of_month"], shift_weeks)})))
     for b in seed["stock_batches"]:
         sup = _supplier(db, pid, b["supplier"])
         db.add(m.StockBatch(pharmacy_id=pid, supplier_id=sup.id, product=b["product"], batch_no=b["batch_no"],
@@ -122,7 +164,7 @@ def load_seed(db: Session, with_demo_captures: bool = False, path: Path | None =
     log("T0", "DEV", "reset", db, pharmacy=pid, with_demo_captures=with_demo_captures)
     if with_demo_captures:
         for name in DEMO_CAPTURES:
-            extraction = json.loads((SEED_DIR / "demo_captures" / f"{name}.json").read_text(encoding="utf-8"))
+            extraction = _read(SEED_DIR / "demo_captures" / f"{name}.json", shift_weeks)
             apply_extraction(db, pid, extraction, capture_id=f"demo-{name}")
             log("T1", "CAPTURE", "capture_confirmed", db, capture=f"demo-{name}", kind=extraction["kind"])
     _log_detections(db, pid)
