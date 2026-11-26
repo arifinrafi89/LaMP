@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../features/more/more_screen.dart';
 import '../features/placeholder/placeholder_screen.dart';
+import '../features/setup/setup_screen.dart';
 import '../features/shell/app_shell.dart';
 import '../features/today/today_screen.dart';
 import '../features/welcome/loading_screen.dart';
@@ -46,10 +47,6 @@ GoRoute _placeholder(LampDestination d) => GoRoute(
       builder: (context, state) => PlaceholderScreen(destination: d),
     );
 
-/// Shown until the owner names their shop (Y2.1 replaces it).
-final setupDestination =
-    LampDestination('/setup', Icons.storefront_outlined, (l) => l.navSetup);
-
 /// Where the session says this phone may be.
 ///
 /// - Until the stored session is read: a holding screen, keeping the link.
@@ -89,7 +86,7 @@ GoRouter buildRouter({
         GoRoute(path: '/', redirect: (_, _) => '/today'),
         GoRoute(path: '/loading', builder: (_, _) => const LoadingScreen()),
         GoRoute(path: '/welcome', builder: (_, _) => const WelcomeScreen()),
-        _placeholder(setupDestination),
+        GoRoute(path: '/setup', builder: (_, _) => const SetupScreen()),
         StatefulShellRoute.indexedStack(
           builder: (context, state, shell) => AppShell(shell: shell),
           branches: [

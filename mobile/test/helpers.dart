@@ -19,9 +19,12 @@ SessionController fakeSession(FakeAuthService auth, [TokenStore? store]) => Sess
     );
 
 /// A session already signed in, with a shop whose setup is done.
-Future<SessionController> signedInSession({bool setupComplete = true}) async {
+/// [hasShop] false: a new owner who hasn't named a shop yet.
+Future<SessionController> signedInSession({bool setupComplete = true, bool hasShop = true}) async {
   final auth = FakeAuthService(
-    pharmacy: PharmacyInfo(id: 'green-life', name: 'Green Life Pharmacy', setupComplete: setupComplete),
+    pharmacy: hasShop
+        ? PharmacyInfo(id: 'green-life', name: 'Green Life Pharmacy', setupComplete: setupComplete)
+        : null,
   );
   final s = fakeSession(auth);
   await s.restore();
