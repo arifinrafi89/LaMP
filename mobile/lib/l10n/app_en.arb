@@ -941,5 +941,90 @@
   "phoneEmptyThread": "No messages yet",
   "phoneSend": "Send",
   "phoneFillTitle": "Type a family's join text",
-  "phoneHowTo": "Press a key again quickly for its next letter. # switches letters and numbers; * deletes."
+  "phoneHowTo": "Press a key again quickly for its next letter. # switches letters and numbers; * deletes.",
+  "meTitle": "Check what you owe your pharmacy",
+  "meEnter": "Enter the code on your slip from the pharmacy.",
+  "meCode": "Card code",
+  "meOpen": "Open",
+  "meNotFound": "We couldn't find that card",
+  "meCheckCode": "Check the code on your slip from the pharmacy and try again.",
+  "meLoadError": "Couldn't load your card",
+  "meEnterCode": "Enter a code",
+  "meYouOwe": "You owe",
+  "meWhere": "{pharmacy}, {city} · {label}",
+  "@meWhere": {
+    "placeholders": {
+      "pharmacy": {
+        "type": "String"
+      },
+      "city": {
+        "type": "String"
+      },
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "meSince": "Since {date}, {n} days ago",
+  "@meSince": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "meYourPlan": "Your plan",
+  "mePromised": "Promised",
+  "meChange": "Change my plan",
+  "meYourWay": "Pay it back your way",
+  "meHow": "How do you want to pay?",
+  "meAll": "All at once: {amount}",
+  "@meAll": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "meParts": "{n} weekly parts of {amount}",
+  "@meParts": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "meFirst": "First payment on",
+  "meAnyDay": "Any day from {a} to {b}.",
+  "@meAnyDay": {
+    "placeholders": {
+      "a": {
+        "type": "String"
+      },
+      "b": {
+        "type": "String"
+      }
+    }
+  },
+  "mePromise": "Promise this plan",
+  "meSaved": "Plan saved.",
+  "mePromiseNote": "A plan is a promise, not a payment. You pay at the pharmacy.",
+  "meSmsTitle": "Free SMS reminders",
+  "meSmsHow": "Text this to {to} from your phone. Text LAMP STOP to stop.",
+  "@meSmsHow": {
+    "placeholders": {
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "meRunPharmacy": "Run a pharmacy?",
+  "meOwnerApp": "Open the owner app",
+  "meLanguageOther": "বাংলা"
 }
