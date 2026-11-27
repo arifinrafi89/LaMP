@@ -28,6 +28,7 @@ class ApiClient {
     required this.refresh,
     http.Client? http,
     Duration Function(int attempt)? backoff,
+    this.onUpdateRequired,
   })  : _http = http ?? _defaultClient(),
         _backoff = backoff ?? _defaultBackoff;
 
@@ -45,6 +46,10 @@ class ApiClient {
 
   /// Gets a new access token. Returns false when the session is over.
   final Future<bool> Function() refresh;
+
+  /// Rings when the server answers 426: this version may not write any more
+  /// (plan 13.5), so the app shows its update screen.
+  final void Function()? onUpdateRequired;
 
   final http.Client _http;
   final Duration Function(int attempt) _backoff;
@@ -235,6 +240,7 @@ class ApiClient {
     final detail = m['detail'] is String ? m['detail'] as String : null;
     final retry = m['retry_after'];
     final resets = m['resets_on'];
+    if (r.statusCode == 426) onUpdateRequired?.call();
     final code = switch (r.statusCode) {
       426 => 'update_required',
       401 => 'session_expired',

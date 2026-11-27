@@ -12,6 +12,9 @@ import '../features/placeholder/placeholder_screen.dart';
 import '../features/plan/plan_screen.dart';
 import '../features/plus/plus_screen.dart';
 import '../features/scan/scan_screen.dart';
+import '../features/settings/help_screen.dart';
+import '../features/sms_phone_mock/sms_phone_screen.dart';
+import '../features/settings/settings_screen.dart';
 import '../features/setup/setup_screen.dart';
 import '../features/stock/stock_screen.dart';
 import '../features/shell/app_shell.dart';
@@ -54,7 +57,7 @@ final moreDestinations = <LampDestination>[
 ];
 
 /// More's screens that have landed; the rest are placeholders until theirs do.
-const _built = {'/stock', '/cash', '/plan', '/approvals', '/credit-record', '/plus'};
+const _built = {'/stock', '/cash', '/plan', '/approvals', '/credit-record', '/plus', '/settings', '/help'};
 
 GoRoute _placeholder(LampDestination d) => GoRoute(
       path: d.path,
@@ -137,6 +140,9 @@ GoRouter buildRouter({
               GoRoute(path: '/approvals', builder: (_, _) => const ApprovalsScreen()),
               GoRoute(path: '/credit-record', builder: (_, _) => const CreditRecordScreen()),
               GoRoute(path: '/plus', builder: (_, _) => const PlusScreen()),
+              GoRoute(path: '/settings', builder: (_, _) => const SettingsScreen()),
+              GoRoute(path: '/help', builder: (_, _) => const HelpScreen()),
+              GoRoute(path: '/demo-phone', builder: (_, _) => const SmsPhoneScreen()),
               for (final d in moreDestinations.where((d) => !_built.contains(d.path))) _placeholder(d),
             ]),
           ],

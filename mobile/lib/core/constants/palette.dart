@@ -76,6 +76,12 @@ class LampPalette extends ThemeExtension<LampPalette> {
   /// page instead of looking like they are sitting in a puddle.
   final Color shadow;
 
+  /// The drawn basic phone (plan 5.7): its body, its monochrome screen and
+  /// the screen's text. A candy-bar phone looks the same in either theme.
+  final Color phoneBody;
+  final Color phoneScreen;
+  final Color phoneInk;
+
   const LampPalette({
     required this.bg,
     required this.surface,
@@ -96,6 +102,9 @@ class LampPalette extends ThemeExtension<LampPalette> {
     required this.dispute,
     required this.disputeSoft,
     required this.shadow,
+    this.phoneBody = const Color(0xFF2A2F2D),
+    this.phoneScreen = const Color(0xFFB8C6A3),
+    this.phoneInk = const Color(0xFF1C2619),
   });
 
   /* ---------------------------------------------------------------------- */
@@ -249,6 +258,9 @@ class LampPalette extends ThemeExtension<LampPalette> {
     Color? dispute,
     Color? disputeSoft,
     Color? shadow,
+    Color? phoneBody,
+    Color? phoneScreen,
+    Color? phoneInk,
   }) {
     return LampPalette(
       bg: bg ?? this.bg,
@@ -270,6 +282,9 @@ class LampPalette extends ThemeExtension<LampPalette> {
       dispute: dispute ?? this.dispute,
       disputeSoft: disputeSoft ?? this.disputeSoft,
       shadow: shadow ?? this.shadow,
+      phoneBody: phoneBody ?? this.phoneBody,
+      phoneScreen: phoneScreen ?? this.phoneScreen,
+      phoneInk: phoneInk ?? this.phoneInk,
     );
   }
 
@@ -296,6 +311,9 @@ class LampPalette extends ThemeExtension<LampPalette> {
       dispute: Color.lerp(dispute, other.dispute, t)!,
       disputeSoft: Color.lerp(disputeSoft, other.disputeSoft, t)!,
       shadow: Color.lerp(shadow, other.shadow, t)!,
+      phoneBody: Color.lerp(phoneBody, other.phoneBody, t)!,
+      phoneScreen: Color.lerp(phoneScreen, other.phoneScreen, t)!,
+      phoneInk: Color.lerp(phoneInk, other.phoneInk, t)!,
     );
   }
 }
