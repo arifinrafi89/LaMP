@@ -35,7 +35,7 @@ The Flutter app in `mobile/` with lamp-flutter's design system, its widget and i
 > 3. **[A]** Add `APPLINK_CALLBACK_SECRET` to `lamp-api` in Render (PR #7 is merged, so the stub deploys), then UptimeRobot on `/health`. Make Ishmam an admin and protect `main` (A0.0, still open).
 > 4. **[A]** As soon as the apps are approved: sandbox checklist items 1–7 (9.4). They set `FAMILY_JOIN_ROUTES` and the subscribe method, and answer Q7, Q11 and Q14 without asking anyone.
 > 5. **[A]** After that first run, send the questions to Applink in one message (12.3). Nothing in the build waits on the answers.
-> 6. **[I]** **[Y]** Build in the stage order of section 7. The family part is SMS commands (3.5) and the web card; there is no USSD screen, route or table.
+> 6. **[I]** **[Y]** Build in the stage order of section 7, and tick tasks in `docs/PROGRESS.md` as they land. The family part is SMS commands (3.5) and the web card; there is no USSD screen, route or table.
 
 ### Contents
 
@@ -842,11 +842,12 @@ The work below changes only what multi-shop use, Flutter and plans need.
 
 ## 7 Build order: stages, tasks and meeting points
 
-There are no fixed days. The team finishes as early as it can; the only fixed date in Phase 1 is AppQuest's submission deadline (30 Nov). Work flows in **stages**: a stage starts as soon as the meeting point before it is signed off, and anyone whose tasks are done picks up their next stage's tasks early, or helps with P0 bugs. Task ids are used in issues and PR titles. "←" marks what a task waits for. **MP** = meeting point, where two people's work meets; the person named signs it off before later work builds on it. A 15-minute stand-up each day, and one merge window each day (8.2).
+There are no fixed days. The team finishes as early as it can; the only fixed date in Phase 1 is AppQuest's submission deadline (30 Nov). Work flows in **stages**: a stage starts as soon as the meeting point before it is signed off, and anyone whose tasks are done picks up their next stage's tasks early, or helps with P0 bugs. Task ids are used in issues and PR titles. "←" marks what a task waits for. **MP** = meeting point, where two people's work meets; the person named signs it off before later work builds on it. A 15-minute stand-up each day, and one merge window each day (8.2). **Progress is ticked in `docs/PROGRESS.md`** as each task lands.
 
 > **Where things stand (27 Nov, checked on `main`)**
 >
 > - **Done:** I0.1, the import (PR #2), with CODEOWNERS and the pytest workflow; Y1.3 Today (PR #1) and Y2.1 Setup (PR #3), both early; Ayon's clean-up (PR #6); the A0.1 callback stub (PR #7) and the Render services `lamp-api` and `lamp-db`; A0.2's two Applink apps, as drafts.
+> - **Live status:** `docs/PROGRESS.md`. This box is the 27 Nov snapshot.
 > - **Open from Stage 0:** A0.0 (Ishmam has write access, not admin, and `main` isn't protected yet); PRs #4 and #5 were merged into Ishmam's branches, not into `main`; the Render secret and UptimeRobot (A0.1); sending both apps for approval, and the approval emails (A0.2).
 
 ### Stage 0: the repo, accounts and Applink forms
