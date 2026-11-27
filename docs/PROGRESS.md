@@ -9,6 +9,66 @@
 - Update the summary table in the same commit, and change the "Last updated" date. "Of those, on `main`" counts only ticked tasks whose work is merged into `main`.
 - Each person ticks their own tasks. Arifin ticks in the same PR as the work.
 
+## Where to pick up (27 Nov, end of day)
+
+**For everyone, and your coding agents**
+
+- **On `main`:**
+  - the 27 Nov plan (no USSD; build order in stages) and this tracker;
+  - Arifin's `applink/`, `auth/` and `jobs/` packages;
+  - the Applink client and its mock (`backend/app/applink/client/`);
+  - the families' text parser (`applink/family/commands.py`) and every SMS in English and Bangla (`applink/templates/`);
+  - a gitleaks secret scan on every PR (`server.yml`).
+
+  617 server tests pass.
+- **Live:** `https://lamp-api-k2xf.onrender.com` runs the callback stub. `/health` is up, and all five Applink callback addresses answer S1000.
+- **Rules so far:**
+  - one branch per task (`<name>/<task>`), with a PR to `main`;
+  - tick here in the same PR as the work;
+  - no AI attribution in commits or PRs;
+  - never commit secrets (gitleaks checks every PR);
+  - only touch your own folders (CODEOWNERS).
+
+**Ishmam: the main blocker**
+
+1. **Merge `ishmam/I0.3-day0-setup` into `main`.** It holds I0.2–I0.5 and I1.1–I1.4: Alembic, the `owner` table and contract v1. Arifin's code was tested merged with it, and 650 tests pass.
+2. **Update the contract for the 27 Nov plan:**
+   1. `/demo/ussd` becomes `/demo/sms`, plus `GET /demo/sms/thread`.
+   2. `CustomerCreated` and the customer rows get `join: {text, to}`.
+   3. `MeOut` gets `family_join_routes`.
+   4. Add `POST /plus/otp`, and `PlusStatus` gets `OTP_SENT`.
+   5. Add the error `join_by_text` (403), for when the counter route is off.
+
+**Ayon**
+
+- Next is Stage 2: Y2.2 Scan, Y2.3 Stock and Y2.4 offline.
+- Customers (Y3.1) shows the join text: `LAMP <code>` to 21213.
+- The drawn phone (Y4.1) is now an SMS phone that calls `/demo/sms`.
+
+**Arifin: next, in order**
+
+1. **UptimeRobot (A0.1e):** sign in, then add the check.
+2. **Once Ishmam's branch is on `main`:**
+   - A1.3 jobs;
+   - A1.2 sign-in;
+   - A2.1 callbacks;
+   - A2.2 part 2: joining and delivery reports;
+   - the rest of A1.4: `render.yaml`, the Postgres tests and `tick.yml`.
+3. **Your calls:**
+   - send both Applink apps for approval (the drafts are ready);
+   - add the two backup secrets to GitHub;
+   - choose how to protect `main` (requiring Ishmam's review would block Arifin's own merges).
+
+**For a coding agent picking up Arifin's part**
+
+- **Read first:**
+  - `backend/app/applink/client/base.py`: the rules for every Applink call;
+  - `client/mock.py`: the test scenarios, keyed on a number's last two digits;
+  - `family/commands.py`: the parser for families' texts.
+- **Run the tests:** `cd backend && pytest -q`.
+- **Before merging:** also test with any unmerged teammate branch that `main` will soon depend on.
+- **Secrets:** never print them. The user pastes them from their clipboard.
+
 ## Summary
 
 | Stage | Done | Of those, on `main` | Total |
@@ -38,7 +98,7 @@
 - [x] **A0.1b** Render Postgres `lamp-db` · **[A]** · done (free, Singapore, PostgreSQL 16)
 - [x] **A0.1c** Render's outbound addresses in the Applink forms · **[A]** · done (508 single IPs)
 - [x] **A0.1d** `APPLINK_CALLBACK_SECRET` in Render · **[A]** · done 27 Nov: `lamp-api` is live; all five callback addresses answer S1000, a wrong secret gets 404, and the log holds no secret
-- [ ] **A0.1e** UptimeRobot keep-awake on `/health` · **[A]**
+- [ ] **A0.1e** UptimeRobot keep-awake on `/health` · **[A]** · next: Arifin signs in at dashboard.uptimerobot.com, then an HTTP check every 5 minutes
 - [x] **A0.2a** Both Applink apps filled in and saved as drafts (LaMP `APP_019205`, LaMPPlus `APP_019207`) · **[A]** · done
 - [ ] **A0.2b** Both apps sent for approval · **[A]**
 - [ ] **A0.2c** Both approval emails sent from the team lead's address · **[I]**
