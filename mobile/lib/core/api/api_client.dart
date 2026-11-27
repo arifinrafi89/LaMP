@@ -6,6 +6,7 @@ import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 
+import 'http_client.dart' if (dart.library.js_interop) 'http_client_web.dart';
 import 'problem.dart';
 
 /// The one way the app talks to the LaMP server (plan 5.3, rules in 2.1).
@@ -52,7 +53,7 @@ class ApiClient {
   static const uploadTimeout = Duration(seconds: 60);
   static const _getAttempts = 3;
 
-  static http.Client _defaultClient() => http.Client();
+  static http.Client _defaultClient() => makeHttpClient();
 
   static Duration _defaultBackoff(int attempt) =>
       Duration(milliseconds: 400 * (1 << attempt) + Random().nextInt(250));
@@ -121,6 +122,40 @@ class ApiClient {
         throw const ApiProblem('session_expired', status: 401);
       }
       return response;
+    }
+  }
+
+  /// The chat (`POST /chat`): posts [body] and hands back the answer's bytes
+  /// as they arrive, for `parseChatStream`. One refresh on 401, then the same
+  /// question again; a network error is not retried, so a question is never
+  /// sent twice. A refusal throws the server's [ApiProblem]
+  /// (`ai_budget_reached`, `plus_required`).
+  Future<Stream<List<int>>> stream(String path, Object? body) async {
+    var refreshed = false;
+    while (true) {
+      final request = http.Request('POST', Uri.parse('$baseUrl$path'))
+        ..headers.addAll(_headers(null))
+        ..headers['Accept'] = 'text/event-stream'
+        ..headers['Content-Type'] = 'application/json; charset=utf-8'
+        ..body = jsonEncode(body);
+      final http.StreamedResponse r;
+      try {
+        // Only the start of the answer is timed; the answer itself takes as
+        // long as it takes, and the screen watches for silence.
+        r = await _http.send(request).timeout(uploadTimeout);
+      } on Object catch (e) {
+        if (!_isNetworkError(e)) rethrow;
+        throw ApiProblem(ApiProblem.offline, detail: e.toString());
+      }
+      if (r.statusCode == 401 && !refreshed) {
+        await r.stream.drain<void>();
+        refreshed = true;
+        if (await refresh()) continue;
+        throw const ApiProblem('session_expired', status: 401);
+      }
+      if (r.statusCode >= 200 && r.statusCode < 300) return r.stream;
+      _decode(await http.Response.fromStream(r));
+      throw ApiProblem('unknown', status: r.statusCode);
     }
   }
 

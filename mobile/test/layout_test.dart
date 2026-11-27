@@ -53,6 +53,7 @@ void main() {
     '/approvals',
     '/credit-record',
     '/plus',
+    '/ask',
   ];
 
   for (final theme in [ThemeMode.light, ThemeMode.dark]) {

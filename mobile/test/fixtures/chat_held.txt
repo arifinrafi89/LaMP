@@ -1,0 +1,28 @@
+data: {"type": "start", "messageId": "m1"}
+
+data: {"type": "start-step"}
+
+data: {"type": "tool-input-start", "toolCallId": "t1", "toolName": "get_forecast"}
+
+data: {"type": "tool-input-delta", "toolCallId": "t1", "inputTextDelta": "{\"days\": 30}"}
+
+data: {"type": "tool-input-available", "toolCallId": "t1", "toolName": "get_forecast", "input": {"days": 30}}
+
+data: {"type": "tool-output-available", "toolCallId": "t1", "output": {"start_cash": 39150.0, "shortfalls": [{"date": "2026-10-26", "amount": 19000.0}]}}
+
+data: {"type": "finish-step"}
+
+data: {"type": "start-step"}
+
+data: {"type": "text-start", "id": "guard"}
+
+data: {"type": "text-delta", "id": "guard", "delta": "I held that answer back because one of its money figures didn't match LaMP's own numbers. Please ask again, or check the figures on the Plan and Cash pages."}
+
+data: {"type": "text-end", "id": "guard"}
+
+data: {"type": "data-trace", "data": {"traced": 0, "total": 1, "blocked": true}}
+
+data: {"type": "finish"}
+
+data: [DONE]
+

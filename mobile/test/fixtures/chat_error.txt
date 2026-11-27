@@ -1,0 +1,10 @@
+data: {"type": "start", "messageId": "m1"}
+
+data: {"type": "start-step"}
+
+data: {"type": "tool-input-start", "toolCallId": "t1", "toolName": "get_forecast"}
+
+data: {"type": "error", "errorText": "model timeout"}
+
+data: [DONE]
+
