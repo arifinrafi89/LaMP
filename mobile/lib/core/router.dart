@@ -13,6 +13,7 @@ import '../features/plan/plan_screen.dart';
 import '../features/plus/plus_screen.dart';
 import '../features/scan/scan_screen.dart';
 import '../features/settings/help_screen.dart';
+import '../features/sms_phone_mock/sms_phone_screen.dart';
 import '../features/settings/settings_screen.dart';
 import '../features/setup/setup_screen.dart';
 import '../features/stock/stock_screen.dart';
@@ -141,6 +142,7 @@ GoRouter buildRouter({
               GoRoute(path: '/plus', builder: (_, _) => const PlusScreen()),
               GoRoute(path: '/settings', builder: (_, _) => const SettingsScreen()),
               GoRoute(path: '/help', builder: (_, _) => const HelpScreen()),
+              GoRoute(path: '/demo-phone', builder: (_, _) => const SmsPhoneScreen()),
               for (final d in moreDestinations.where((d) => !_built.contains(d.path))) _placeholder(d),
             ]),
           ],

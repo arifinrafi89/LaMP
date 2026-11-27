@@ -54,6 +54,10 @@ void main() {
     '/credit-record',
     '/plus',
     '/ask',
+    '/settings',
+    '/help',
+    // Not a demo shop (me.json): says the phone is for the demo shop only.
+    '/demo-phone',
   ];
 
   for (final theme in [ThemeMode.light, ThemeMode.dark]) {

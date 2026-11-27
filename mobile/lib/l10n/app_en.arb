@@ -934,5 +934,12 @@
   "updateBanner": "A new version of LaMP is ready.",
   "updateLater": "Later",
   "maintenanceTitle": "LaMP is being updated",
-  "maintenanceBody": "Try again in a few minutes. Your data is safe."
+  "maintenanceBody": "Try again in a few minutes. Your data is safe.",
+  "navPhone": "SMS phone (demo)",
+  "phoneOnlyDemo": "The SMS phone is only on the demo shop",
+  "phoneOnlyDemoBody": "Real families text 21213 from their own phones.",
+  "phoneEmptyThread": "No messages yet",
+  "phoneSend": "Send",
+  "phoneFillTitle": "Type a family's join text",
+  "phoneHowTo": "Press a key again quickly for its next letter. # switches letters and numbers; * deletes."
 }

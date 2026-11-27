@@ -17,7 +17,8 @@ class MoreScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = L10n.of(context);
     // How many steps wait, on Plus only: a free shop's More reads nothing.
-    final plus = context.watch<MeController>().me?.entitlements.approvals ?? false;
+    final me = context.watch<MeController>().me;
+    final plus = me?.entitlements.approvals ?? false;
     final waiting = plus ? context.watch<ApprovalsController>().actions?.waiting.length ?? 0 : 0;
     return Scaffold(
       appBar: AppBar(title: Text(l.tabMore)),
@@ -46,6 +47,15 @@ class MoreScreen extends StatelessWidget {
                           )
                         : const Icon(Icons.chevron_right),
                     onTap: () => context.go(d.path),
+                  ),
+                // The drawn phone, for the demo video and finale (plan 5.7).
+                if (me?.demoTools ?? false)
+                  LampRow(
+                    key: const ValueKey('more-demo-phone'),
+                    icon: Icons.smartphone,
+                    title: l.navPhone,
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => context.go('/demo-phone'),
                   ),
               ],
             ),
