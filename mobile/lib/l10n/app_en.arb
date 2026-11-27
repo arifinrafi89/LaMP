@@ -738,5 +738,88 @@
         "type": "String"
       }
     }
-  }
+  },
+  "checkAgain": "Check again",
+  "otpBadCode": "Enter the 6-digit code.",
+  "creditWhat": "A record of how your shop pays its suppliers, to show a lender.",
+  "creditPreview": "{paid} of {total} bills paid on time, over {months} months",
+  "@creditPreview": {
+    "placeholders": {
+      "paid": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      },
+      "months": {
+        "type": "String"
+      }
+    }
+  },
+  "creditNoBills": "No supplier bills yet. Scan a few first.",
+  "creditBuy": "Get my record for BDT 10",
+  "creditBuyNote": "BDT 10 from your mobile balance. Banglalink sends a code to confirm.",
+  "creditCodeBody": "Banglalink sent a code to your phone. Type it to pay BDT 10.",
+  "creditPay": "Pay BDT 10",
+  "creditWrongCode": "That code isn't right. {n} tries left.",
+  "@creditWrongCode": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "creditChecking": "Checking with Banglalink…",
+  "creditWaiting": "Banglalink hasn't confirmed yet. Nothing more will be charged. Check again in a minute.",
+  "creditFailed": "No money was taken.",
+  "creditExpired": "The code ran out. No money was taken.",
+  "creditPaid": "Your record is ready",
+  "creditPdf": "Save or send the PDF",
+  "creditShareTitle": "Share with one lender",
+  "creditShareBody": "They get a link for 7 days. You can take it back any time, and every view shows in History.",
+  "creditLenderName": "Lender's name",
+  "creditMakeLink": "Make the link",
+  "creditNameNeeded": "Enter the lender's name.",
+  "creditLinkFor": "Link for {lender}",
+  "@creditLinkFor": {
+    "placeholders": {
+      "lender": {
+        "type": "String"
+      }
+    }
+  },
+  "creditLinkUntil": "Open until {day} · opened {n} times",
+  "@creditLinkUntil": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      },
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "creditRevoke": "Take the link back",
+  "creditRevoked": "The link is closed",
+  "plusIntro": "LaMP Plus adds these to everything free:",
+  "plusScans": "Scans with no monthly limit",
+  "plusConsent": "LaMP Plus, BDT 50 a month + VAT from your mobile balance. Stop any time.",
+  "plusAgree": "Agree",
+  "plusCodeBody": "Banglalink sent a code to your phone. Type it to start LaMP Plus.",
+  "plusPending": "Waiting for Banglalink to confirm.",
+  "plusActive": "LaMP Plus is on",
+  "plusRenews": "Renews on {day}",
+  "@plusRenews": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "plusBlocked": "Top up your balance; LaMP Plus continues when Banglalink can charge it. Everything free keeps working.",
+  "plusStopped": "LaMP Plus is off. You won't be charged again.",
+  "plusCancel": "Stop LaMP Plus",
+  "plusCancelConfirm": "Stop LaMP Plus? Cash, Plan, Approvals and Ask lock again, and you won't be charged again.",
+  "plusComingSoon": "LaMP Plus is coming soon",
+  "plusComingSoonBody": "Banglalink is still approving it. Everything free keeps working."
 }

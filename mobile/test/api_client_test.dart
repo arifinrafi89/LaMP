@@ -252,4 +252,27 @@ void main() {
               .having((p) => p.resetsOn, 'resetsOn', DateTime(2026, 12, 1))));
     });
   });
+
+  group('getBytes (a PDF behind the session)', () {
+    test('returns the bytes as sent, with the session', () async {
+      final pdf = [0x25, 0x50, 0x44, 0x46, 0x2D];
+      final api = client((_) async => http.Response.bytes(pdf, 200, headers: {'content-type': 'application/pdf'}));
+      expect(await api.getBytes('/pharmacies/green-life/credit-record/pdf'), pdf);
+      expect(sent.single.method, 'GET');
+      expect(sent.single.headers['Authorization'], 'Bearer old');
+    });
+
+    test('an expired token is refreshed once, then the bytes', () async {
+      final api = client((req) async => req.headers['Authorization'] == 'Bearer old'
+          ? json({'detail': 'expired'}, 401)
+          : http.Response.bytes([1, 2, 3], 200));
+      expect(await api.getBytes('/x'), [1, 2, 3]);
+      expect(refreshes, 1);
+    });
+
+    test('a refusal is the server code, not bytes', () async {
+      final api = client((_) async => json({'detail': 'Not bought yet', 'code': 'not_found'}, 404));
+      await expectLater(api.getBytes('/x'), throwsA(isA<ApiProblem>().having((p) => p.code, 'code', 'not_found')));
+    });
+  });
 }

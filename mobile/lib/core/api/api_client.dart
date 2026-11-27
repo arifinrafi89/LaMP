@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
@@ -106,7 +107,11 @@ class ApiClient {
   }) =>
       _call(() => _once(method, path, body, idempotencyKey), retry: retry);
 
-  Future<Object?> _call(Future<http.Response> Function() once, {bool retry = false}) async {
+  Future<Object?> _call(Future<http.Response> Function() once, {bool retry = false}) async =>
+      _decode(await _respond(once, retry: retry));
+
+  /// The response after the retries and one refresh on 401, undecoded.
+  Future<http.Response> _respond(Future<http.Response> Function() once, {bool retry = false}) async {
     var refreshed = false;
     while (true) {
       final response = await _withRetry(once, attempts: retry ? _getAttempts : 1);
@@ -115,8 +120,17 @@ class ApiClient {
         if (await refresh()) continue;
         throw const ApiProblem('session_expired', status: 401);
       }
-      return _decode(response);
+      return response;
     }
+  }
+
+  /// A file behind the session, like the credit record's PDF: its bytes, or
+  /// the server's [ApiProblem]. Retried like any GET.
+  Future<Uint8List> getBytes(String path) async {
+    final r = await _respond(() => _once('GET', path, null, null), retry: true);
+    if (r.statusCode >= 200 && r.statusCode < 300) return r.bodyBytes;
+    _decode(r);
+    throw ApiProblem('unknown', status: r.statusCode);
   }
 
   Future<http.Response> _withRetry(

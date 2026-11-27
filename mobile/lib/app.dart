@@ -35,6 +35,7 @@ class LampApp extends StatefulWidget {
     this.shrinkPhoto,
     this.cache,
     this.shareText,
+    this.shareFile,
   });
 
   /// Injected by tests; built against the real server otherwise.
@@ -58,6 +59,9 @@ class LampApp extends StatefulWidget {
 
   /// The share sheet; tests record what is shared.
   final ShareText? shareText;
+
+  /// Sharing a file (the credit record's PDF); tests record it.
+  final ShareFile? shareFile;
 
   @override
   State<LampApp> createState() => _LampAppState();
@@ -151,6 +155,7 @@ class _LampAppState extends State<LampApp> {
         ChangeNotifierProvider<ShopChanges>.value(value: _changes),
         Provider<ShrinkPhoto>.value(value: widget.shrinkPhoto ?? shrinkPhotoInBackground),
         Provider<ShareText>.value(value: widget.shareText ?? shareWithPhone),
+        Provider<ShareFile>.value(value: widget.shareFile ?? shareFileWithPhone),
       ],
       child: Consumer2<ThemeController, LocaleController>(
         builder: (context, theme, locale, _) => MaterialApp.router(
