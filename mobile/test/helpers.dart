@@ -7,6 +7,7 @@ import 'package:lamp_shop/app.dart';
 import 'package:lamp_shop/core/auth/auth_service.dart';
 import 'package:lamp_shop/core/auth/fake_auth_service.dart';
 import 'package:lamp_shop/core/auth/token_store.dart';
+import 'package:lamp_shop/core/links.dart';
 import 'package:lamp_shop/core/offline/cache_store.dart';
 import 'package:lamp_shop/core/state/session_controller.dart';
 import 'package:lamp_shop/features/customers/share_text.dart';
@@ -50,6 +51,7 @@ Future<void> pumpLamp(
   CacheStore? cache,
   ShareText? share,
   ShareFile? shareFile,
+  OpenLink? open,
 }) async {
   SharedPreferences.setMockInitialValues(prefs);
   tester.view.physicalSize = const Size(360, 800);
@@ -68,6 +70,7 @@ Future<void> pumpLamp(
     cache: cache ?? MemoryCacheStore(),
     shareText: share ?? (_) async {},
     shareFile: shareFile ?? (_, _, _) async {},
+    openLink: open ?? (_) async => true,
   ));
   await tester.pumpAndSettle();
 }

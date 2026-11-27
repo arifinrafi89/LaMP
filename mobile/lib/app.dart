@@ -12,6 +12,7 @@ import 'core/auth/lamp_auth_service.dart';
 import 'core/auth/token_store.dart';
 import 'core/constants/app_theme.dart';
 import 'core/constants/palette.dart';
+import 'core/links.dart';
 import 'core/offline/cache_store.dart';
 import 'core/router.dart';
 import 'core/state/locale_controller.dart';
@@ -36,6 +37,7 @@ class LampApp extends StatefulWidget {
     this.cache,
     this.shareText,
     this.shareFile,
+    this.openLink,
   });
 
   /// Injected by tests; built against the real server otherwise.
@@ -62,6 +64,9 @@ class LampApp extends StatefulWidget {
 
   /// Sharing a file (the credit record's PDF); tests record it.
   final ShareFile? shareFile;
+
+  /// Opening a link outside the app; tests record it.
+  final OpenLink? openLink;
 
   @override
   State<LampApp> createState() => _LampAppState();
@@ -156,6 +161,7 @@ class _LampAppState extends State<LampApp> {
         Provider<ShrinkPhoto>.value(value: widget.shrinkPhoto ?? shrinkPhotoInBackground),
         Provider<ShareText>.value(value: widget.shareText ?? shareWithPhone),
         Provider<ShareFile>.value(value: widget.shareFile ?? shareFileWithPhone),
+        Provider<OpenLink>.value(value: widget.openLink ?? openWithPhone),
       ],
       child: Consumer2<ThemeController, LocaleController>(
         builder: (context, theme, locale, _) => MaterialApp.router(

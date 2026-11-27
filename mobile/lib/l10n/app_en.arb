@@ -847,5 +847,84 @@
   "toolRecord": "Checking your payment record…",
   "toolMessage": "Preparing a message…",
   "toolPropose": "Adding a step to Approvals…",
-  "askProposed": "A step is waiting in Approvals."
+  "askProposed": "A step is waiting in Approvals.",
+  "settingsLook": "Language and look",
+  "settingsTheme": "Theme",
+  "settingsLanguageNote": "SMS from LaMP use this language too.",
+  "settingsLanguageNotSent": "Saved on this phone. SMS will switch once you're online.",
+  "settingsDevices": "Signed-in phones and browsers",
+  "settingsThisDevice": "This phone",
+  "settingsLastUsed": "Last used {day}",
+  "@settingsLastUsed": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsSignOutDevice": "Sign out",
+  "settingsSignedOutDevice": "{name} is signed out",
+  "@settingsSignedOutDevice": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsSignOut": "Sign out of this phone",
+  "settingsSignOutBody": "Your shop's data stays safe. Sign in again with a code.",
+  "settingsYourData": "Your data",
+  "settingsExport": "Download my data",
+  "settingsExportBody": "A zip of your bills, stock, customers and cash, as spreadsheets and PDF. Families' numbers are left out.",
+  "settingsExportBuilding": "Getting your data ready…",
+  "settingsExportReady": "Your data is ready. The link works for 10 minutes.",
+  "settingsExportOpen": "Open the download",
+  "settingsExportFailed": "Your data couldn't be prepared. Try again.",
+  "settingsExportWaiting": "Still getting it ready. Check again in a minute.",
+  "settingsDelete": "Delete my account",
+  "settingsDeleteBody": "Everything for your shop is erased 7 days later. Sign in within 7 days to undo it.",
+  "settingsDeleteType": "Type DELETE to confirm",
+  "settingsDeleteConfirm": "Delete my account",
+  "settingsDeleteNeedsWord": "Type DELETE, in capital letters.",
+  "settingsDeleted": "Your account will be erased on {day}. Sign in before then to keep it.",
+  "@settingsDeleted": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsLegal": "Terms and privacy",
+  "settingsTerms": "Terms of use",
+  "settingsPrivacy": "Privacy notice",
+  "settingsVersion": "LaMP {version}",
+  "@settingsVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "helpTitle": "Questions owners ask",
+  "helpQ1": "How do I add a supplier bill?",
+  "helpA1": "Open Scan, take a photo of the bill, check what LaMP read, and save it. Anything LaMP isn't sure of shows in orange for you to check.",
+  "helpQ2": "How do families get SMS reminders?",
+  "helpA2": "Add them under Customers. Read them the join text, or write it on their bill. When they text it to 21213, their reminders start. It's free for them.",
+  "helpQ3": "What does LaMP Plus cost?",
+  "helpA3": "BDT 50 a month + VAT from your mobile balance. Stop any time under LaMP Plus. Everything free keeps working.",
+  "helpQ4": "Does it work without internet?",
+  "helpA4": "Yes: LaMP opens with the last figures it read, and says how old they are. Saving needs a connection.",
+  "helpQ5": "Who can see my shop's figures?",
+  "helpA5": "Only you, on the phones signed in to your number. A lender sees your credit record only through a link you make, and you can take it back.",
+  "reportTitle": "Report a problem",
+  "reportBody": "Tell us what happened. We read every report.",
+  "reportKind": "What is it about?",
+  "reportBug": "Something broke",
+  "reportQuestion": "A question",
+  "reportIdea": "An idea",
+  "reportOther": "Something else",
+  "reportMessage": "What happened",
+  "reportNeeded": "Write a few words about it.",
+  "reportSend": "Send",
+  "reportSent": "Thank you. We got it."
 }
