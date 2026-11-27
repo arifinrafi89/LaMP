@@ -1,0 +1,25 @@
+[
+  {
+    "id": "act-4", "kind": "extension_request", "status": "proposed",
+    "payload": {"summary": "Ask Supplier A for 20 more days on BDT 8,200", "amount": 8200, "when": "2026-10-16"},
+    "proposed_by": "owner", "created_at": "2026-11-27T04:10:00Z", "decided_at": null, "result": null, "requires_pin": false
+  },
+  {
+    "id": "act-3", "kind": "trim_order", "status": "proposed",
+    "payload": {"summary": "Cut Montelukast from 30 to 12 boxes", "amount": 10800, "when": "2026-10-16"},
+    "proposed_by": "agent", "created_at": "2026-11-27T04:09:00Z", "decided_at": null, "result": null, "requires_pin": false
+  },
+  {
+    "id": "act-1", "kind": "return_claim", "status": "executed",
+    "payload": {"summary": "Return expiring stock", "amount": 9200},
+    "proposed_by": "owner", "created_at": "2026-11-26T03:29:39Z", "decided_at": "2026-11-26T03:29:40Z",
+    "result": {"claim_id": "CLM-0001", "expected_credit": 9200.0, "summary": "Return sent. Your next bills should be BDT 9,200 lower."},
+    "requires_pin": false
+  },
+  {
+    "id": "act-0", "kind": "set_aside", "status": "rejected",
+    "payload": {"summary": "Put BDT 500 aside each day", "amount": 500},
+    "proposed_by": "agent", "created_at": "2026-11-25T03:00:00Z", "decided_at": "2026-11-25T05:00:00Z",
+    "result": null, "requires_pin": false
+  }
+]

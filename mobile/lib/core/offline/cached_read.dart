@@ -13,10 +13,13 @@ import 'cache_store.dart';
 ///   the screen shows the problem and a way to try again.
 class CachedRead<T> extends ChangeNotifier {
   /// For a read that answers a JSON object.
+  ///
+  /// [fetch] replaces the GET, for a read the server answers to a POST
+  /// (`/funding-plan`).
   CachedRead(ApiClient api, CacheStore cache, String path, T Function(Map<String, dynamic>) parse,
-      {Listenable? refreshOn, DateTime Function()? now})
+      {Listenable? refreshOn, DateTime Function()? now, Future<Object?> Function()? fetch})
       : this._(api, cache, path, (j) => j is Map<String, dynamic> ? parse(j) : null,
-            refreshOn: refreshOn, now: now);
+            refreshOn: refreshOn, now: now, fetch: fetch);
 
   /// For a read that answers a JSON list, like `GET /customers`.
   CachedRead.list(ApiClient api, CacheStore cache, String path, T Function(List<dynamic>) parse,
@@ -24,8 +27,9 @@ class CachedRead<T> extends ChangeNotifier {
       : this._(api, cache, path, (j) => j is List ? parse(j) : null, refreshOn: refreshOn, now: now);
 
   CachedRead._(this._api, this._cache, this.path, this._parse,
-      {Listenable? refreshOn, DateTime Function()? now})
+      {Listenable? refreshOn, DateTime Function()? now, Future<Object?> Function()? fetch})
       : _now = now ?? DateTime.now,
+        _fetch = fetch,
         _refreshOn = refreshOn {
     _refreshOn?.addListener(load);
   }
@@ -38,6 +42,7 @@ class CachedRead<T> extends ChangeNotifier {
   /// Null when the answer has the wrong shape (an object for a list).
   final T? Function(Object?) _parse;
   final DateTime Function() _now;
+  final Future<Object?> Function()? _fetch;
 
   /// Reads again whenever this rings (see ShopChanges).
   final Listenable? _refreshOn;
@@ -76,7 +81,7 @@ class CachedRead<T> extends ChangeNotifier {
       }
     }
     try {
-      final j = await _api.get(path);
+      final j = await (_fetch?.call() ?? _api.get(path));
       final parsed = _tryParse(j);
       // No detail: the owner reads the plain-words line, not ours.
       if (parsed == null) throw const ApiProblem('unknown');
