@@ -38,6 +38,7 @@ String problemMessage(L10n l, ApiProblem p) => switch (p.code) {
       'rate_limited' => l.errRateLimited,
       'applink_down' => l.errApplinkDown,
       'charge_failed' => l.errChargeFailed,
+      'join_by_text' => l.errJoinByText,
       'not_found' => l.errNotFound,
       'invalid' => l.errInvalid,
       'too_large' => l.errTooLarge,
