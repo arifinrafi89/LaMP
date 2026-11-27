@@ -12,6 +12,7 @@ import 'core/auth/lamp_auth_service.dart';
 import 'core/auth/token_store.dart';
 import 'core/constants/app_theme.dart';
 import 'core/constants/palette.dart';
+import 'core/offline/cache_store.dart';
 import 'core/router.dart';
 import 'core/state/locale_controller.dart';
 import 'core/state/session_controller.dart';
@@ -30,6 +31,7 @@ class LampApp extends StatefulWidget {
     this.httpClient,
     this.photoSource,
     this.shrinkPhoto,
+    this.cache,
   });
 
   /// Injected by tests; built against the real server otherwise.
@@ -48,6 +50,9 @@ class LampApp extends StatefulWidget {
   /// Makes a photo ready to send; tests skip the isolate.
   final ShrinkPhoto? shrinkPhoto;
 
+  /// The offline cache; tests keep it in memory.
+  final CacheStore? cache;
+
   @override
   State<LampApp> createState() => _LampAppState();
 }
@@ -59,6 +64,7 @@ class _LampAppState extends State<LampApp> {
   late final SessionController _session;
   late final GoRouter _router;
   late final PhotoSource _photos = widget.photoSource ?? DevicePhotoSource();
+  late final CacheStore _cache = widget.cache ?? HiveCacheStore();
 
   @override
   void initState() {
@@ -79,7 +85,14 @@ class _LampAppState extends State<LampApp> {
       _api = _client(refresh: _session.refreshNow);
     }
     _router = buildRouter(session: _session, initialLocation: widget.initialLocation);
+    _session.addListener(_forgetOnSignOut);
     if (_session.status == SessionStatus.restoring) _session.restore();
+  }
+
+  /// Signed out, by choice or because the session ended: what the phone kept
+  /// for this shop goes too, so the next owner on this phone never sees it.
+  void _forgetOnSignOut() {
+    if (_session.status == SessionStatus.signedOut) _cache.clear();
   }
 
   ApiClient _client({required Future<bool> Function() refresh}) => ApiClient(
@@ -109,6 +122,7 @@ class _LampAppState extends State<LampApp> {
 
   @override
   void dispose() {
+    _session.removeListener(_forgetOnSignOut);
     _router.dispose();
     _theme.dispose();
     _locale.dispose();
@@ -125,6 +139,7 @@ class _LampAppState extends State<LampApp> {
         ChangeNotifierProvider.value(value: _session),
         Provider.value(value: _api),
         Provider<PhotoSource>.value(value: _photos),
+        Provider<CacheStore>.value(value: _cache),
         Provider<ShrinkPhoto>.value(value: widget.shrinkPhoto ?? shrinkPhotoInBackground),
       ],
       child: Consumer2<ThemeController, LocaleController>(

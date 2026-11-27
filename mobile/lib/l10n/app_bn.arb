@@ -190,5 +190,8 @@
   "stockNothingBody": "সরবরাহকারীর বিল স্ক্যান করুন, যাতে LaMP আপনার স্টক ও মেয়াদ জানে।",
   "stockScanBill": "বিল স্ক্যান করুন",
   "stockCostValue": "কেনা দাম",
-  "stockLeft": "বাকি"
+  "stockLeft": "বাকি",
+  "syncUpdated": "আপডেট {time}",
+  "syncOffline": "অফলাইন · আপডেট {time}",
+  "syncStale": "রিফ্রেশ হয়নি · আপডেট {time}"
 }

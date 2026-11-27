@@ -7,6 +7,7 @@ import 'package:lamp_shop/app.dart';
 import 'package:lamp_shop/core/auth/auth_service.dart';
 import 'package:lamp_shop/core/auth/fake_auth_service.dart';
 import 'package:lamp_shop/core/auth/token_store.dart';
+import 'package:lamp_shop/core/offline/cache_store.dart';
 import 'package:lamp_shop/core/state/session_controller.dart';
 import 'package:lamp_shop/features/scan/photo_prep.dart';
 import 'package:lamp_shop/features/scan/photo_source.dart';
@@ -45,6 +46,7 @@ Future<void> pumpLamp(
   PhotoSource? photos,
   ShrinkPhoto? shrink,
   Map<String, Object> prefs = const {},
+  CacheStore? cache,
 }) async {
   SharedPreferences.setMockInitialValues(prefs);
   tester.view.physicalSize = const Size(360, 800);
@@ -59,6 +61,8 @@ Future<void> pumpLamp(
     httpClient: http ?? MockClient((_) async => _down),
     photoSource: photos,
     shrinkPhoto: shrink,
+    // Never the phone's encrypted box in a test.
+    cache: cache ?? MemoryCacheStore(),
   ));
   await tester.pumpAndSettle();
 }

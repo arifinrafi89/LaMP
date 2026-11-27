@@ -176,7 +176,8 @@ class ApiClient {
         // An error page in HTML (Render's 502 while waking) still has a status
         // to go on. A success the app can't read does not: say so here, or the
         // caller's cast fails outside its ApiProblem handling.
-        if (ok) throw ApiProblem('unknown', detail: 'response was not JSON', status: r.statusCode);
+        // No detail: problemMessage would show it, and it isn't the owner's words.
+        if (ok) throw ApiProblem('unknown', status: r.statusCode);
       }
     }
     if (ok) return json;

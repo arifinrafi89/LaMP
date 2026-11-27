@@ -7,10 +7,12 @@ import '../../core/api/problem.dart';
 import '../../core/constants/palette.dart';
 import '../../core/constants/typography.dart';
 import '../../core/l10n/digits.dart';
+import '../../core/offline/cache_store.dart';
 import '../../core/state/session_controller.dart';
 import '../../l10n/app_localizations.dart';
 import '../../widgets/ui/lamp_failed.dart';
 import '../../widgets/ui/lamp_skeleton.dart';
+import '../../widgets/ui/lamp_sync_pip.dart';
 import '../../widgets/ui/lamp_ui.dart';
 import 'today_controller.dart';
 import 'today_models.dart';
@@ -24,7 +26,8 @@ class TodayScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final pid = context.read<SessionController>().pharmacy!.id;
     return ChangeNotifierProvider(
-      create: (context) => TodayController(context.read<ApiClient>(), pid)..load(),
+      create: (context) =>
+          TodayController(context.read<ApiClient>(), context.read<CacheStore>(), pid)..load(),
       child: const _TodayView(),
     );
   }
@@ -51,7 +54,7 @@ class _TodayView extends StatelessWidget {
     } else {
       body = RefreshIndicator(
         onRefresh: today.load,
-        child: _Figures(summary: summary, problem: problem),
+        child: _Figures(summary: summary, problem: problem, savedAt: today.savedAt),
       );
     }
     return Scaffold(appBar: AppBar(title: Text(l.tabToday)), body: body);
@@ -59,10 +62,11 @@ class _TodayView extends StatelessWidget {
 }
 
 class _Figures extends StatelessWidget {
-  const _Figures({required this.summary, required this.problem});
+  const _Figures({required this.summary, required this.problem, required this.savedAt});
 
   final TodaySummary summary;
   final ApiProblem? problem;
+  final DateTime? savedAt;
 
   @override
   Widget build(BuildContext context) {
@@ -78,9 +82,9 @@ class _Figures extends StatelessWidget {
       padding: const EdgeInsets.all(Gap.lg),
       children: [
         Text(l.todayAsOf(day(summary.asOf)), style: LaMPType.caption.copyWith(color: c.inkFaint)),
-        if (problem != null) ...[
+        if (savedAt != null) ...[
           const SizedBox(height: Gap.xs),
-          Text(problemMessage(l, problem!), style: LaMPType.caption.copyWith(color: c.pending)),
+          LampSyncPip(savedAt: savedAt!, problem: problem),
         ],
         const SizedBox(height: Gap.md),
         _OneThingCard(oneThing: summary.oneThing),

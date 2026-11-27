@@ -365,5 +365,29 @@
   "stockNothingBody": "Scan your supplier bills so LaMP knows your stock and when it expires.",
   "stockScanBill": "Scan a bill",
   "stockCostValue": "Cost value",
-  "stockLeft": "Left"
+  "stockLeft": "Left",
+  "syncUpdated": "Updated {time}",
+  "@syncUpdated": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "syncOffline": "Offline · updated {time}",
+  "@syncOffline": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "syncStale": "Couldn't refresh · updated {time}",
+  "@syncStale": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  }
 }

@@ -142,6 +142,11 @@ class ScanController extends ChangeNotifier {
     } on ApiProblem catch (p) {
       _problem = p;
       _stage = ScanStage.preview;
+    } on Object catch (e) {
+      // A draft the app can't read: keep the photo, say it plainly.
+      debugPrint('LaMP: could not read the scan: $e');
+      _problem = const ApiProblem('unknown');
+      _stage = ScanStage.preview;
     } finally {
       _notify();
     }

@@ -141,6 +141,16 @@ void main() {
     expect(sent[0].headers['Idempotency-Key'], isNotEmpty);
   });
 
+  test('an answer it cannot read keeps the photo, never a spinner forever', () async {
+    reply = (_) => ok('{"shape": "changed"}');
+    final scan = controller();
+    await scan.take(() async => photo);
+    await scan.send();
+    expect(scan.stage, ScanStage.preview);
+    expect(scan.problem!.code, 'unknown');
+    expect(scan.problem!.detail, isNull);
+  });
+
   test('a new photo gets a new key', () async {
     final scan = controller();
     await scan.take(() async => photo);

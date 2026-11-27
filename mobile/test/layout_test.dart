@@ -7,6 +7,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lamp_shop/app.dart';
 import 'package:lamp_shop/core/auth/fake_auth_service.dart';
+import 'package:lamp_shop/core/offline/cache_store.dart';
 
 import 'helpers.dart';
 
@@ -55,6 +56,7 @@ void main() {
               initialLocation: at,
               locale: Locale(lang),
               httpClient: server,
+              cache: MemoryCacheStore(),
             ));
             await tester.pumpAndSettle();
 

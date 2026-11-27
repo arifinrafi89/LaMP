@@ -8,10 +8,12 @@ import '../../core/constants/palette.dart';
 import '../../core/constants/typography.dart';
 import '../../core/design/luma_sheet.dart';
 import '../../core/l10n/digits.dart';
+import '../../core/offline/cache_store.dart';
 import '../../core/state/session_controller.dart';
 import '../../l10n/app_localizations.dart';
 import '../../widgets/ui/lamp_failed.dart';
 import '../../widgets/ui/lamp_skeleton.dart';
+import '../../widgets/ui/lamp_sync_pip.dart';
 import '../../widgets/ui/lamp_ui.dart';
 import 'stock_controller.dart';
 import 'stock_models.dart';
@@ -25,7 +27,8 @@ class StockScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final pid = context.read<SessionController>().pharmacy!.id;
     return ChangeNotifierProvider(
-      create: (context) => StockController(context.read<ApiClient>(), pid)..load(),
+      create: (context) =>
+          StockController(context.read<ApiClient>(), context.read<CacheStore>(), pid)..load(),
       child: const _StockView(),
     );
   }
@@ -50,7 +53,7 @@ class _StockView extends StatelessWidget {
         children: const [LampSkeletonCard(lines: 2), SizedBox(height: Gap.md), LampSkeletonCard()],
       );
     } else {
-      body = RefreshIndicator(onRefresh: stock.load, child: _Batches(data: data, problem: problem));
+      body = RefreshIndicator(onRefresh: stock.load, child: _Batches(data: data, problem: problem, savedAt: stock.savedAt));
     }
     return Scaffold(appBar: AppBar(title: Text(l.navStock)), body: body);
   }
@@ -60,14 +63,14 @@ String _daysLeft(L10n l, int days, bool bn) =>
     days <= 0 ? l.stockExpired : l.stockDaysLeft(formatCount(days, bangla: bn));
 
 class _Batches extends StatelessWidget {
-  const _Batches({required this.data, required this.problem});
+  const _Batches({required this.data, required this.problem, required this.savedAt});
 
   final StockExpiry data;
   final ApiProblem? problem;
+  final DateTime? savedAt;
 
   @override
   Widget build(BuildContext context) {
-    final c = context.lamp;
     final l = L10n.of(context);
     final bn = isBangla(context);
     final back = data.canGoBack;
@@ -98,10 +101,10 @@ class _Batches extends StatelessWidget {
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.all(Gap.lg),
       children: [
-        if (problem != null)
+        if (savedAt != null)
           Padding(
             padding: const EdgeInsets.only(bottom: Gap.md),
-            child: Text(problemMessage(l, problem!), style: LaMPType.caption.copyWith(color: c.pending)),
+            child: LampSyncPip(savedAt: savedAt!, problem: problem),
           ),
         LampCard(
           child: Column(
