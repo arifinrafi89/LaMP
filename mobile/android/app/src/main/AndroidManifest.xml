@@ -1,4 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Release builds need it to reach the server; Flutter adds it only to debug. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="lamp_shop"
         android:name="${applicationName}"

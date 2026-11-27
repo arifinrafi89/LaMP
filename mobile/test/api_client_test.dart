@@ -185,4 +185,71 @@ void main() {
       expect(problemMessage(l, const ApiProblem('brand_new')), 'Something went wrong. Try again.');
     });
   });
+
+  group('upload', () {
+    final photo = List<int>.generate(64, (i) => i);
+
+    Future<Object?> send(ApiClient api, {String key = 'k-1'}) => api.upload(
+          '/pharmacies/green-life/captures',
+          fields: {'kind': 'invoice'},
+          bytes: photo,
+          filename: 'bill.jpg',
+          contentType: 'image/jpeg',
+          idempotencyKey: key,
+        );
+
+    test('sends the file and kind as multipart, with the key and session', () async {
+      final api = client((_) async => json({'id': 'cap-1'}));
+      expect(await send(api), {'id': 'cap-1'});
+      final req = sent.single;
+      expect(req.method, 'POST');
+      expect(req.url.path, '/api/v1/pharmacies/green-life/captures');
+      expect(req.headers['content-type'], startsWith('multipart/form-data; boundary='));
+      expect(req.headers['Idempotency-Key'], 'k-1');
+      expect(req.headers['Authorization'], 'Bearer old');
+      expect(req.headers['X-App-Version'], '1.0.3+12');
+      final body = latin1.decode(req.bodyBytes);
+      expect(body, contains('name="kind"\r\n\r\ninvoice'));
+      expect(body, contains('name="file"; filename="bill.jpg"'));
+      expect(body, contains('content-type: image/jpeg'));
+      expect(req.bodyBytes.length, greaterThan(photo.length));
+    });
+
+    test('a 401 refreshes once and sends the same file and key again', () async {
+      var calls = 0;
+      final api = client((_) async => ++calls == 1 ? json({'detail': 'expired'}, 401) : json({'id': 'cap-1'}));
+      await send(api);
+      expect(refreshes, 1);
+      expect(sent, hasLength(2));
+      expect(sent[1].headers['Authorization'], 'Bearer fresh');
+      expect(sent[1].headers['Idempotency-Key'], 'k-1');
+      // A multipart body is a stream that can be read once: the replay must
+      // build it again, or it goes out empty.
+      expect(latin1.decode(sent[1].bodyBytes), contains('name="file"; filename="bill.jpg"'));
+      expect(sent[1].bodyBytes.length, sent[0].bodyBytes.length);
+    });
+
+    test('a network error is not retried here: the owner sends it again', () async {
+      final api = client((_) async => throw http.ClientException('no network'));
+      await expectLater(send(api), throwsA(isA<ApiProblem>().having((p) => p.code, 'code', ApiProblem.offline)));
+      expect(sent, hasLength(1));
+    });
+
+    test('a file over the server limit reads as too_large', () async {
+      final api = client((_) async => json({'detail': 'Request Entity Too Large'}, 413));
+      await expectLater(send(api), throwsA(isA<ApiProblem>().having((p) => p.code, 'code', 'too_large')));
+      expect(problemMessage(L10nEn(), const ApiProblem('too_large')),
+          'This file is too big to send. Take the photo again, or pick a smaller file.');
+    });
+
+    test('the scan limit keeps the day it resets on', () async {
+      final api = client((_) async => json(
+          {'detail': 'limit', 'code': 'scan_limit_reached', 'resets_on': '2026-12-01'}, 402));
+      await expectLater(
+          send(api),
+          throwsA(isA<ApiProblem>()
+              .having((p) => p.code, 'code', 'scan_limit_reached')
+              .having((p) => p.resetsOn, 'resetsOn', DateTime(2026, 12, 1))));
+    });
+  });
 }

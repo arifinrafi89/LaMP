@@ -16,6 +16,8 @@ import 'core/router.dart';
 import 'core/state/locale_controller.dart';
 import 'core/state/session_controller.dart';
 import 'core/state/theme_controller.dart';
+import 'features/scan/photo_prep.dart';
+import 'features/scan/photo_source.dart';
 import 'l10n/app_localizations.dart';
 
 /// The owner's app: providers, router, theme and language.
@@ -26,6 +28,8 @@ class LampApp extends StatefulWidget {
     this.initialLocation = '/today',
     this.locale,
     this.httpClient,
+    this.photoSource,
+    this.shrinkPhoto,
   });
 
   /// Injected by tests; built against the real server otherwise.
@@ -38,6 +42,12 @@ class LampApp extends StatefulWidget {
   /// The transport under every [ApiClient]; tests serve fixtures through it.
   final http.Client? httpClient;
 
+  /// Camera, gallery and files; tests give a fake.
+  final PhotoSource? photoSource;
+
+  /// Makes a photo ready to send; tests skip the isolate.
+  final ShrinkPhoto? shrinkPhoto;
+
   @override
   State<LampApp> createState() => _LampAppState();
 }
@@ -48,6 +58,7 @@ class _LampAppState extends State<LampApp> {
   late final ApiClient _api;
   late final SessionController _session;
   late final GoRouter _router;
+  late final PhotoSource _photos = widget.photoSource ?? DevicePhotoSource();
 
   @override
   void initState() {
@@ -113,6 +124,8 @@ class _LampAppState extends State<LampApp> {
         ChangeNotifierProvider.value(value: _locale),
         ChangeNotifierProvider.value(value: _session),
         Provider.value(value: _api),
+        Provider<PhotoSource>.value(value: _photos),
+        Provider<ShrinkPhoto>.value(value: widget.shrinkPhoto ?? shrinkPhotoInBackground),
       ],
       child: Consumer2<ThemeController, LocaleController>(
         builder: (context, theme, locale, _) => MaterialApp.router(

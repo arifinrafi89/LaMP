@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 
 import 'problem.dart';
 
@@ -75,19 +76,40 @@ class ApiClient {
 
   Future<Object?> delete(String path) => _send('DELETE', path);
 
+  /// Sends one file as multipart `file`, with [fields] beside it, within
+  /// [uploadTimeout]. A photo that may have reached the server is not resent
+  /// here: the owner taps again, and [idempotencyKey] stops a double scan.
+  Future<Object?> upload(
+    String path, {
+    required Map<String, String> fields,
+    required List<int> bytes,
+    required String filename,
+    required String contentType,
+    required String idempotencyKey,
+  }) =>
+      _call(() {
+        // Built afresh for each try: a multipart body can be read only once.
+        final request = http.MultipartRequest('POST', Uri.parse('$baseUrl$path'))
+          ..headers.addAll(_headers(idempotencyKey))
+          ..fields.addAll(fields)
+          ..files.add(http.MultipartFile.fromBytes('file', bytes,
+              filename: filename, contentType: MediaType.parse(contentType)));
+        return _http.send(request).then(http.Response.fromStream).timeout(uploadTimeout);
+      });
+
   Future<Object?> _send(
     String method,
     String path, {
     Object? body,
     String? idempotencyKey,
     bool retry = false,
-  }) async {
+  }) =>
+      _call(() => _once(method, path, body, idempotencyKey), retry: retry);
+
+  Future<Object?> _call(Future<http.Response> Function() once, {bool retry = false}) async {
     var refreshed = false;
     while (true) {
-      final response = await _withRetry(
-        () => _once(method, path, body, idempotencyKey),
-        attempts: retry ? _getAttempts : 1,
-      );
+      final response = await _withRetry(once, attempts: retry ? _getAttempts : 1);
       if (response.statusCode == 401 && !refreshed) {
         refreshed = true;
         if (await refresh()) continue;
@@ -162,6 +184,7 @@ class ApiClient {
     final m = json is Map<String, dynamic> ? json : const <String, dynamic>{};
     final detail = m['detail'] is String ? m['detail'] as String : null;
     final retry = m['retry_after'];
+    final resets = m['resets_on'];
     final code = switch (r.statusCode) {
       426 => 'update_required',
       401 => 'session_expired',
@@ -172,11 +195,13 @@ class ApiClient {
       detail: detail,
       status: r.statusCode,
       retryAfter: retry is num ? Duration(seconds: retry.round()) : null,
+      resetsOn: resets is String ? DateTime.tryParse(resets) : null,
     );
   }
 
   static String _codeFor(int status) => switch (status) {
         404 => 'not_found',
+        413 => 'too_large',
         422 => 'invalid',
         429 => 'rate_limited',
         503 => 'applink_down',
