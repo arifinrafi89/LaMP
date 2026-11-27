@@ -1,0 +1,7 @@
+{
+  "bills_total": 41, "paid_on_time": 38, "months": 12, "purchased": true,
+  "shares": [
+    {"id": "sh-1", "lender_name": "City Bank Bogura", "url": "https://lamp-api-k2xf.onrender.com/r/9fK2xQ7mPa",
+     "expires_at": "2026-12-04T06:00:00+06:00", "views": 2}
+  ]
+}

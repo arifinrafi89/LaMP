@@ -49,6 +49,7 @@ Future<void> pumpLamp(
   Map<String, Object> prefs = const {},
   CacheStore? cache,
   ShareText? share,
+  ShareFile? shareFile,
 }) async {
   SharedPreferences.setMockInitialValues(prefs);
   tester.view.physicalSize = const Size(360, 800);
@@ -66,6 +67,7 @@ Future<void> pumpLamp(
     // Never the phone's encrypted box in a test.
     cache: cache ?? MemoryCacheStore(),
     shareText: share ?? (_) async {},
+    shareFile: shareFile ?? (_, _, _) async {},
   ));
   await tester.pumpAndSettle();
 }

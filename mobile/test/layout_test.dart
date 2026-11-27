@@ -21,6 +21,8 @@ void main() {
     '/expiry': fixture('expiry'),
     '/customers': fixture('customers'),
     '/me': fixture('me'),
+    '/credit-record': fixture('credit_record'),
+    '/plus': fixture('plus'),
     '/usage': '{"plan":"free","scans_used":7,"scans_limit":10,"ai_used_bdt":0.4,'
         '"ai_budget_bdt":1.2,"resets_on":"2026-12-01"}',
   };
@@ -49,6 +51,8 @@ void main() {
     '/cash',
     '/plan',
     '/approvals',
+    '/credit-record',
+    '/plus',
   ];
 
   for (final theme in [ThemeMode.light, ThemeMode.dark]) {
