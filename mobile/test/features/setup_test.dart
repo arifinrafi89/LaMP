@@ -173,6 +173,22 @@ void main() {
     expect(find.text('Your main suppliers'), findsOneWidget);
   });
 
+  testWidgets('coming back offline: suppliers say why, adding waits', (tester) async {
+    down = true;
+    final session = await signedInSession(hasShop: true, setupComplete: false);
+    await pumpLamp(tester, session: session, at: '/setup', http: server());
+    // A GET is retried twice with backoff before the app says it's offline.
+    await tester.pump(const Duration(seconds: 5));
+    await tester.pumpAndSettle();
+    expect(find.text("You're offline. Check your connection."), findsOneWidget);
+    expect(find.text('No suppliers yet.'), findsNothing);
+    final add = tester.widget<OutlinedButton>(find.byKey(const ValueKey('add-supplier')));
+    expect(add.onPressed, isNull);
+    down = false;
+    await tapKey(tester, 'suppliers-retry');
+    expect(find.text('No suppliers yet.'), findsOneWidget);
+  });
+
   testWidgets('in Bangla at 1.3, every step fits and digits are Bangla', (tester) async {
     tester.platformDispatcher.textScaleFactorTestValue = 1.3;
     addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);

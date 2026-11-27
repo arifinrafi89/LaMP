@@ -67,7 +67,7 @@ class _Figures extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.lamp;
     final l = L10n.of(context);
-    final bn = Localizations.localeOf(context).languageCode == 'bn';
+    final bn = isBangla(context);
     String money(double v) => formatMoney(v, bangla: bn);
     String day(DateTime d) => formatDay(d, bangla: bn);
     final next = summary.nextProblem;
@@ -117,7 +117,7 @@ class _Figures extends StatelessWidget {
               ),
               LampStat(
                 label: l.todayApprovals,
-                value: bn ? bnDigits('${summary.approvalsWaiting}') : '${summary.approvalsWaiting}',
+                value: formatCount(summary.approvalsWaiting, bangla: bn),
               ),
             ],
           ),

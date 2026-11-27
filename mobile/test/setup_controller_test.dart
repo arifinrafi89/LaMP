@@ -190,6 +190,17 @@ void main() {
     expect(setup.suppliers.single.name, 'Square');
   });
 
+  test('suppliers that cannot be read are reported, not shown as none', () async {
+    down = true;
+    await start(hasShop: true);
+    expect(setup.suppliersProblem!.code, 'offline');
+    expect(setup.suppliers, isEmpty);
+    down = false;
+    await setup.loadSuppliers();
+    expect(setup.suppliersProblem, isNull);
+    expect(setup.suppliers.single.name, 'Square');
+  });
+
   test('coming back with no step saved opens at suppliers, not the shop', () async {
     await start(hasShop: true);
     expect(setup.step, SetupStep.suppliers);

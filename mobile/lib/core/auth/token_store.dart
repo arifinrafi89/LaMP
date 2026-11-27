@@ -22,10 +22,8 @@ class StoredSession {
 
   Map<String, Object?> toJson() => {
         'refresh_token': refreshToken,
-        'owner': {'id': owner.id, 'phone_masked': owner.phoneMasked, 'language': owner.language},
-        'pharmacy': pharmacy == null
-            ? null
-            : {'id': pharmacy!.id, 'name': pharmacy!.name, 'setup_complete': pharmacy!.setupComplete},
+        'owner': owner.toJson(),
+        'pharmacy': pharmacy?.toJson(),
       };
 
   factory StoredSession.fromJson(Map<String, dynamic> j) => StoredSession(
@@ -43,7 +41,7 @@ abstract class TokenStore {
   Future<void> clear();
 }
 
-/// Tests, and a fallback when secure storage is unavailable.
+/// For tests: nothing survives a restart.
 class MemoryTokenStore implements TokenStore {
   StoredSession? _s;
 

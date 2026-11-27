@@ -145,6 +145,17 @@ void main() {
     expect(sent.map((r) => r.headers['Idempotency-Key']), ['k-1', 'k-1']);
   });
 
+  test('a success that is not JSON is a problem, not a silent null', () async {
+    final api = client((_) async => http.Response('<html>waking up</html>', 200));
+    await expectLater(api.get('/pharmacies/p1/today'),
+        throwsA(isA<ApiProblem>().having((p) => p.code, 'code', 'unknown')));
+  });
+
+  test('an empty success body is fine', () async {
+    final api = client((_) async => http.Response('', 204));
+    expect(await api.post('/pharmacies/p1/setup/complete', null), isNull);
+  });
+
   test('an ordinary POST has no Idempotency-Key', () async {
     final api = client((_) async => json({}, 202));
     await api.post('/auth/otp/request', {'phone': 'x'});

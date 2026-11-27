@@ -1,4 +1,5 @@
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Bangla digits for amounts and dates (plan 5.4).
 ///
@@ -38,6 +39,12 @@ String bnNumbers(String text) => text
 
 bool _precededByTaka(Match m) =>
     m.start > 0 && m.input.substring(m.start - 1, m.start) == '৳';
+
+/// Whether the screen is showing Bangla.
+bool isBangla(BuildContext context) => Localizations.localeOf(context).languageCode == 'bn';
+
+/// A count of things or days: `12`, or `১২` in Bangla.
+String formatCount(int n, {required bool bangla}) => bangla ? bnDigits('$n') : '$n';
 
 final _lakh = NumberFormat('#,##,###', 'en_IN');
 

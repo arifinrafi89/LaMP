@@ -32,9 +32,7 @@ class SetupScreen extends StatelessWidget {
   }
 }
 
-bool _bangla(BuildContext context) => Localizations.localeOf(context).languageCode == 'bn';
-
-String _num(BuildContext context, int n) => _bangla(context) ? bnDigits('$n') : '$n';
+String _num(BuildContext context, int n) => formatCount(n, bangla: isBangla(context));
 
 class _SetupView extends StatelessWidget {
   const _SetupView();
@@ -155,13 +153,7 @@ class _StepFrame extends StatelessWidget {
         Text(subtitle, style: LaMPType.body.copyWith(color: c.inkMuted)),
         const SizedBox(height: Gap.xl),
         ...children,
-        if (message != null)
-          Padding(
-            padding: const EdgeInsets.only(top: Gap.md),
-            child: Text(message,
-                key: const ValueKey('setup-error'),
-                style: LaMPType.body.copyWith(color: c.dispute)),
-          ),
+        LampErrorText(message),
         const SizedBox(height: Gap.xl),
         action,
       ],
@@ -194,6 +186,30 @@ Widget _label(BuildContext context, String text) => Padding(
       padding: const EdgeInsets.only(bottom: Gap.sm, top: Gap.md),
       child: Text(text, style: LaMPType.meta.copyWith(color: context.lamp.inkMuted)),
     );
+
+/// Two labelled fields side by side, bottoms aligned.
+class _FieldPair extends StatelessWidget {
+  const _FieldPair({required this.left, required this.right, this.flex = (1, 1)});
+
+  final (String, Widget) left;
+  final (String, Widget) right;
+  final (int, int) flex;
+
+  @override
+  Widget build(BuildContext context) {
+    Widget half((String, Widget) f, int flex) => Expanded(
+          flex: flex,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [_label(context, f.$1), f.$2],
+          ),
+        );
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [half(left, flex.$1), const SizedBox(width: Gap.md), half(right, flex.$2)],
+    );
+  }
+}
 
 const _amountKeyboard = TextInputType.numberWithOptions(decimal: true);
 
@@ -292,7 +308,17 @@ class _SuppliersStep extends StatelessWidget {
       subtitle: l.setupSuppliersSubtitle,
       action: _MainButton(label: l.continueLabel, onPressed: setup.skip),
       children: [
-        if (setup.suppliers.isEmpty)
+        if (setup.suppliersProblem != null) ...[
+          LampErrorText(problemMessage(l, setup.suppliersProblem!)),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton(
+              key: const ValueKey('suppliers-retry'),
+              onPressed: setup.loadSuppliers,
+              child: Text(l.retry),
+            ),
+          ),
+        ] else if (setup.suppliers.isEmpty)
           Text(l.setupSuppliersNone, style: LaMPType.body.copyWith(color: c.inkFaint))
         else
           LampCard(
@@ -318,7 +344,7 @@ class _SuppliersStep extends StatelessWidget {
         const SizedBox(height: Gap.md),
         OutlinedButton.icon(
           key: const ValueKey('add-supplier'),
-          onPressed: setup.busy
+          onPressed: setup.busy || setup.suppliersProblem != null
               ? null
               : () async {
                   final s = await LumaSheet.show<Supplier>(
@@ -401,43 +427,19 @@ class _SupplierSheetState extends State<_SupplierSheet> {
             keyboardType: TextInputType.phone,
             style: LaMPType.monoBody.copyWith(color: c.ink),
           ),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _label(context, l.supplierPaymentDays),
-                    TextField(
-                      key: const ValueKey('supplier-pay'),
-                      controller: _pay,
-                      keyboardType: TextInputType.number,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: Gap.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _label(context, l.supplierReturnDays),
-                    TextField(
-                      key: const ValueKey('supplier-back'),
-                      controller: _back,
-                      keyboardType: TextInputType.number,
-                    ),
-                  ],
-                ),
-              ),
-            ],
+          _FieldPair(
+            left: (l.supplierPaymentDays, TextField(
+              key: const ValueKey('supplier-pay'),
+              controller: _pay,
+              keyboardType: TextInputType.number,
+            )),
+            right: (l.supplierReturnDays, TextField(
+              key: const ValueKey('supplier-back'),
+              controller: _back,
+              keyboardType: TextInputType.number,
+            )),
           ),
-          if (_error != null)
-            Padding(
-              padding: const EdgeInsets.only(top: Gap.md),
-              child: Text(_error!, style: LaMPType.body.copyWith(color: c.dispute)),
-            ),
+          LampErrorText(_error),
           const SizedBox(height: Gap.lg),
           ElevatedButton(
             key: const ValueKey('supplier-save'),
@@ -562,41 +564,20 @@ class _ExpensesStepState extends State<_ExpensesStep> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(label, style: LaMPType.head.copyWith(color: c.ink)),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Expanded(
-                flex: 3,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _label(context, l.expenseAmount),
-                    TextField(
-                      key: ValueKey('$key-amount'),
-                      controller: amount,
-                      keyboardType: _amountKeyboard,
-                      style: LaMPType.monoBody.copyWith(color: c.ink),
-                      decoration: const InputDecoration(prefixText: '৳ '),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: Gap.md),
-              Expanded(
-                flex: 2,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _label(context, l.expenseDay),
-                    TextField(
-                      key: ValueKey('$key-day'),
-                      controller: day,
-                      keyboardType: TextInputType.number,
-                    ),
-                  ],
-                ),
-              ),
-            ],
+          _FieldPair(
+            left: (l.expenseAmount, TextField(
+              key: ValueKey('$key-amount'),
+              controller: amount,
+              keyboardType: _amountKeyboard,
+              style: LaMPType.monoBody.copyWith(color: c.ink),
+              decoration: const InputDecoration(prefixText: '৳ '),
+            )),
+            right: (l.expenseDay, TextField(
+              key: ValueKey('$key-day'),
+              controller: day,
+              keyboardType: TextInputType.number,
+            )),
+            flex: (3, 2),
           ),
         ],
       ),
@@ -640,7 +621,7 @@ class _StockStep extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.lamp;
     final l = L10n.of(context);
-    final bn = _bangla(context);
+    final bn = isBangla(context);
     final setup = context.watch<SetupController>();
     return _StepFrame(
       title: l.setupStockTitle,
@@ -687,7 +668,7 @@ class _StockStep extends StatelessWidget {
                     // Strengths keep English digits, as printed on the box.
                     title: [s.product, s.strength].whereType<String>().where((x) => x.isNotEmpty).join(' '),
                     subtitle: l.stockLineSummary(
-                        bn ? bnDigits('${s.qty}') : '${s.qty}', formatDay(s.expiryDate, bangla: bn)),
+                        formatCount(s.qty, bangla: bn), formatDay(s.expiryDate, bangla: bn)),
                     trailing: IconButton(
                       tooltip: l.removeLine,
                       icon: const Icon(Icons.delete_outline),
@@ -794,42 +775,22 @@ class _StockLineSheetState extends State<_StockLineSheet> {
             icon: const Icon(Icons.event_outlined),
             label: Text(expiry == null
                 ? l.stockExpiryPick
-                : formatDay(expiry, bangla: _bangla(context))),
+                : formatDay(expiry, bangla: isBangla(context))),
             style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
           ),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _label(context, l.stockQty),
-                    TextField(
-                      key: const ValueKey('stock-qty'),
-                      controller: _qty,
-                      keyboardType: TextInputType.number,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: Gap.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _label(context, l.stockUnitCost),
-                    TextField(
-                      key: const ValueKey('stock-cost'),
-                      controller: _cost,
-                      keyboardType: _amountKeyboard,
-                      style: LaMPType.monoBody.copyWith(color: c.ink),
-                      decoration: const InputDecoration(prefixText: '৳ '),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+          _FieldPair(
+            left: (l.stockQty, TextField(
+              key: const ValueKey('stock-qty'),
+              controller: _qty,
+              keyboardType: TextInputType.number,
+            )),
+            right: (l.stockUnitCost, TextField(
+              key: const ValueKey('stock-cost'),
+              controller: _cost,
+              keyboardType: _amountKeyboard,
+              style: LaMPType.monoBody.copyWith(color: c.ink),
+              decoration: const InputDecoration(prefixText: '৳ '),
+            )),
           ),
           if (widget.suppliers.any((s) => s.id != null)) ...[
             _label(context, l.stockSupplier),
@@ -845,11 +806,7 @@ class _StockLineSheetState extends State<_StockLineSheet> {
               onChanged: (v) => setState(() => _supplierId = v),
             ),
           ],
-          if (_error != null)
-            Padding(
-              padding: const EdgeInsets.only(top: Gap.md),
-              child: Text(_error!, style: LaMPType.body.copyWith(color: c.dispute)),
-            ),
+          LampErrorText(_error),
           const SizedBox(height: Gap.lg),
           ElevatedButton(
             key: const ValueKey('stock-save'),

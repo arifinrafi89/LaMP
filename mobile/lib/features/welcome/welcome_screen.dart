@@ -15,6 +15,7 @@ import '../../core/state/locale_controller.dart';
 import '../../core/state/session_controller.dart';
 import '../../l10n/app_localizations.dart';
 import '../../widgets/lamp_mark.dart';
+import '../../widgets/ui/lamp_ui.dart';
 
 /// Welcome, number and code (adapted from lamp-flutter's sign_in_screen).
 ///
@@ -126,8 +127,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     return left.isNegative ? null : left;
   }
 
-  bool get _bangla => Localizations.localeOf(context).languageCode == 'bn';
-
   @override
   Widget build(BuildContext context) {
     final c = context.lamp;
@@ -238,7 +237,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           },
           onSubmitted: (_) => _busy ? null : _sendCode(),
         ),
-        _errorText(context),
+        LampErrorText(_error),
         const SizedBox(height: Gap.xl),
         ElevatedButton(
           key: const ValueKey('send-code'),
@@ -254,7 +253,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     final c = context.lamp;
     final l = L10n.of(context);
     final left = _resendRemaining;
-    final seconds = '${(left?.inSeconds ?? 0) + 1}';
+    final seconds = (left?.inSeconds ?? 0) + 1;
     return ListView(
       key: const ValueKey('code'),
       padding: const EdgeInsets.fromLTRB(Gap.lg, Gap.md, Gap.lg, Gap.xl),
@@ -281,7 +280,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             if (v.length == _codeLength && !_busy) _confirmCode();
           },
         ),
-        _errorText(context),
+        LampErrorText(_error),
         const SizedBox(height: Gap.xl),
         ElevatedButton(
           key: const ValueKey('confirm-code'),
@@ -295,7 +294,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           onPressed: _busy || left != null ? null : _sendCode,
           child: Text(left == null
               ? l.resendCode
-              : l.resendIn(_bangla ? bnDigits(seconds) : seconds)),
+              : l.resendIn(formatCount(seconds, bangla: isBangla(context)))),
         ),
       ],
     );
@@ -310,13 +309,4 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           icon: const Icon(Icons.arrow_back),
         ),
       );
-
-  Widget _errorText(BuildContext context) {
-    final e = _error;
-    if (e == null) return const SizedBox.shrink();
-    return Padding(
-      padding: const EdgeInsets.only(top: Gap.md),
-      child: Text(e, style: LaMPType.body.copyWith(color: context.lamp.dispute)),
-    );
-  }
 }

@@ -145,15 +145,19 @@ class ApiClient {
 
   Object? _decode(http.Response r) {
     final text = utf8.decode(r.bodyBytes);
+    final ok = r.statusCode >= 200 && r.statusCode < 300;
     Object? json;
     if (text.isNotEmpty) {
       try {
         json = jsonDecode(text);
       } on FormatException {
-        json = null;
+        // An error page in HTML (Render's 502 while waking) still has a status
+        // to go on. A success the app can't read does not: say so here, or the
+        // caller's cast fails outside its ApiProblem handling.
+        if (ok) throw ApiProblem('unknown', detail: 'response was not JSON', status: r.statusCode);
       }
     }
-    if (r.statusCode >= 200 && r.statusCode < 300) return json;
+    if (ok) return json;
 
     final m = json is Map<String, dynamic> ? json : const <String, dynamic>{};
     final detail = m['detail'] is String ? m['detail'] as String : null;

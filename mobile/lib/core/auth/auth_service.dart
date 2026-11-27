@@ -61,6 +61,8 @@ class OwnerInfo {
   final String phoneMasked;
   final String language;
 
+  Map<String, Object?> toJson() => {'id': id, 'phone_masked': phoneMasked, 'language': language};
+
   factory OwnerInfo.fromJson(Map<String, dynamic> j) => OwnerInfo(
         id: j['id'] as String,
         phoneMasked: j['phone_masked'] as String,
@@ -80,6 +82,8 @@ class PharmacyInfo {
         name: name ?? this.name,
         setupComplete: setupComplete ?? this.setupComplete,
       );
+
+  Map<String, Object?> toJson() => {'id': id, 'name': name, 'setup_complete': setupComplete};
 
   factory PharmacyInfo.fromJson(Map<String, dynamic> j) => PharmacyInfo(
         id: j['id'] as String,

@@ -296,8 +296,9 @@ class LaMPTheme {
   /// The theme for a world.
   ///
   /// An explicit Light or Dark choice applies everywhere. Left on the default,
-  /// each world takes its own: field seats are light, for a phone read in
-  /// sunlight at a pharmacy door; portals are dark, for a desk.
+  /// each world takes its own: field is light, for a phone read in sunlight
+  /// at a pharmacy door; portal is dark, for a desk. This app uses only
+  /// field (`app.dart`).
   static ThemeData of(BuildContext context, LampWorld world) {
     final mode = Provider.of<ThemeController?>(context)?.mode;
     final brightness = mode == ThemeMode.system

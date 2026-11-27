@@ -46,6 +46,11 @@ class SetupController extends ChangeNotifier {
   final List<Supplier> _suppliers = [];
   List<Supplier> get suppliers => List.unmodifiable(_suppliers);
 
+  /// Why the saved suppliers couldn't be read. Until they are, adding one is
+  /// off: the owner would re-add what the server already has.
+  ApiProblem? _suppliersProblem;
+  ApiProblem? get suppliersProblem => _suppliersProblem;
+
   final List<StockLine> _stock = [];
   List<StockLine> get stock => List.unmodifiable(_stock);
 
@@ -70,22 +75,26 @@ class SetupController extends ChangeNotifier {
         orElse: () => SetupStep.suppliers,
       );
       if (_step == SetupStep.shop) _step = SetupStep.suppliers;
-      await _loadSuppliers();
+      await loadSuppliers();
     }
     _ready = true;
     _notify();
   }
 
-  Future<void> _loadSuppliers() async {
+  /// Reads the suppliers already saved, for an owner coming back to Setup.
+  Future<void> loadSuppliers() async {
+    _suppliersProblem = null;
+    _notify();
     try {
       final j = await _api.get('/pharmacies/$_pid/suppliers');
       final list = j is List ? j : const [];
       _suppliers
         ..clear()
         ..addAll(list.whereType<Map<String, dynamic>>().map(Supplier.fromJson));
-    } on ApiProblem {
-      // Not worth stopping Setup for: the owner can add them again.
+    } on ApiProblem catch (p) {
+      _suppliersProblem = p;
     }
+    _notify();
   }
 
   /// Step 1. Creates the shop, or renames it when the owner came back.
@@ -172,24 +181,16 @@ class SetupController extends ChangeNotifier {
         _session.updatePharmacy(p.copyWith(setupComplete: true));
       });
 
-  /// Moves on without saving. The shop step can't be skipped.
   Future<void> skip() async {
     if (_step == SetupStep.shop) return;
     final i = _step.index + 1;
     if (i < SetupStep.values.length) await _moveTo(SetupStep.values[i]);
   }
 
-  /// Back to the previous step; false when already on the first.
   bool back() {
     if (_step.index == 0 || _busy) return false;
     _moveTo(SetupStep.values[_step.index - 1]);
     return true;
-  }
-
-  void clearProblem() {
-    if (_problem == null) return;
-    _problem = null;
-    _notify();
   }
 
   Future<void> _moveTo(SetupStep s) async {
