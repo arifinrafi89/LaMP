@@ -13,14 +13,14 @@
 
 | Stage | Done | Of those, on `main` | Total |
 |---|---|---|---|
-| Stage 0: repo, accounts, Applink forms | 12 | 4 | 21 |
+| Stage 0: repo, accounts, Applink forms | 14 | 5 | 21 |
 | Stage 1: foundations | 7 | 3 | 15 |
 | Stage 2: core flows in mock mode | 1 | 1 | 12 |
 | Stage 3: money, Plus, AI, families | 0 | 0 | 16 |
 | Stage 4: test, fix, record | 0 | 0 | 11 |
 | Stage 5: submit | 0 | 0 | 5 |
 | Applink track | 1 | 0 | 9 |
-| **All** | **21** | **8** | **89** |
+| **All** | **23** | **9** | **89** |
 
 > **Waiting to reach `main`:** Ishmam's branch `ishmam/I0.3-day0-setup` holds I0.2, I0.3, I0.4, I0.5 and I1.1–I1.4 (PRs #4 and #5 were merged into his own branches, not into `main`). Until it's merged, `main` has no Alembic, no Stage 0 packages, no `owner` table and no contract v1, and Arifin's and Ayon's server-side work can't build on them.
 
@@ -42,8 +42,8 @@
 - [x] **A0.2a** Both Applink apps filled in and saved as drafts (LaMP `APP_019205`, LaMPPlus `APP_019207`) · **[A]** · done
 - [ ] **A0.2b** Both apps sent for approval · **[A]**
 - [ ] **A0.2c** Both approval emails sent from the team lead's address · **[I]**
-- [ ] **A0.3** Sign-in endpoint shapes to Ishmam · **[A]**
-- [ ] **A0.4** Empty `applink/`, `auth/`, `jobs/` packages with their routers · **[A]**
+- [x] **A0.3** Sign-in endpoint shapes to Ishmam · **[A]** · agreed: Ishmam's contract v1 (on his branch) matches plan 2.2 for every `/auth` route
+- [x] **A0.4** Empty `applink/`, `auth/`, `jobs/` packages with their routers · **[A]** · on `main` (PR #10)
 - [x] **Y0.1** `mobile/` created, design system copied, design lint tests green · **[Y]** · on `main`
 - [x] **Y0.2** `mobile.yml` · **[Y]** · on `main`
 - [ ] **MP0** New repo ready: tests pass in CI, CODEOWNERS in, the empty modules mounted, `mobile/` builds · signed off by **[I]**
