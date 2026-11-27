@@ -113,3 +113,13 @@ DateTime dhakaToday([DateTime? now]) {
 String apiDate(DateTime d) =>
     '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-'
     '${d.day.toString().padLeft(2, '0')}';
+
+/// The server's own words (a label, a reason), as sent; in Bangla only their
+/// figures change, "BDT 60,000" to "৳৬০,০০০" (plan 5.4, the chat rule).
+String serverWords(String text, {required bool bangla}) => bangla ? bnNumbers(text) : text;
+
+/// A rate as the server gave it, with at most 2 decimals: 9.0 is "9".
+String formatPct(double pct, {required bool bangla}) {
+  final s = ((pct * 100).round() / 100).toString().replaceFirst(RegExp(r'\.0$'), '');
+  return bangla ? bnDigits(s) : s;
+}

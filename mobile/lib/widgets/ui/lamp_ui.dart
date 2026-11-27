@@ -192,9 +192,13 @@ class LampChip extends StatelessWidget {
             Icon(icon, size: 12, color: fg),
             const SizedBox(width: Gap.xs),
           ],
-          Text(
-            label,
-            style: LaMPType.caption.copyWith(color: fg, fontWeight: FontWeight.w600),
+          // A long label wraps inside the pill rather than running past a
+          // narrow card (1.3x text, Bangla).
+          Flexible(
+            child: Text(
+              label,
+              style: LaMPType.caption.copyWith(color: fg, fontWeight: FontWeight.w600),
+            ),
           ),
         ],
       ),

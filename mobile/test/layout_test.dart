@@ -45,6 +45,10 @@ void main() {
     '/customers/GL-8NBV-2KLM?added=1',
     '/more',
     '/stock',
+    // On the free plan (me.json): each shows what it does and Start LaMP Plus.
+    '/cash',
+    '/plan',
+    '/approvals',
   ];
 
   for (final theme in [ThemeMode.light, ThemeMode.dark]) {

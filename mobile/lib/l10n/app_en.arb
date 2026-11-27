@@ -576,5 +576,167 @@
       }
     }
   },
-  "planPaid": "Paid"
+  "planPaid": "Paid",
+  "plusLockedTitle": "{screen} is part of LaMP Plus",
+  "@plusLockedTitle": {
+    "placeholders": {
+      "screen": {
+        "type": "String"
+      }
+    }
+  },
+  "plusStart": "Start LaMP Plus",
+  "plusPrice": "BDT 50 a month, from your mobile balance. Stop any time.",
+  "cashWhat": "See your cash for the next 30 days, and why a day runs short.",
+  "planWhat": "A plan for the short day: the cheapest steps first, and each one waits for your yes.",
+  "approvalsWhat": "LaMP suggests steps. Nothing happens until you approve it.",
+  "cashSeeWhy": "See why",
+  "cashSeePlan": "See the plan",
+  "cashNoShort": "No short day in the next 30 days",
+  "cashNoShortBody": "Your cash stays above zero every day.",
+  "cashYouHave": "You have {amount} now",
+  "@cashYouHave": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "cashNext30": "The next 30 days",
+  "cashLeftShort": "Left at day's end: {amount}",
+  "@cashLeftShort": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "cashWhyTitle": "Why {day} runs short",
+  "@cashWhyTitle": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "cashDayIn": "Money in that day",
+  "cashDayOut": "Money out that day",
+  "cashOtherShort": "Other short days",
+  "planNeedTitle": "To cover by {day}",
+  "@planNeedTitle": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "planHowWorked": "How this was worked out",
+  "planSteps": "The plan",
+  "planStepNow": "Now",
+  "planStepIf": "If needed, on {day}",
+  "@planStepIf": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "planCosts": "This plan costs {amount}",
+  "@planCosts": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "planBorrowAll": "Borrowing it all would cost {amount}",
+  "@planBorrowAll": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "planSend": "Send to Approvals",
+  "planSent": "Waiting in Approvals: approve each step there.",
+  "planOpenApprovals": "Open Approvals",
+  "planLoanNote": "A loan stays a fallback. LaMP shows what it costs and never applies for you.",
+  "planOtherWays": "Other ways",
+  "planFree": "No cost",
+  "planCost": "Costs {amount}",
+  "@planCost": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "planApr": "{pct}% a year",
+  "@planApr": {
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "planNotOpen": "Not open to you",
+  "planSure": "Sure to work",
+  "planNotSure": "Depends on their answer",
+  "planSeeOrder": "See what to cut",
+  "planNothingTitle": "Nothing to cover",
+  "planNothingBody": "No day runs short, so there is no plan to make.",
+  "trimInstead": "Order {to} instead of {from}",
+  "@trimInstead": {
+    "placeholders": {
+      "to": {
+        "type": "String"
+      },
+      "from": {
+        "type": "String"
+      }
+    }
+  },
+  "trimSaving": "Saves {amount}",
+  "@trimSaving": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "trimNone": "Nothing to cut from this order.",
+  "approvalsWaiting": "Waiting for you",
+  "approvalsDone": "Decided",
+  "approve": "Approve",
+  "notNow": "Not now",
+  "approvedToast": "Approved",
+  "rejectedToast": "Not done. It stays in the list.",
+  "byLamp": "Suggested by LaMP",
+  "byYou": "Added by you",
+  "kindTrimOrder": "Order fewer",
+  "kindExtension": "More days to pay",
+  "kindReturn": "Send stock back",
+  "kindSetAside": "Put cash aside",
+  "kindLoan": "A loan",
+  "kindOther": "A step",
+  "statusExecuted": "Done",
+  "statusApproved": "Approved",
+  "statusRejected": "Not done",
+  "statusFailed": "Couldn't be done",
+  "approvalsNone": "Nothing waits for you",
+  "approvalsNoneBody": "Steps from the Plan, and LaMP's suggestions, wait here for your yes.",
+  "pauseTitle": "Pause LaMP's suggestions",
+  "pauseBody": "While paused, LaMP suggests nothing new, and its waiting suggestions can't be approved.",
+  "pausedToast": "LaMP's suggestions are paused",
+  "resumedToast": "LaMP's suggestions are on again",
+  "shareToSupplier": "Send this to the supplier",
+  "shareToSupplierBody": "LaMP doesn't send it for you. Share it by SMS or WhatsApp, or read it out on a call.",
+  "supplierNumber": "Their number: {phone}",
+  "@supplierNumber": {
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  }
 }

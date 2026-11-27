@@ -6,6 +6,7 @@ import '../../core/offline/cache_store.dart';
 import '../../core/state/me.dart';
 import '../../core/state/session_controller.dart';
 import '../../core/state/shop_changes.dart';
+import '../approvals/approvals_controller.dart';
 import '../customers/customers_controller.dart';
 
 /// Reads that more than one screen shares, for the signed-in shop.
@@ -41,6 +42,18 @@ class ShopProviders extends StatelessWidget {
         Provider(
           create: (context) =>
               CustomerActions(context.read<ApiClient>(), pid, onSaved: context.read<ShopChanges>().saved),
+        ),
+        // Shared by Approvals, the Plan (is a step waiting?) and More's badge.
+        ChangeNotifierProvider(
+          create: (context) => ApprovalsController(
+            context.read<ApiClient>(),
+            context.read<CacheStore>(),
+            pid,
+            refreshOn: context.read<ShopChanges>(),
+          )..load(),
+        ),
+        Provider(
+          create: (context) => MoneyActions(context.read<ApiClient>(), pid, onSaved: context.read<ShopChanges>().saved),
         ),
       ],
       child: child,
