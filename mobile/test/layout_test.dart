@@ -7,6 +7,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lamp_shop/app.dart';
 import 'package:lamp_shop/core/auth/fake_auth_service.dart';
+import 'package:lamp_shop/core/offline/cache_store.dart';
 
 import 'helpers.dart';
 
@@ -14,11 +15,24 @@ import 'helpers.dart';
 /// and 1.3, in English and Bangla, with nothing overflowing. An overflow is
 /// reported by Flutter as an exception, which fails the test.
 void main() {
-  final today = File('test/fixtures/today.json').readAsStringSync();
-  final server = MockClient((req) async => http.Response(today, 200,
-      headers: {'content-type': 'application/json; charset=utf-8'}));
+  String fixture(String name) => File('test/fixtures/$name.json').readAsStringSync();
+  final byPath = {
+    '/today': fixture('today'),
+    '/expiry': fixture('expiry'),
+    '/usage': '{"plan":"free","scans_used":7,"scans_limit":10,"ai_used_bdt":0.4,'
+        '"ai_budget_bdt":1.2,"resets_on":"2026-12-01"}',
+  };
+  // Each screen gets its own answer; anything else reads as an empty list.
+  final server = MockClient((req) async {
+    final body = byPath.entries
+            .where((e) => req.url.path.endsWith(e.key))
+            .map((e) => e.value)
+            .firstOrNull ??
+        '[]';
+    return http.Response(body, 200, headers: {'content-type': 'application/json; charset=utf-8'});
+  });
 
-  final screens = ['/welcome', '/setup', '/today', '/customers', '/more', '/stock'];
+  final screens = ['/welcome', '/setup', '/today', '/scan', '/customers', '/more', '/stock'];
 
   for (final theme in [ThemeMode.light, ThemeMode.dark]) {
     for (final scale in [1.0, 1.3]) {
@@ -42,6 +56,7 @@ void main() {
               initialLocation: at,
               locale: Locale(lang),
               httpClient: server,
+              cache: MemoryCacheStore(),
             ));
             await tester.pumpAndSettle();
 

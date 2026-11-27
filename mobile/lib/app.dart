@@ -12,10 +12,14 @@ import 'core/auth/lamp_auth_service.dart';
 import 'core/auth/token_store.dart';
 import 'core/constants/app_theme.dart';
 import 'core/constants/palette.dart';
+import 'core/offline/cache_store.dart';
 import 'core/router.dart';
 import 'core/state/locale_controller.dart';
 import 'core/state/session_controller.dart';
+import 'core/state/shop_changes.dart';
 import 'core/state/theme_controller.dart';
+import 'features/scan/photo_prep.dart';
+import 'features/scan/photo_source.dart';
 import 'l10n/app_localizations.dart';
 
 /// The owner's app: providers, router, theme and language.
@@ -26,6 +30,9 @@ class LampApp extends StatefulWidget {
     this.initialLocation = '/today',
     this.locale,
     this.httpClient,
+    this.photoSource,
+    this.shrinkPhoto,
+    this.cache,
   });
 
   /// Injected by tests; built against the real server otherwise.
@@ -38,6 +45,15 @@ class LampApp extends StatefulWidget {
   /// The transport under every [ApiClient]; tests serve fixtures through it.
   final http.Client? httpClient;
 
+  /// Camera, gallery and files; tests give a fake.
+  final PhotoSource? photoSource;
+
+  /// Makes a photo ready to send; tests skip the isolate.
+  final ShrinkPhoto? shrinkPhoto;
+
+  /// The offline cache; tests keep it in memory.
+  final CacheStore? cache;
+
   @override
   State<LampApp> createState() => _LampAppState();
 }
@@ -48,6 +64,9 @@ class _LampAppState extends State<LampApp> {
   late final ApiClient _api;
   late final SessionController _session;
   late final GoRouter _router;
+  late final PhotoSource _photos = widget.photoSource ?? DevicePhotoSource();
+  late final CacheStore _cache = widget.cache ?? HiveCacheStore();
+  final _changes = ShopChanges();
 
   @override
   void initState() {
@@ -68,7 +87,14 @@ class _LampAppState extends State<LampApp> {
       _api = _client(refresh: _session.refreshNow);
     }
     _router = buildRouter(session: _session, initialLocation: widget.initialLocation);
+    _session.addListener(_forgetOnSignOut);
     if (_session.status == SessionStatus.restoring) _session.restore();
+  }
+
+  /// Signed out, by choice or because the session ended: what the phone kept
+  /// for this shop goes too, so the next owner on this phone never sees it.
+  void _forgetOnSignOut() {
+    if (_session.status == SessionStatus.signedOut) _cache.clear();
   }
 
   ApiClient _client({required Future<bool> Function() refresh}) => ApiClient(
@@ -98,8 +124,10 @@ class _LampAppState extends State<LampApp> {
 
   @override
   void dispose() {
+    _session.removeListener(_forgetOnSignOut);
     _router.dispose();
     _theme.dispose();
+    _changes.dispose();
     _locale.dispose();
     if (widget.session == null) _session.dispose();
     super.dispose();
@@ -113,6 +141,10 @@ class _LampAppState extends State<LampApp> {
         ChangeNotifierProvider.value(value: _locale),
         ChangeNotifierProvider.value(value: _session),
         Provider.value(value: _api),
+        Provider<PhotoSource>.value(value: _photos),
+        Provider<CacheStore>.value(value: _cache),
+        ChangeNotifierProvider<ShopChanges>.value(value: _changes),
+        Provider<ShrinkPhoto>.value(value: widget.shrinkPhoto ?? shrinkPhotoInBackground),
       ],
       child: Consumer2<ThemeController, LocaleController>(
         builder: (context, theme, locale, _) => MaterialApp.router(

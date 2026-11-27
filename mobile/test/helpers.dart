@@ -7,7 +7,10 @@ import 'package:lamp_shop/app.dart';
 import 'package:lamp_shop/core/auth/auth_service.dart';
 import 'package:lamp_shop/core/auth/fake_auth_service.dart';
 import 'package:lamp_shop/core/auth/token_store.dart';
+import 'package:lamp_shop/core/offline/cache_store.dart';
 import 'package:lamp_shop/core/state/session_controller.dart';
+import 'package:lamp_shop/features/scan/photo_prep.dart';
+import 'package:lamp_shop/features/scan/photo_source.dart';
 
 const testDevice = DeviceInfo(id: 'd-test', name: 'Test phone', os: 'android', appVersion: '0.1.0+1');
 
@@ -40,8 +43,12 @@ Future<void> pumpLamp(
   String at = '/today',
   Locale? locale = const Locale('en'),
   http.Client? http,
+  PhotoSource? photos,
+  ShrinkPhoto? shrink,
+  Map<String, Object> prefs = const {},
+  CacheStore? cache,
 }) async {
-  SharedPreferences.setMockInitialValues({});
+  SharedPreferences.setMockInitialValues(prefs);
   tester.view.physicalSize = const Size(360, 800);
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.resetPhysicalSize);
@@ -52,6 +59,10 @@ Future<void> pumpLamp(
     locale: locale,
     // No real network in tests: an unanswered call reads as the server down.
     httpClient: http ?? MockClient((_) async => _down),
+    photoSource: photos,
+    shrinkPhoto: shrink,
+    // Never the phone's encrypted box in a test.
+    cache: cache ?? MemoryCacheStore(),
   ));
   await tester.pumpAndSettle();
 }

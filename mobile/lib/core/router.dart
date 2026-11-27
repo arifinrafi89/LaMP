@@ -3,7 +3,9 @@ import 'package:material_ui/material_ui.dart';
 
 import '../features/more/more_screen.dart';
 import '../features/placeholder/placeholder_screen.dart';
+import '../features/scan/scan_screen.dart';
 import '../features/setup/setup_screen.dart';
+import '../features/stock/stock_screen.dart';
 import '../features/shell/app_shell.dart';
 import '../features/today/today_screen.dart';
 import '../features/welcome/loading_screen.dart';
@@ -93,14 +95,18 @@ GoRouter buildRouter({
             StatefulShellBranch(routes: [
               GoRoute(path: '/today', builder: (_, _) => const TodayScreen()),
             ]),
-            for (final t in tabs.skip(1).take(3))
+            StatefulShellBranch(routes: [
+              GoRoute(path: '/scan', builder: (_, _) => const ScanScreen()),
+            ]),
+            for (final t in tabs.skip(2).take(2))
               StatefulShellBranch(routes: [_placeholder(t)]),
             StatefulShellBranch(routes: [
               GoRoute(
                 path: '/more',
                 builder: (context, state) => const MoreScreen(),
               ),
-              for (final d in moreDestinations) _placeholder(d),
+              GoRoute(path: '/stock', builder: (_, _) => const StockScreen()),
+              for (final d in moreDestinations.where((d) => d.path != '/stock')) _placeholder(d),
             ]),
           ],
         ),

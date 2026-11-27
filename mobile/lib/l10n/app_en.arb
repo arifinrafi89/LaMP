@@ -34,6 +34,7 @@
   "errNotFound": "We couldn't find that.",
   "errInvalid": "Something here isn't right. Check it and try again.",
   "errOffline": "You're offline. Check your connection.",
+  "errTooLarge": "This file is too big to send. Take the photo again, or pick a smaller file.",
   "errUnknown": "Something went wrong. Try again.",
   "themeDefault": "Default (light)",
   "themeLight": "Light",
@@ -213,5 +214,180 @@
     }
   },
   "stockFieldsNeeded": "Fill in the medicine, batch, expiry, quantity and cost.",
-  "removeLine": "Remove"
+  "removeLine": "Remove",
+  "errPhotoUnreadable": "This photo couldn't be opened. Take it again.",
+  "scanKindBill": "Supplier bill",
+  "scanKindSales": "Sales book page",
+  "scanTakePhoto": "Take a photo",
+  "scanFromGallery": "Pick a photo",
+  "scanFromPdf": "Pick a PDF",
+  "scanHint": "Lay the bill flat in good light, with all four corners in the photo.",
+  "scanScansLeft": "{count} free scans left this month",
+  "@scanScansLeft": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "scanResetsOn": "They start again on {day}.",
+  "@scanResetsOn": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "scanPreparing": "Getting the photo ready…",
+  "scanSend": "Send",
+  "scanRetake": "Take again",
+  "scanSending": "Reading the bill. This can take up to a minute.",
+  "scanPdfReady": "PDF ready to send",
+  "scanToCheck": "{count} things to check before saving",
+  "@scanToCheck": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "scanAllChecked": "Everything is checked",
+  "scanCheckThis": "Check this",
+  "scanRight": "Right",
+  "scanChange": "Change",
+  "scanCheckOk": "I've checked this",
+  "scanSuspicious": "Some text on this photo looked like instructions. LaMP ignored it; check the figures yourself.",
+  "scanSaveBill": "Save this bill",
+  "scanSavePage": "Save this page",
+  "scanSavedBill": "Bill saved",
+  "scanSavedPage": "Page saved",
+  "scanSavedBillDetail": "Your stock and what you owe this supplier are updated. Today shows the new figures.",
+  "scanSavedPageDetail": "These days' sales are saved. Today shows the new figures.",
+  "scanAnother": "Scan another",
+  "scanGoToday": "Go to Today",
+  "scanLine": "Line {n}",
+  "@scanLine": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "scanEmpty": "Not on the bill",
+  "fieldSave": "Save",
+  "fieldBadAmount": "That doesn't look like an amount.",
+  "fieldBadWhole": "Type a whole number above 0.",
+  "fieldBadText": "This can't be left empty.",
+  "fieldSupplierName": "Supplier",
+  "fieldInvoiceNo": "Bill number",
+  "fieldInvoiceDate": "Bill date",
+  "fieldDueDate": "Pay by",
+  "fieldTotal": "Bill total",
+  "fieldProduct": "Medicine",
+  "fieldStrength": "Strength",
+  "fieldPack": "Pack",
+  "fieldBatchNo": "Batch",
+  "fieldExpiryDate": "Expiry",
+  "fieldQty": "Quantity",
+  "fieldUnitCost": "Price each",
+  "fieldLineTotal": "Line total",
+  "fieldDate": "Day",
+  "fieldCashSales": "Cash sales",
+  "fieldCreditSales": "Sales on credit",
+  "fieldDuesCollected": "Dues collected",
+  "fieldExpenses": "Expenses",
+  "stockAtRisk": "Expiring in {days} days",
+  "@stockAtRisk": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "stockCanGoBackTotal": "{amount} can go back to suppliers",
+  "@stockCanGoBackTotal": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "stockFirstReturn": "See what can go back first",
+  "stockCanGoBackHeader": "Can go back",
+  "stockCannotGoBackHeader": "Can't go back",
+  "stockDaysLeft": "{days} days left",
+  "@stockDaysLeft": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "stockExpired": "Expired",
+  "stockBatchLine": "Batch {batch} · {qty} left · {value}",
+  "@stockBatchLine": {
+    "placeholders": {
+      "batch": {
+        "type": "String"
+      },
+      "qty": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "stockTakesBack": "{supplier} can take this back.",
+  "@stockTakesBack": {
+    "placeholders": {
+      "supplier": {
+        "type": "String"
+      }
+    }
+  },
+  "stockWontTakeBack": "{supplier} won't take this back now.",
+  "@stockWontTakeBack": {
+    "placeholders": {
+      "supplier": {
+        "type": "String"
+      }
+    }
+  },
+  "stockNothingTitle": "Nothing expires in the next {days} days",
+  "@stockNothingTitle": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "stockNothingBody": "Scan your supplier bills so LaMP knows your stock and when it expires.",
+  "stockScanBill": "Scan a bill",
+  "stockCostValue": "Cost value",
+  "stockLeft": "Left",
+  "syncUpdated": "Updated {time}",
+  "@syncUpdated": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "syncOffline": "Offline · updated {time}",
+  "@syncOffline": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "syncStale": "Couldn't refresh · updated {time}",
+  "@syncStale": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  }
 }

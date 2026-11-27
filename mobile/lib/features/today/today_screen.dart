@@ -7,9 +7,13 @@ import '../../core/api/problem.dart';
 import '../../core/constants/palette.dart';
 import '../../core/constants/typography.dart';
 import '../../core/l10n/digits.dart';
+import '../../core/offline/cache_store.dart';
 import '../../core/state/session_controller.dart';
+import '../../core/state/shop_changes.dart';
 import '../../l10n/app_localizations.dart';
+import '../../widgets/ui/lamp_failed.dart';
 import '../../widgets/ui/lamp_skeleton.dart';
+import '../../widgets/ui/lamp_sync_pip.dart';
 import '../../widgets/ui/lamp_ui.dart';
 import 'today_controller.dart';
 import 'today_models.dart';
@@ -23,7 +27,10 @@ class TodayScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final pid = context.read<SessionController>().pharmacy!.id;
     return ChangeNotifierProvider(
-      create: (context) => TodayController(context.read<ApiClient>(), pid)..load(),
+      create: (context) =>
+          TodayController(context.read<ApiClient>(), context.read<CacheStore>(), pid,
+              refreshOn: context.read<ShopChanges>())
+            ..load(),
       child: const _TodayView(),
     );
   }
@@ -41,7 +48,7 @@ class _TodayView extends StatelessWidget {
 
     final Widget body;
     if (summary == null && problem != null) {
-      body = _Failed(problem: problem, onRetry: today.load);
+      body = LampFailed(problem: problem, onRetry: today.load);
     } else if (summary == null) {
       body = ListView(
         padding: const EdgeInsets.all(Gap.lg),
@@ -50,7 +57,7 @@ class _TodayView extends StatelessWidget {
     } else {
       body = RefreshIndicator(
         onRefresh: today.load,
-        child: _Figures(summary: summary, problem: problem),
+        child: _Figures(summary: summary, problem: problem, savedAt: today.savedAt),
       );
     }
     return Scaffold(appBar: AppBar(title: Text(l.tabToday)), body: body);
@@ -58,10 +65,11 @@ class _TodayView extends StatelessWidget {
 }
 
 class _Figures extends StatelessWidget {
-  const _Figures({required this.summary, required this.problem});
+  const _Figures({required this.summary, required this.problem, required this.savedAt});
 
   final TodaySummary summary;
   final ApiProblem? problem;
+  final DateTime? savedAt;
 
   @override
   Widget build(BuildContext context) {
@@ -77,9 +85,9 @@ class _Figures extends StatelessWidget {
       padding: const EdgeInsets.all(Gap.lg),
       children: [
         Text(l.todayAsOf(day(summary.asOf)), style: LaMPType.caption.copyWith(color: c.inkFaint)),
-        if (problem != null) ...[
+        if (savedAt != null) ...[
           const SizedBox(height: Gap.xs),
-          Text(problemMessage(l, problem!), style: LaMPType.caption.copyWith(color: c.pending)),
+          LampSyncPip(savedAt: savedAt!, problem: problem),
         ],
         const SizedBox(height: Gap.md),
         _OneThingCard(oneThing: summary.oneThing),
@@ -196,36 +204,6 @@ class _OneThingCard extends StatelessWidget {
             child: Text(l.todayOpen),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _Failed extends StatelessWidget {
-  const _Failed({required this.problem, required this.onRetry});
-
-  final ApiProblem problem;
-  final Future<void> Function() onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.lamp;
-    final l = L10n.of(context);
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(Gap.xl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(problem.code == ApiProblem.offline ? Icons.cloud_off_outlined : Icons.error_outline,
-                size: IconSize.xl, color: c.inkMuted),
-            const SizedBox(height: Gap.md),
-            Text(problemMessage(l, problem),
-                textAlign: TextAlign.center, style: LaMPType.body.copyWith(color: c.ink)),
-            const SizedBox(height: Gap.lg),
-            OutlinedButton(onPressed: onRetry, child: Text(l.retry)),
-          ],
-        ),
       ),
     );
   }

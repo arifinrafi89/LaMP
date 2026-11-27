@@ -6,13 +6,17 @@ import '../../l10n/app_localizations.dart';
 /// "retry_after": 30}`. The app shows its own words for each `code`, in
 /// English or Bangla, and falls back to `detail`.
 class ApiProblem implements Exception {
-  const ApiProblem(this.code, {this.detail, this.status, this.retryAfter});
+  const ApiProblem(this.code, {this.detail, this.status, this.retryAfter, this.resetsOn});
 
   /// The server's machine code, or `offline` when it couldn't be reached.
   final String code;
   final String? detail;
   final int? status;
   final Duration? retryAfter;
+
+  /// The day a monthly limit starts again (`scan_limit_reached`,
+  /// `ai_budget_reached`).
+  final DateTime? resetsOn;
 
   static const offline = 'offline';
 
@@ -36,6 +40,8 @@ String problemMessage(L10n l, ApiProblem p) => switch (p.code) {
       'charge_failed' => l.errChargeFailed,
       'not_found' => l.errNotFound,
       'invalid' => l.errInvalid,
+      'too_large' => l.errTooLarge,
+      'photo_unreadable' => l.errPhotoUnreadable,
       ApiProblem.offline => l.errOffline,
       _ => (p.detail?.trim().isNotEmpty ?? false) ? p.detail! : l.errUnknown,
     };
