@@ -1,0 +1,7 @@
+{
+  "pharmacy_name": "Green Life Pharmacy", "city": "Bogura", "label": "Customer 003",
+  "amount": 2450.0, "since": "2026-10-20", "days_outstanding": 38,
+  "as_of": "2026-11-27", "latest_first_on": "2026-12-11",
+  "options": [{"parts": 1, "part_amount": 2450.0}, {"parts": 2, "part_amount": 1225.0}, {"parts": 4, "part_amount": 612.0}],
+  "plan": null
+}

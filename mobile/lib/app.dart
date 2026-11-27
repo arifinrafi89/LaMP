@@ -18,6 +18,7 @@ import 'core/state/locale_controller.dart';
 import 'core/state/session_controller.dart';
 import 'core/state/shop_changes.dart';
 import 'core/state/theme_controller.dart';
+import 'features/customers/share_text.dart';
 import 'features/scan/photo_prep.dart';
 import 'features/scan/photo_source.dart';
 import 'l10n/app_localizations.dart';
@@ -33,6 +34,7 @@ class LampApp extends StatefulWidget {
     this.photoSource,
     this.shrinkPhoto,
     this.cache,
+    this.shareText,
   });
 
   /// Injected by tests; built against the real server otherwise.
@@ -53,6 +55,9 @@ class LampApp extends StatefulWidget {
 
   /// The offline cache; tests keep it in memory.
   final CacheStore? cache;
+
+  /// The share sheet; tests record what is shared.
+  final ShareText? shareText;
 
   @override
   State<LampApp> createState() => _LampAppState();
@@ -145,6 +150,7 @@ class _LampAppState extends State<LampApp> {
         Provider<CacheStore>.value(value: _cache),
         ChangeNotifierProvider<ShopChanges>.value(value: _changes),
         Provider<ShrinkPhoto>.value(value: widget.shrinkPhoto ?? shrinkPhotoInBackground),
+        Provider<ShareText>.value(value: widget.shareText ?? shareWithPhone),
       ],
       child: Consumer2<ThemeController, LocaleController>(
         builder: (context, theme, locale, _) => MaterialApp.router(

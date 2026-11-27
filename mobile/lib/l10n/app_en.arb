@@ -389,5 +389,192 @@
         "type": "String"
       }
     }
-  }
+  },
+  "errJoinByText": "Ask the family to text the join text instead.",
+  "customersAdd": "Add a customer",
+  "customersCountOne": "1 customer owes you",
+  "customersCount": "{n} customers owe you",
+  "@customersCount": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "customersEmptyTitle": "No one owes you yet",
+  "customersEmptyBody": "When a family takes medicine on credit, add them here. They get a card code and free SMS reminders.",
+  "customerSince": "Since {day} · {days} days",
+  "@customerSince": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      },
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "customerNoPlan": "No plan yet",
+  "planOnePayment": "One payment",
+  "planWeeklyParts": "{n} weekly parts",
+  "@planWeeklyParts": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "smsJoining": "Joining",
+  "smsOn": "SMS on",
+  "smsStopped": "SMS stopped",
+  "smsFailed": "SMS failed",
+  "customerTrusted": "Pays on time",
+  "customerOwes": "Owes",
+  "customerRecordPayment": "Record a payment",
+  "customerRecordSale": "Record a sale on credit",
+  "customerNotFound": "This card isn't in your list.",
+  "customersBack": "Back to customers",
+  "joinTitle": "Free SMS reminders",
+  "joinHow": "Ask the family to text this to {to}:",
+  "@joinHow": {
+    "placeholders": {
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "joinWriteOnBill": "Write it on their bill too.",
+  "joinShare": "Share",
+  "joinCopy": "Copy",
+  "joinCopied": "Copied",
+  "joinShareText": "Text {text} to {to} for free reminders of what you owe. Free. Text LAMP STOP to stop.",
+  "@joinShareText": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "smsNoneBody": "No SMS yet. It starts when the family texts the join text.",
+  "smsPendingBody": "The family texted. Waiting for Banglalink to confirm.",
+  "smsOnBody": "The family gets a reminder two days before each part, and a receipt for each payment.",
+  "smsStoppedBody": "SMS is stopped. The family can text the join text again to restart it.",
+  "smsFailedBody": "SMS couldn't start. The family can text the join text again.",
+  "smsRemind": "Send a reminder",
+  "smsReminded": "Reminder sent",
+  "smsStop": "Stop SMS",
+  "smsStopConfirm": "Stop SMS for {label}? The family can text the join text again to restart.",
+  "@smsStopConfirm": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "customerAddNumber": "Type their number instead",
+  "planTitle": "Payment plan",
+  "planSet": "Set a plan",
+  "planChange": "Change plan",
+  "planPartLine": "Part {n} · {day}",
+  "@planPartLine": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      },
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "planNext": "Next: {amount} on {day}",
+  "@planNext": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "planChoose": "How will they pay?",
+  "planOneOf": "One payment of {amount}",
+  "@planOneOf": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "planPartsOf": "{n} weekly parts of {amount}",
+  "@planPartsOf": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "planLastPart": "The last part takes any odd taka.",
+  "planFirstOn": "First payment on",
+  "planSave": "Save plan",
+  "planSaved": "Plan saved",
+  "moneyAmount": "Amount",
+  "moneyMethod": "Paid by",
+  "methodCash": "Cash",
+  "methodBkash": "bKash",
+  "methodNagad": "Nagad",
+  "methodOther": "Other",
+  "moneyAboveZero": "Enter an amount above 0.",
+  "paymentSaved": "Payment saved · now owes {amount}",
+  "@paymentSaved": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "saleSaved": "Sale saved · now owes {amount}",
+  "@saleSaved": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "addOwes": "What they owe",
+  "addSince": "Since",
+  "addNoNames": "No name is kept. The card has a number and a code.",
+  "addSave": "Add",
+  "addedTitle": "{label} added",
+  "@addedTitle": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "addedCode": "Card code",
+  "familyPhoneTitle": "Their number",
+  "consentReadAloud": "Read this to them:",
+  "consentWording": "LaMP will text you what you owe and remind you before each payment. Free. Stop any time.",
+  "smsLanguage": "SMS language",
+  "consentAgreed": "They agreed",
+  "planPaidOf": "{paid} of {parts} parts paid",
+  "@planPaidOf": {
+    "placeholders": {
+      "paid": {
+        "type": "String"
+      },
+      "parts": {
+        "type": "String"
+      }
+    }
+  },
+  "planPaid": "Paid"
 }

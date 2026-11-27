@@ -19,6 +19,8 @@ void main() {
   final byPath = {
     '/today': fixture('today'),
     '/expiry': fixture('expiry'),
+    '/customers': fixture('customers'),
+    '/me': fixture('me'),
     '/usage': '{"plan":"free","scans_used":7,"scans_limit":10,"ai_used_bdt":0.4,'
         '"ai_budget_bdt":1.2,"resets_on":"2026-12-01"}',
   };
@@ -32,7 +34,18 @@ void main() {
     return http.Response(body, 200, headers: {'content-type': 'application/json; charset=utf-8'});
   });
 
-  final screens = ['/welcome', '/setup', '/today', '/scan', '/customers', '/more', '/stock'];
+  final screens = [
+    '/welcome',
+    '/setup',
+    '/today',
+    '/scan',
+    '/customers',
+    // SMS on with a plan; and not on SMS yet, with the join text.
+    '/customers/GL-7KQM-4XPA',
+    '/customers/GL-8NBV-2KLM?added=1',
+    '/more',
+    '/stock',
+  ];
 
   for (final theme in [ThemeMode.light, ThemeMode.dark]) {
     for (final scale in [1.0, 1.3]) {

@@ -1,0 +1,7 @@
+{
+  "owner": {"id": "o-1", "phone_masked": "+880 19•• ••• 678", "language": "en"},
+  "pharmacy": {"id": "green-life", "name": "Green Life Pharmacy", "setup_complete": true},
+  "plan": "free", "plus_status": "NONE",
+  "entitlements": {"cash": false, "plan": false, "approvals": false, "ask": false, "scans_left": 7},
+  "demo_tools": false, "family_join_routes": ["text"], "consents_needed": []
+}

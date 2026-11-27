@@ -12,7 +12,18 @@ import 'cache_store.dart';
 /// - A failed refresh keeps what is shown and says why; with nothing kept,
 ///   the screen shows the problem and a way to try again.
 class CachedRead<T> extends ChangeNotifier {
-  CachedRead(this._api, this._cache, this.path, this._parse,
+  /// For a read that answers a JSON object.
+  CachedRead(ApiClient api, CacheStore cache, String path, T Function(Map<String, dynamic>) parse,
+      {Listenable? refreshOn, DateTime Function()? now})
+      : this._(api, cache, path, (j) => j is Map<String, dynamic> ? parse(j) : null,
+            refreshOn: refreshOn, now: now);
+
+  /// For a read that answers a JSON list, like `GET /customers`.
+  CachedRead.list(ApiClient api, CacheStore cache, String path, T Function(List<dynamic>) parse,
+      {Listenable? refreshOn, DateTime Function()? now})
+      : this._(api, cache, path, (j) => j is List ? parse(j) : null, refreshOn: refreshOn, now: now);
+
+  CachedRead._(this._api, this._cache, this.path, this._parse,
       {Listenable? refreshOn, DateTime Function()? now})
       : _now = now ?? DateTime.now,
         _refreshOn = refreshOn {
@@ -24,7 +35,8 @@ class CachedRead<T> extends ChangeNotifier {
 
   /// The API path, which is also the cache key: it carries the shop's id.
   final String path;
-  final T Function(Map<String, dynamic>) _parse;
+  /// Null when the answer has the wrong shape (an object for a list).
+  final T? Function(Object?) _parse;
   final DateTime Function() _now;
 
   /// Reads again whenever this rings (see ShopChanges).
@@ -43,10 +55,16 @@ class CachedRead<T> extends ChangeNotifier {
   /// Why the last refresh failed; null after a good one.
   ApiProblem? get problem => _problem;
 
+  bool _loading = false;
+
+  /// A read is on its way.
+  bool get loading => _loading;
+
   bool _disposed = false;
 
   Future<void> load() async {
     _problem = null;
+    _loading = true;
     _notify();
     if (_data == null) {
       final kept = await _cache.read(path);
@@ -68,6 +86,7 @@ class CachedRead<T> extends ChangeNotifier {
     } on ApiProblem catch (p) {
       _problem = p;
     } finally {
+      _loading = false;
       _notify();
     }
   }
@@ -75,7 +94,6 @@ class CachedRead<T> extends ChangeNotifier {
   /// Null for an answer the app can't read, so a changed shape shows as a
   /// plain problem rather than a screen stuck loading.
   T? _tryParse(Object? json) {
-    if (json is! Map<String, dynamic>) return null;
     try {
       return _parse(json);
     } on Object catch (e) {

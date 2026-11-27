@@ -1,12 +1,15 @@
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../features/customers/customer_screen.dart';
+import '../features/customers/customers_screen.dart';
 import '../features/more/more_screen.dart';
 import '../features/placeholder/placeholder_screen.dart';
 import '../features/scan/scan_screen.dart';
 import '../features/setup/setup_screen.dart';
 import '../features/stock/stock_screen.dart';
 import '../features/shell/app_shell.dart';
+import '../features/shell/shop_providers.dart';
 import '../features/today/today_screen.dart';
 import '../features/welcome/loading_screen.dart';
 import '../features/welcome/welcome_screen.dart';
@@ -90,7 +93,7 @@ GoRouter buildRouter({
         GoRoute(path: '/welcome', builder: (_, _) => const WelcomeScreen()),
         GoRoute(path: '/setup', builder: (_, _) => const SetupScreen()),
         StatefulShellRoute.indexedStack(
-          builder: (context, state, shell) => AppShell(shell: shell),
+          builder: (context, state, shell) => ShopProviders(child: AppShell(shell: shell)),
           branches: [
             StatefulShellBranch(routes: [
               GoRoute(path: '/today', builder: (_, _) => const TodayScreen()),
@@ -98,8 +101,22 @@ GoRouter buildRouter({
             StatefulShellBranch(routes: [
               GoRoute(path: '/scan', builder: (_, _) => const ScanScreen()),
             ]),
-            for (final t in tabs.skip(2).take(2))
-              StatefulShellBranch(routes: [_placeholder(t)]),
+            StatefulShellBranch(routes: [
+              GoRoute(
+                path: '/customers',
+                builder: (_, _) => const CustomersScreen(),
+                routes: [
+                  GoRoute(
+                    path: ':code',
+                    builder: (_, state) => CustomerScreen(
+                      code: state.pathParameters['code']!,
+                      added: state.uri.queryParameters['added'] == '1',
+                    ),
+                  ),
+                ],
+              ),
+            ]),
+            StatefulShellBranch(routes: [_placeholder(tabs[3])]),
             StatefulShellBranch(routes: [
               GoRoute(
                 path: '/more',

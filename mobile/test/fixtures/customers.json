@@ -1,0 +1,28 @@
+[
+  {
+    "code": "GL-5RTY-6UIO", "label": "Customer 001", "amount": 12000.0, "since": "2026-09-01",
+    "days_outstanding": 87, "status": "no_plan", "plan": null, "sms_status": "STOPPED", "trusted": false,
+    "join": {"text": "LAMP GL5RTY6UIO", "to": "21213"}
+  },
+  {
+    "code": "GL-3HFD-9WQT", "label": "Customer 003", "amount": 2450.0, "since": "2026-10-20",
+    "days_outstanding": 38, "status": "no_plan", "plan": null, "sms_status": "PENDING", "trusted": false,
+    "join": {"text": "LAMP GL3HFD9WQT", "to": "21213"}
+  },
+  {
+    "code": "GL-7KQM-4XPA", "label": "Customer 004", "amount": 6500.0, "since": "2026-11-03",
+    "days_outstanding": 24, "status": "planned",
+    "plan": {"parts": 4, "first_on": "2026-11-26", "schedule": [
+      {"n": 1, "due_on": "2026-11-26", "amount": 1625.0},
+      {"n": 2, "due_on": "2026-12-03", "amount": 1625.0},
+      {"n": 3, "due_on": "2026-12-10", "amount": 1625.0},
+      {"n": 4, "due_on": "2026-12-17", "amount": 1625.0}
+    ]},
+    "sms_status": "ON", "trusted": true,
+    "join": {"text": "LAMP GL7KQM4XPA", "to": "21213"}
+  },
+  {
+    "code": "GL-8NBV-2KLM", "label": "Customer 005", "amount": 900.0, "since": "2026-11-20",
+    "days_outstanding": 7, "status": "no_plan", "plan": null, "sms_status": "NONE", "trusted": false
+  }
+]
