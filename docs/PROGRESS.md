@@ -72,7 +72,7 @@
 - [ ] **I2.2** New routes: `/me`, setup, suppliers, opening, stock, expenses, `/today`, payments, sales days, customers · **[I]**
 - [ ] **I2.3** Capture changes (`stored_file`, idempotency, free-plan count, `ai_usage`) · **[I]**
 - [ ] **A2.1** The four Applink callbacks and the subscription mirror · **[A]**
-- [ ] **A2.2** Families by SMS: `family/commands.py`, `join.py`, both join routes, templates, delivery reports · **[A]**
+- [ ] **A2.2** Families by SMS: `family/commands.py`, `join.py`, both join routes, templates, delivery reports · **[A]** · part 1 (reading texts, SMS templates in English and Bangla) on `main` (PR #13); joining and delivery reports need the migrations
 - [ ] **A2.3** The plan SMS; `/demo/sms` and the drawn phone's thread · **[A]**
 - [ ] **A2.4** Sandbox items 1–7 as soon as the apps are approved · **[A]**
 - [x] **Y2.1** Setup flow · **[Y]** · on `main` (PR #3)
