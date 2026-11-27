@@ -21,12 +21,17 @@ const maxUploadBytes = 8 * 1024 * 1024;
 ///   two of the month's free scans. A new photo gets a new key.
 /// - A failed send keeps the photo on screen; a failed save keeps the review.
 class ScanController extends ChangeNotifier {
-  ScanController(this._api, this._pid, {Future<Uint8List> Function(Uint8List)? shrink})
-      : _shrink = shrink ?? shrinkPhotoInBackground;
+  ScanController(this._api, this._pid,
+      {Future<Uint8List> Function(Uint8List)? shrink, VoidCallback? onSaved})
+      : _shrink = shrink ?? shrinkPhotoInBackground,
+        _onSaved = onSaved;
 
   final ApiClient _api;
   final String _pid;
   final Future<Uint8List> Function(Uint8List) _shrink;
+
+  /// Told after a save, so other screens read their figures again.
+  final VoidCallback? _onSaved;
 
   ScanStage _stage = ScanStage.pick;
   ScanStage get stage => _stage;
@@ -180,6 +185,7 @@ class ScanController extends ChangeNotifier {
       await _api.post('/pharmacies/$_pid/captures/${r.captureId}/confirm', r.toConfirmJson(),
           idempotencyKey: _confirmKey);
       _stage = ScanStage.done;
+      _onSaved?.call();
       return true;
     } on ApiProblem catch (p) {
       _problem = p;

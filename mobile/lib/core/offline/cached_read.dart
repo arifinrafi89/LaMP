@@ -12,8 +12,12 @@ import 'cache_store.dart';
 /// - A failed refresh keeps what is shown and says why; with nothing kept,
 ///   the screen shows the problem and a way to try again.
 class CachedRead<T> extends ChangeNotifier {
-  CachedRead(this._api, this._cache, this.path, this._parse, {DateTime Function()? now})
-      : _now = now ?? DateTime.now;
+  CachedRead(this._api, this._cache, this.path, this._parse,
+      {Listenable? refreshOn, DateTime Function()? now})
+      : _now = now ?? DateTime.now,
+        _refreshOn = refreshOn {
+    _refreshOn?.addListener(load);
+  }
 
   final ApiClient _api;
   final CacheStore _cache;
@@ -22,6 +26,9 @@ class CachedRead<T> extends ChangeNotifier {
   final String path;
   final T Function(Map<String, dynamic>) _parse;
   final DateTime Function() _now;
+
+  /// Reads again whenever this rings (see ShopChanges).
+  final Listenable? _refreshOn;
 
   T? _data;
   T? get data => _data;
@@ -83,6 +90,7 @@ class CachedRead<T> extends ChangeNotifier {
 
   @override
   void dispose() {
+    _refreshOn?.removeListener(load);
     _disposed = true;
     super.dispose();
   }

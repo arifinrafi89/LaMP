@@ -130,6 +130,36 @@ void main() {
     expect(find.descendant(of: find.byType(AppBar), matching: find.text('Today')), findsOneWidget);
   });
 
+  testWidgets('after a save, Today and Stock read their figures again', (tester) async {
+    await pumpLamp(tester,
+        session: await signedInSession(),
+        at: '/today',
+        http: server(),
+        photos: photos,
+        shrink: (b) async => b);
+    await tester.tap(find.text('Scan').last);
+    await tester.pumpAndSettle();
+    await photographAndSend(tester);
+    for (final path in ['invoice.due_date', 'invoice.lines[2].qty', 'invoice.lines[2].unit_cost']) {
+      await tapKey(tester, 'field-right-$path');
+    }
+    await tapKey(tester, 'check-ok-Invoice total');
+    await tapKey(tester, 'scan-save');
+    final saved = sent.indexWhere((r) => r.url.path.endsWith('/confirm'));
+    await tapKey(tester, 'scan-today');
+    expect(sent.skip(saved + 1).where((r) => r.url.path.endsWith('/today')), isNotEmpty,
+        reason: 'Today must not keep showing the figures from before the bill');
+  });
+
+  testWidgets('a date read with an impossible year still opens the calendar', (tester) async {
+    captures = (_) => ok(capture.replaceFirst('"invoice_date": "2026-10-16"', '"invoice_date": "0202-10-16"'));
+    await open(tester);
+    await photographAndSend(tester);
+    await tapKey(tester, 'field-change-invoice.invoice_date');
+    expect(tester.takeException(), isNull);
+    expect(find.byType(DatePickerDialog), findsOneWidget);
+  });
+
   testWidgets('a wrong figure is corrected in place, and the correction is sent', (tester) async {
     await open(tester);
     await photographAndSend(tester);

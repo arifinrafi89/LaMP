@@ -16,6 +16,7 @@ import 'core/offline/cache_store.dart';
 import 'core/router.dart';
 import 'core/state/locale_controller.dart';
 import 'core/state/session_controller.dart';
+import 'core/state/shop_changes.dart';
 import 'core/state/theme_controller.dart';
 import 'features/scan/photo_prep.dart';
 import 'features/scan/photo_source.dart';
@@ -65,6 +66,7 @@ class _LampAppState extends State<LampApp> {
   late final GoRouter _router;
   late final PhotoSource _photos = widget.photoSource ?? DevicePhotoSource();
   late final CacheStore _cache = widget.cache ?? HiveCacheStore();
+  final _changes = ShopChanges();
 
   @override
   void initState() {
@@ -125,6 +127,7 @@ class _LampAppState extends State<LampApp> {
     _session.removeListener(_forgetOnSignOut);
     _router.dispose();
     _theme.dispose();
+    _changes.dispose();
     _locale.dispose();
     if (widget.session == null) _session.dispose();
     super.dispose();
@@ -140,6 +143,7 @@ class _LampAppState extends State<LampApp> {
         Provider.value(value: _api),
         Provider<PhotoSource>.value(value: _photos),
         Provider<CacheStore>.value(value: _cache),
+        ChangeNotifierProvider<ShopChanges>.value(value: _changes),
         Provider<ShrinkPhoto>.value(value: widget.shrinkPhoto ?? shrinkPhotoInBackground),
       ],
       child: Consumer2<ThemeController, LocaleController>(

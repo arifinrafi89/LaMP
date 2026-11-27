@@ -9,6 +9,7 @@ import '../../core/constants/typography.dart';
 import '../../core/l10n/digits.dart';
 import '../../core/offline/cache_store.dart';
 import '../../core/state/session_controller.dart';
+import '../../core/state/shop_changes.dart';
 import '../../l10n/app_localizations.dart';
 import '../../widgets/ui/lamp_failed.dart';
 import '../../widgets/ui/lamp_skeleton.dart';
@@ -27,7 +28,9 @@ class TodayScreen extends StatelessWidget {
     final pid = context.read<SessionController>().pharmacy!.id;
     return ChangeNotifierProvider(
       create: (context) =>
-          TodayController(context.read<ApiClient>(), context.read<CacheStore>(), pid)..load(),
+          TodayController(context.read<ApiClient>(), context.read<CacheStore>(), pid,
+              refreshOn: context.read<ShopChanges>())
+            ..load(),
       child: const _TodayView(),
     );
   }

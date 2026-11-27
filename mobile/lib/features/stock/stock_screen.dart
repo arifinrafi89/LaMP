@@ -10,6 +10,7 @@ import '../../core/design/luma_sheet.dart';
 import '../../core/l10n/digits.dart';
 import '../../core/offline/cache_store.dart';
 import '../../core/state/session_controller.dart';
+import '../../core/state/shop_changes.dart';
 import '../../l10n/app_localizations.dart';
 import '../../widgets/ui/lamp_failed.dart';
 import '../../widgets/ui/lamp_skeleton.dart';
@@ -28,7 +29,9 @@ class StockScreen extends StatelessWidget {
     final pid = context.read<SessionController>().pharmacy!.id;
     return ChangeNotifierProvider(
       create: (context) =>
-          StockController(context.read<ApiClient>(), context.read<CacheStore>(), pid)..load(),
+          StockController(context.read<ApiClient>(), context.read<CacheStore>(), pid,
+              refreshOn: context.read<ShopChanges>())
+            ..load(),
       child: const _StockView(),
     );
   }

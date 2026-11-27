@@ -9,6 +9,7 @@ import '../../core/constants/typography.dart';
 import '../../core/design/luma_sheet.dart';
 import '../../core/l10n/digits.dart';
 import '../../core/state/session_controller.dart';
+import '../../core/state/shop_changes.dart';
 import '../../l10n/app_localizations.dart';
 import '../../widgets/ui/lamp_skeleton.dart';
 import '../../widgets/ui/lamp_ui.dart';
@@ -30,6 +31,7 @@ class ScanScreen extends StatelessWidget {
         context.read<ApiClient>(),
         pid,
         shrink: context.read<ShrinkPhoto>(),
+        onSaved: context.read<ShopChanges>().saved,
       )..loadUsage(),
       child: const _ScanView(),
     );
@@ -515,12 +517,16 @@ Future<void> editField(BuildContext context, ScanController scan, ReviewField f)
   if (f.type == FieldType.date) {
     final now = DateTime.now();
     final v = f.value;
-    final initial = v is String ? DateTime.tryParse(v) ?? now : now;
+    final first = DateTime(2000);
+    final last = DateTime(2100);
+    // A misread year (0202) must still open the calendar: start it in range.
+    var initial = v is String ? DateTime.tryParse(v) ?? now : now;
+    if (initial.isBefore(first) || initial.isAfter(last)) initial = now;
     final picked = await showDatePicker(
       context: context,
       initialDate: initial,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
+      firstDate: first,
+      lastDate: last,
     );
     if (picked != null) scan.edit(f.path, apiDate(picked));
     return;
