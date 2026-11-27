@@ -23,6 +23,7 @@ void main() {
     '/me': fixture('me'),
     '/credit-record': fixture('credit_record'),
     '/plus': fixture('plus'),
+    '/cards/GL-3HFD-9WQT': fixture('card'),
     '/usage': '{"plan":"free","scans_used":7,"scans_limit":10,"ai_used_bdt":0.4,'
         '"ai_budget_bdt":1.2,"resets_on":"2026-12-01"}',
   };
@@ -58,6 +59,9 @@ void main() {
     '/help',
     // Not a demo shop (me.json): says the phone is for the demo shop only.
     '/demo-phone',
+    // The family's pages, public.
+    '/me',
+    '/me/GL-3HFD-9WQT',
   ];
 
   for (final theme in [ThemeMode.light, ThemeMode.dark]) {

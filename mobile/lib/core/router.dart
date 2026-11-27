@@ -6,6 +6,7 @@ import '../features/ask/ask_screen.dart';
 import '../features/cash/cash_screen.dart';
 import '../features/credit_record/credit_record_screen.dart';
 import '../features/customers/customer_screen.dart';
+import '../features/family/family_card.dart';
 import '../features/customers/customers_screen.dart';
 import '../features/more/more_screen.dart';
 import '../features/placeholder/placeholder_screen.dart';
@@ -72,6 +73,8 @@ GoRoute _placeholder(LampDestination d) => GoRoute(
 /// - Signed in: anywhere but Welcome; the link given at launch is kept.
 String? sessionRedirect(SessionController session, Uri uri) {
   final at = uri.path;
+  // The family's card is public: no session, no setup, any time.
+  if (at == '/me' || at.startsWith('/me/')) return null;
   switch (session.status) {
     case SessionStatus.restoring:
       if (at == '/loading') return null;
@@ -104,6 +107,12 @@ GoRouter buildRouter({
         GoRoute(path: '/loading', builder: (_, _) => const LoadingScreen()),
         GoRoute(path: '/welcome', builder: (_, _) => const WelcomeScreen()),
         GoRoute(path: '/setup', builder: (_, _) => const SetupScreen()),
+        // Outside the owner's shell: the family's pages have no bottom bar.
+        GoRoute(path: '/me', builder: (_, _) => const FamilyCodeScreen()),
+        GoRoute(
+          path: '/me/:code',
+          builder: (_, state) => FamilyCardScreen(code: state.pathParameters['code']!),
+        ),
         StatefulShellRoute.indexedStack(
           builder: (context, state, shell) => ShopProviders(child: AppShell(shell: shell)),
           branches: [
