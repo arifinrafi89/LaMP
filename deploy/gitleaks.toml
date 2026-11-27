@@ -1,0 +1,23 @@
+# Secret scan settings for server.yml (build plan 8.3, 13.1). Gitleaks' default rules,
+# plus two narrow exceptions for values that look like keys but are hashes.
+title = "LaMP gitleaks"
+
+[extend]
+useDefault = true
+
+# Replay recordings (copied from LaMP.ai): "key" is the SHA-256 of the recorded request,
+# the same as the file's own name. Only that exact line shape is allowed, only there.
+[[allowlists]]
+description = "replay recording keys are request hashes"
+condition = "AND"
+paths = ['''^eval/replay/.+\.json$''']
+regexTarget = "line"
+regexes = ['''^\s*"key":\s*"[0-9a-f]{64}",?\s*$''']
+
+# The demo shop's simulated lenders store a SHA-256 of a demo key, never a key.
+[[allowlists]]
+description = "seeded lenders store a hash of a demo key"
+condition = "AND"
+paths = ['''^seed/.+\.json$''']
+regexTarget = "line"
+regexes = ['''^\s*"api_key_sha256":\s*"[0-9a-f]{64}",?\s*$''']
