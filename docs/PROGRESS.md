@@ -58,7 +58,7 @@
 - [x] **A1.1** Applink config, phone helpers, status-code table, client and mock · **[A]** · on `main` (PRs #11 and #12)
 - [ ] **A1.2** `auth/`: OTP sign-in, tokens, refresh, devices, rate limits · **[A]**
 - [ ] **A1.3** `jobs/`: table, runner inside the web service, scheduler, tick endpoint · **[A]**
-- [ ] **A1.4** `render.yaml`, `backup.yml`, `tick.yml`, `server.yml` · **[A]**
+- [ ] **A1.4** `render.yaml`, `backup.yml`, `tick.yml`, `server.yml` · **[A]** · `server.yml` with the secret scan on `main` (PR #14); the Postgres tests join it with the migrations; `render.yaml` waits for the migrations, `tick.yml` for A1.3, `backup.yml` for its secrets
 - [x] **Y1.1** App shell: go_router, theme, ARB en and bn, digits, `ApiClient` · **[Y]** · on `main`
 - [x] **Y1.2** Welcome, number, code, token store (app side; server sign-in is A1.2) · **[Y]** · on `main`
 - [x] **Y1.3** Today · **[Y]** · on `main` (PR #1)
