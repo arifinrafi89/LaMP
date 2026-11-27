@@ -14,13 +14,13 @@
 | Stage | Done | Of those, on `main` | Total |
 |---|---|---|---|
 | Stage 0: repo, accounts, Applink forms | 14 | 5 | 21 |
-| Stage 1: foundations | 7 | 3 | 15 |
+| Stage 1: foundations | 8 | 4 | 15 |
 | Stage 2: core flows in mock mode | 1 | 1 | 12 |
 | Stage 3: money, Plus, AI, families | 0 | 0 | 16 |
 | Stage 4: test, fix, record | 0 | 0 | 11 |
 | Stage 5: submit | 0 | 0 | 5 |
 | Applink track | 1 | 0 | 9 |
-| **All** | **23** | **9** | **89** |
+| **All** | **24** | **10** | **89** |
 
 > **Waiting to reach `main`:** Ishmam's branch `ishmam/I0.3-day0-setup` holds I0.2, I0.3, I0.4, I0.5 and I1.1–I1.4 (PRs #4 and #5 were merged into his own branches, not into `main`). Until it's merged, `main` has no Alembic, no Stage 0 packages, no `owner` table and no contract v1, and Arifin's and Ayon's server-side work can't build on them.
 
@@ -55,7 +55,7 @@
 - [x] **I1.3** Contract v1 for every Phase 1 screen · **[I]** · on a branch (`ishmam/I0.3-day0-setup`)
 - [x] **I1.4** Stubs for the core functions in 1.4 B · **[I]** · on a branch (`ishmam/I0.3-day0-setup`)
 - [ ] **I0.6** Farhan's written OK, screenshot in `docs/PRIOR_WORK.md` · **[I]**
-- [ ] **A1.1** Applink config, phone helpers, status-code table, client and mock · **[A]** · part 1 (settings, numbers, codes) on `main` (PR #11); part 2 (client and mock) next
+- [x] **A1.1** Applink config, phone helpers, status-code table, client and mock · **[A]** · on `main` (PRs #11 and #12)
 - [ ] **A1.2** `auth/`: OTP sign-in, tokens, refresh, devices, rate limits · **[A]**
 - [ ] **A1.3** `jobs/`: table, runner inside the web service, scheduler, tick endpoint · **[A]**
 - [ ] **A1.4** `render.yaml`, `backup.yml`, `tick.yml`, `server.yml` · **[A]**
