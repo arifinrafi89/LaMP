@@ -926,5 +926,13 @@
   "reportMessage": "What happened",
   "reportNeeded": "Write a few words about it.",
   "reportSend": "Send",
-  "reportSent": "Thank you. We got it."
+  "reportSent": "Thank you. We got it.",
+  "updateTitle": "Update LaMP",
+  "updateBody": "This version of LaMP is too old to keep your figures right. Update it to carry on; your data is safe.",
+  "updateWeb": "A new version of LaMP is ready. Reload this page to use it.",
+  "updateButton": "Update",
+  "updateBanner": "A new version of LaMP is ready.",
+  "updateLater": "Later",
+  "maintenanceTitle": "LaMP is being updated",
+  "maintenanceBody": "Try again in a few minutes. Your data is safe."
 }

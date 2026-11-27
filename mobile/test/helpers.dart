@@ -52,6 +52,7 @@ Future<void> pumpLamp(
   ShareText? share,
   ShareFile? shareFile,
   OpenLink? open,
+  bool updates = false,
 }) async {
   SharedPreferences.setMockInitialValues(prefs);
   tester.view.physicalSize = const Size(360, 800);
@@ -71,6 +72,7 @@ Future<void> pumpLamp(
     shareText: share ?? (_) async {},
     shareFile: shareFile ?? (_, _, _) async {},
     openLink: open ?? (_) async => true,
+    checkForUpdates: updates,
   ));
   await tester.pumpAndSettle();
 }

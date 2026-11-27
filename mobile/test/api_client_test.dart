@@ -276,6 +276,22 @@ void main() {
     });
   });
 
+  test('a 426 tells the update gate, and still throws update_required', () async {
+    var told = 0;
+    final api = ApiClient(
+      baseUrl: 'https://api.test/api/v1',
+      appVersion: '0.0.1',
+      language: () => 'en',
+      accessToken: () => token,
+      refresh: () async => false,
+      http: MockClient((_) async => json({'detail': 'too old'}, 426)),
+      backoff: (_) => Duration.zero,
+      onUpdateRequired: () => told++,
+    );
+    await expectLater(api.get('/me'), throwsA(isA<ApiProblem>().having((p) => p.code, 'code', 'update_required')));
+    expect(told, 1);
+  });
+
   group('stream (the chat)', () {
     ApiClient streaming(Future<http.StreamedResponse> Function(http.BaseRequest) handler) => ApiClient(
           baseUrl: 'https://api.test/api/v1',

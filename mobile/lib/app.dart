@@ -15,12 +15,14 @@ import 'core/constants/palette.dart';
 import 'core/links.dart';
 import 'core/offline/cache_store.dart';
 import 'core/router.dart';
+import 'core/state/app_config.dart';
 import 'core/state/locale_controller.dart';
 import 'core/state/session_controller.dart';
 import 'core/state/shop_changes.dart';
 import 'core/state/theme_controller.dart';
 import 'features/customers/share_text.dart';
 import 'features/scan/photo_prep.dart';
+import 'features/update/update_gate.dart';
 import 'features/scan/photo_source.dart';
 import 'l10n/app_localizations.dart';
 
@@ -38,6 +40,7 @@ class LampApp extends StatefulWidget {
     this.shareText,
     this.shareFile,
     this.openLink,
+    this.checkForUpdates = true,
   });
 
   /// Injected by tests; built against the real server otherwise.
@@ -68,6 +71,10 @@ class LampApp extends StatefulWidget {
   /// Opening a link outside the app; tests record it.
   final OpenLink? openLink;
 
+  /// Reads /app/config at launch (plan 13.5). Tests leave it off unless they
+  /// test the gate, so their request counts stay exact.
+  final bool checkForUpdates;
+
   @override
   State<LampApp> createState() => _LampAppState();
 }
@@ -81,6 +88,7 @@ class _LampAppState extends State<LampApp> {
   late final PhotoSource _photos = widget.photoSource ?? DevicePhotoSource();
   late final CacheStore _cache = widget.cache ?? HiveCacheStore();
   final _changes = ShopChanges();
+  late final AppConfigController _config = AppConfigController(_api, appVersion: lampAppVersion);
 
   @override
   void initState() {
@@ -101,6 +109,7 @@ class _LampAppState extends State<LampApp> {
       _api = _client(refresh: _session.refreshNow);
     }
     _router = buildRouter(session: _session, initialLocation: widget.initialLocation);
+    if (widget.checkForUpdates) _config.load();
     _session.addListener(_forgetOnSignOut);
     if (_session.status == SessionStatus.restoring) _session.restore();
   }
@@ -118,6 +127,7 @@ class _LampAppState extends State<LampApp> {
         accessToken: () => _session.accessToken,
         refresh: refresh,
         http: widget.httpClient,
+        onUpdateRequired: () => _config.serverSaysUpdate(),
       );
 
   static Future<DeviceInfo> _device() async {
@@ -142,6 +152,7 @@ class _LampAppState extends State<LampApp> {
     _router.dispose();
     _theme.dispose();
     _changes.dispose();
+    _config.dispose();
     _locale.dispose();
     if (widget.session == null) _session.dispose();
     super.dispose();
@@ -158,6 +169,7 @@ class _LampAppState extends State<LampApp> {
         Provider<PhotoSource>.value(value: _photos),
         Provider<CacheStore>.value(value: _cache),
         ChangeNotifierProvider<ShopChanges>.value(value: _changes),
+        ChangeNotifierProvider<AppConfigController>.value(value: _config),
         Provider<ShrinkPhoto>.value(value: widget.shrinkPhoto ?? shrinkPhotoInBackground),
         Provider<ShareText>.value(value: widget.shareText ?? shareWithPhone),
         Provider<ShareFile>.value(value: widget.shareFile ?? shareFileWithPhone),
@@ -189,7 +201,7 @@ class _LampAppState extends State<LampApp> {
               data: media.copyWith(
                 textScaler: media.textScaler.clamp(minScaleFactor: 0.9, maxScaleFactor: 1.3),
               ),
-              child: child ?? const SizedBox.shrink(),
+              child: UpdateGate(child: child ?? const SizedBox.shrink()),
             );
           },
         ),
