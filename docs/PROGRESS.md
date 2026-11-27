@@ -13,14 +13,14 @@
 
 | Stage | Done | Of those, on `main` | Total |
 |---|---|---|---|
-| Stage 0: repo, accounts, Applink forms | 14 | 5 | 21 |
+| Stage 0: repo, accounts, Applink forms | 15 | 5 | 21 |
 | Stage 1: foundations | 8 | 4 | 15 |
 | Stage 2: core flows in mock mode | 1 | 1 | 12 |
 | Stage 3: money, Plus, AI, families | 0 | 0 | 16 |
 | Stage 4: test, fix, record | 0 | 0 | 11 |
 | Stage 5: submit | 0 | 0 | 5 |
 | Applink track | 1 | 0 | 9 |
-| **All** | **24** | **10** | **89** |
+| **All** | **25** | **10** | **89** |
 
 > **Waiting to reach `main`:** Ishmam's branch `ishmam/I0.3-day0-setup` holds I0.2, I0.3, I0.4, I0.5 and I1.1–I1.4 (PRs #4 and #5 were merged into his own branches, not into `main`). Until it's merged, `main` has no Alembic, no Stage 0 packages, no `owner` table and no contract v1, and Arifin's and Ayon's server-side work can't build on them.
 
@@ -37,7 +37,7 @@
 - [x] **A0.1a** Render web service `lamp-api` running the callback stub · **[A]** · on `main` (PR #7)
 - [x] **A0.1b** Render Postgres `lamp-db` · **[A]** · done (free, Singapore, PostgreSQL 16)
 - [x] **A0.1c** Render's outbound addresses in the Applink forms · **[A]** · done (508 single IPs)
-- [ ] **A0.1d** `APPLINK_CALLBACK_SECRET` in Render · **[A]**
+- [x] **A0.1d** `APPLINK_CALLBACK_SECRET` in Render · **[A]** · done 27 Nov: `lamp-api` is live; all five callback addresses answer S1000, a wrong secret gets 404, and the log holds no secret
 - [ ] **A0.1e** UptimeRobot keep-awake on `/health` · **[A]**
 - [x] **A0.2a** Both Applink apps filled in and saved as drafts (LaMP `APP_019205`, LaMPPlus `APP_019207`) · **[A]** · done
 - [ ] **A0.2b** Both apps sent for approval · **[A]**
@@ -126,7 +126,7 @@
 
 - [x] **1a** Both drafts finished (LaMP's description and stop text updated on 27 Nov) · **[A]** · done
 - [ ] **1b** Both apps sent for approval, approval emails the same hour · **[A]**, **[I]**
-- [ ] **2** `APPLINK_CALLBACK_SECRET` in Render; UptimeRobot · **[A]**
+- [ ] **2** `APPLINK_CALLBACK_SECRET` in Render (done 27 Nov); UptimeRobot (open) · **[A]**
 - [ ] **3a** Approval arrived · Applink
 - [ ] **3b** Ayon texts `LAMP test` to 21213; the stub's log shows whether it arrived · **[A]**, **[Y]**
 - [ ] **4** Production to `sandbox`; sandbox items 1–7; `FAMILY_JOIN_ROUTES` and the subscribe method set · **[A]**
