@@ -1,0 +1,16 @@
+data: {"type": "start", "messageId": "m1"}
+
+data: {"type": "start-step"}
+
+data: {"type": "tool-input-start", "toolCallId": "t1", "toolName": "get_forecast"}
+
+data: {"type": "tool-input-delta", "toolCallId": "t1", "inputTextDelta": "{\"days\": 30}"}
+
+data: {"type": "tool-input-available", "toolCallId": "t1", "toolName": "get_forecast", "input": {"days": 30}}
+
+data: {"type": "tool-output-available", "toolCallId": "t1", "output": {"start_cash": 39150.0, "shortfalls": [{"date": "2026-10-26", "amount": 19000.0}]}}
+
+data: {"type": "finish-step"}
+
+data: {"type": "start-step"}
+

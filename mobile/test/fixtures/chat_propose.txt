@@ -1,0 +1,18 @@
+data: {"type": "start", "messageId": "m2"}
+
+data: {"type": "tool-input-available", "toolCallId": "t9", "toolName": "propose_action", "input": {"kind": "extension_request", "payload": {"summary": "Ask Supplier A for 20 more days", "amount": 8200}}}
+
+data: {"type": "tool-output-available", "toolCallId": "t9", "output": {"id": "act-7", "status": "proposed"}}
+
+data: {"type": "text-start", "id": "x2"}
+
+data: {"type": "text-delta", "id": "x2", "delta": "I added a step to Approvals: ask Supplier A for 20 more days on BDT 8,200."}
+
+data: {"type": "text-end", "id": "x2"}
+
+data: {"type": "data-trace", "data": {"traced": 1, "total": 1, "blocked": false}}
+
+data: {"type": "finish"}
+
+data: [DONE]
+

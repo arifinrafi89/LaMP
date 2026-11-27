@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../features/approvals/approvals_screen.dart';
+import '../features/ask/ask_screen.dart';
 import '../features/cash/cash_screen.dart';
 import '../features/credit_record/credit_record_screen.dart';
 import '../features/customers/customer_screen.dart';
@@ -124,7 +125,7 @@ GoRouter buildRouter({
                 ],
               ),
             ]),
-            StatefulShellBranch(routes: [_placeholder(tabs[3])]),
+            StatefulShellBranch(routes: [GoRoute(path: '/ask', builder: (_, _) => const AskScreen())]),
             StatefulShellBranch(routes: [
               GoRoute(
                 path: '/more',

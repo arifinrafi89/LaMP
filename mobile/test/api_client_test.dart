@@ -275,4 +275,65 @@ void main() {
       await expectLater(api.getBytes('/x'), throwsA(isA<ApiProblem>().having((p) => p.code, 'code', 'not_found')));
     });
   });
+
+  group('stream (the chat)', () {
+    ApiClient streaming(Future<http.StreamedResponse> Function(http.BaseRequest) handler) => ApiClient(
+          baseUrl: 'https://api.test/api/v1',
+          appVersion: '1.0.3+12',
+          language: () => 'bn',
+          accessToken: () => token,
+          refresh: () async {
+            refreshes++;
+            token = 'fresh';
+            return true;
+          },
+          http: MockClient.streaming((req, body) async {
+            sent.add(http.Request(req.method, req.url)
+              ..headers.addAll(req.headers)
+              ..bodyBytes = await body.toBytes());
+            return handler(req);
+          }),
+          backoff: (_) => Duration.zero,
+        );
+
+    http.StreamedResponse chunks(List<String> parts, [int status = 200]) =>
+        http.StreamedResponse(Stream.fromIterable(parts.map(utf8.encode)), status,
+            headers: {'content-type': 'text/event-stream'});
+
+    test('posts the body with the session and hands back the bytes as they come', () async {
+      const first = 'data: {"a":1}\n\n';
+      const last = 'data: [DONE]\n\n';
+      final api = streaming((_) async => chunks([first, last]));
+      final bytes = await api.stream('/chat', {'id': 'c1'});
+      expect(utf8.decode(await bytes.expand((b) => b).toList()), first + last);
+      final r = sent.single;
+      expect(r.method, 'POST');
+      expect(r.url.toString(), 'https://api.test/api/v1/chat');
+      expect(r.headers['Authorization'], 'Bearer old');
+      expect(r.headers['Accept'], 'text/event-stream');
+      expect(jsonDecode(r.body), {'id': 'c1'});
+    });
+
+    test('an expired token is refreshed once, then the stream', () async {
+      final api = streaming((req) async =>
+          req.headers['Authorization'] == 'Bearer old' ? chunks(['{"detail":"expired"}'], 401) : chunks(['ok']));
+      final bytes = await api.stream('/chat', {});
+      expect(utf8.decode(await bytes.expand((b) => b).toList()), 'ok');
+      expect(refreshes, 1);
+      expect(sent, hasLength(2));
+    });
+
+    test('a refusal is the server code', () async {
+      final api = streaming((_) async =>
+          chunks(['{"detail":"Budget used","code":"ai_budget_reached"}'], 402));
+      await expectLater(
+          api.stream('/chat', {}), throwsA(isA<ApiProblem>().having((p) => p.code, 'code', 'ai_budget_reached')));
+    });
+
+    test('no network: offline, and a question is not sent twice', () async {
+      final api = streaming((_) async => throw http.ClientException('no network'));
+      await expectLater(api.stream('/chat', {}), throwsA(isA<ApiProblem>().having((p) => p.code, 'code', 'offline')));
+      expect(sent, hasLength(1));
+    });
+  });
 }
