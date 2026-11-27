@@ -55,7 +55,7 @@
 - [x] **I1.3** Contract v1 for every Phase 1 screen · **[I]** · on a branch (`ishmam/I0.3-day0-setup`)
 - [x] **I1.4** Stubs for the core functions in 1.4 B · **[I]** · on a branch (`ishmam/I0.3-day0-setup`)
 - [ ] **I0.6** Farhan's written OK, screenshot in `docs/PRIOR_WORK.md` · **[I]**
-- [ ] **A1.1** Applink config, phone helpers, status-code table, client and mock · **[A]**
+- [ ] **A1.1** Applink config, phone helpers, status-code table, client and mock · **[A]** · part 1 (settings, numbers, codes) on `main` (PR #11); part 2 (client and mock) next
 - [ ] **A1.2** `auth/`: OTP sign-in, tokens, refresh, devices, rate limits · **[A]**
 - [ ] **A1.3** `jobs/`: table, runner inside the web service, scheduler, tick endpoint · **[A]**
 - [ ] **A1.4** `render.yaml`, `backup.yml`, `tick.yml`, `server.yml` · **[A]**
