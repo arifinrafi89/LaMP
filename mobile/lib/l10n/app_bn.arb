@@ -175,5 +175,20 @@
   "fieldCashSales": "নগদ বিক্রি",
   "fieldCreditSales": "বাকিতে বিক্রি",
   "fieldDuesCollected": "আদায় হওয়া বাকি",
-  "fieldExpenses": "খরচ"
+  "fieldExpenses": "খরচ",
+  "stockAtRisk": "{days} দিনে মেয়াদ শেষ",
+  "stockCanGoBackTotal": "{amount} সরবরাহকারীকে ফেরত দেওয়া যাবে",
+  "stockFirstReturn": "আগে কী ফেরত যাবে দেখুন",
+  "stockCanGoBackHeader": "ফেরত দেওয়া যাবে",
+  "stockCannotGoBackHeader": "ফেরত দেওয়া যাবে না",
+  "stockDaysLeft": "আর {days} দিন",
+  "stockExpired": "মেয়াদ শেষ",
+  "stockBatchLine": "ব্যাচ {batch} · {qty}টি বাকি · {value}",
+  "stockTakesBack": "{supplier} এটি ফেরত নিতে পারে।",
+  "stockWontTakeBack": "{supplier} এখন এটি ফেরত নেবে না।",
+  "stockNothingTitle": "আগামী {days} দিনে কিছুর মেয়াদ শেষ হচ্ছে না",
+  "stockNothingBody": "সরবরাহকারীর বিল স্ক্যান করুন, যাতে LaMP আপনার স্টক ও মেয়াদ জানে।",
+  "stockScanBill": "বিল স্ক্যান করুন",
+  "stockCostValue": "কেনা দাম",
+  "stockLeft": "বাকি"
 }

@@ -295,5 +295,75 @@
   "fieldCashSales": "Cash sales",
   "fieldCreditSales": "Sales on credit",
   "fieldDuesCollected": "Dues collected",
-  "fieldExpenses": "Expenses"
+  "fieldExpenses": "Expenses",
+  "stockAtRisk": "Expiring in {days} days",
+  "@stockAtRisk": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "stockCanGoBackTotal": "{amount} can go back to suppliers",
+  "@stockCanGoBackTotal": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "stockFirstReturn": "See what can go back first",
+  "stockCanGoBackHeader": "Can go back",
+  "stockCannotGoBackHeader": "Can't go back",
+  "stockDaysLeft": "{days} days left",
+  "@stockDaysLeft": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "stockExpired": "Expired",
+  "stockBatchLine": "Batch {batch} · {qty} left · {value}",
+  "@stockBatchLine": {
+    "placeholders": {
+      "batch": {
+        "type": "String"
+      },
+      "qty": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "stockTakesBack": "{supplier} can take this back.",
+  "@stockTakesBack": {
+    "placeholders": {
+      "supplier": {
+        "type": "String"
+      }
+    }
+  },
+  "stockWontTakeBack": "{supplier} won't take this back now.",
+  "@stockWontTakeBack": {
+    "placeholders": {
+      "supplier": {
+        "type": "String"
+      }
+    }
+  },
+  "stockNothingTitle": "Nothing expires in the next {days} days",
+  "@stockNothingTitle": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "stockNothingBody": "Scan your supplier bills so LaMP knows your stock and when it expires.",
+  "stockScanBill": "Scan a bill",
+  "stockCostValue": "Cost value",
+  "stockLeft": "Left"
 }

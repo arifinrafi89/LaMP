@@ -5,6 +5,7 @@ import '../features/more/more_screen.dart';
 import '../features/placeholder/placeholder_screen.dart';
 import '../features/scan/scan_screen.dart';
 import '../features/setup/setup_screen.dart';
+import '../features/stock/stock_screen.dart';
 import '../features/shell/app_shell.dart';
 import '../features/today/today_screen.dart';
 import '../features/welcome/loading_screen.dart';
@@ -104,7 +105,8 @@ GoRouter buildRouter({
                 path: '/more',
                 builder: (context, state) => const MoreScreen(),
               ),
-              for (final d in moreDestinations) _placeholder(d),
+              GoRoute(path: '/stock', builder: (_, _) => const StockScreen()),
+              for (final d in moreDestinations.where((d) => d.path != '/stock')) _placeholder(d),
             ]),
           ],
         ),
