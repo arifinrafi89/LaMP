@@ -19,12 +19,11 @@ from fastapi import APIRouter, Body, Path
 from fastapi.responses import JSONResponse
 
 from app.schemas.patients import PatientCardOut
-from app.schemas.pharmacy import PharmacyOut
 from app.schemas.product import (
     AppConfigOut, ChargeOtpIn, ChargeOut, ConsentsIn, CreditRecordOut, CreditShareOut, CustomerBalance,
     CustomerCreate, CustomerCreated, CustomerMoneyIn, CustomerPhoneIn, CustomerPlanIn, DeleteIn, DeleteOut,
     DemoSignInIn, DemoSmsIn, DemoSmsOut, DemoThreadOut, DeviceOut, ExpenseIn, ExportOut, ExportStarted, LegalOut,
-    MeOut, MePatch, OpeningIn, OtpChallengeOut, OtpRequestIn, OtpVerifyIn, PaymentIn, PharmacyCreate, PharmacyPatch,
+    OpeningIn, OtpChallengeOut, OtpRequestIn, OtpVerifyIn, PaymentIn,
     PlusOtpIn, PlusOut, PlusSubscribeIn, Problem, RefreshIn, SalesDayIn, Saved, ShareIn, SignedInOut, SmsStatusOut,
     StockBatchIn, SupplierIn, SupplierOut, SupportReportIn, SupportReportOut, TelemetryIn, TodayOut, TokenPairOut,
     UsageOut,
@@ -46,14 +45,10 @@ ROUTES: list[tuple[str, str, Any, Any, int, str]] = [
     ("POST", "/auth/demo", DemoSignInIn, SignedInOut, 200, "A"),
     ("GET", "/legal/current", None, LegalOut, 200, "A"),
     ("POST", "/me/consents", ConsentsIn, None, 204, "A"),
-    ("GET", "/me", None, MeOut, 200, "I"),
-    ("PATCH", "/me", MePatch, MeOut, 200, "I"),
     ("POST", "/me/export", None, ExportStarted, 202, "I"),
     ("GET", "/me/export/{export_id}", None, ExportOut, 200, "I"),
     ("POST", "/me/delete", DeleteIn, DeleteOut, 202, "I"),
     # Shop setup
-    ("POST", "/pharmacies", PharmacyCreate, PharmacyOut, 201, "I"),
-    ("PATCH", P, PharmacyPatch, PharmacyOut, 200, "I"),
     ("GET", f"{P}/suppliers", None, list[SupplierOut], 200, "I"),
     ("POST", f"{P}/suppliers", SupplierIn, SupplierOut, 201, "I"),
     ("PATCH", f"{P}/suppliers/{{sid}}", SupplierIn, SupplierOut, 200, "I"),
@@ -61,7 +56,6 @@ ROUTES: list[tuple[str, str, Any, Any, int, str]] = [
     ("POST", f"{P}/opening", OpeningIn, Saved, 200, "I"),
     ("POST", f"{P}/stock-batches", list[StockBatchIn], Saved, 201, "I"),
     ("POST", f"{P}/expenses", list[ExpenseIn], Saved, 201, "I"),
-    ("POST", f"{P}/setup/complete", None, PharmacyOut, 200, "I"),
     # Daily screens
     ("GET", f"{P}/today", None, TodayOut, 200, "I"),
     ("POST", f"{P}/payments", PaymentIn, Saved, 201, "I"),

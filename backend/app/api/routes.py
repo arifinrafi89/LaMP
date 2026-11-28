@@ -55,7 +55,6 @@ from app.schemas import (
     PauseOut,
     PolicyOut,
     PharmacyOut,
-    PharmacySettings,
     ShelfLifeCreditOut,
     SupplierReply,
     TrimOut,
@@ -64,6 +63,7 @@ from app.schemas import (
 )
 
 from . import examples as ex
+from . import me, shop
 from .deps import dev_only, require_any_owner, require_lender, require_owner
 
 router = APIRouter()   # public: health, owner unlock, lender catalogue
@@ -167,11 +167,7 @@ def list_customers(pid: str, db: Session = Depends(get_db)):
 
 @owner.get("/pharmacies/{pid}", response_model=PharmacyOut)
 def get_pharmacy(pid: str, db: Session = Depends(get_db)):
-    ph = engines.get_pharmacy(db, pid)
-    # Only the public fields: settings also holds the PIN hash, the PIN lockout and the Pause state.
-    public = {k: v for k, v in (ph.settings or {}).items() if k in PharmacySettings.model_fields}
-    return {"id": ph.id, "name": ph.name, "city": ph.city, "settings": public, "asks_pin": settings.ask_owner_pin,
-            "kind": ph.kind, "setup_complete": ph.setup_complete, "card_prefix": ph.card_prefix}
+    return shop.pharmacy_out(engines.get_pharmacy(db, pid))
 
 
 # --- Captures -------------------------------------------------------------------------
@@ -497,6 +493,10 @@ async def stream_logs(once: bool = False, db: Session = Depends(get_db)):
     return StreamingResponse(gen(), media_type="text/event-stream",
                              headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
+
+# The I2.2 modules: each group of routes in its own file.
+router.include_router(me.router)            # /me, POST /pharmacies: the signed-in owner
+owner.include_router(shop.router)           # PATCH /pharmacies/{pid}, setup/complete
 
 router.include_router(owner, dependencies=[Depends(require_owner)])
 router.include_router(lender, dependencies=[Depends(require_lender)])
