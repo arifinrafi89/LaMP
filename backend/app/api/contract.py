@@ -18,11 +18,9 @@ from typing import Any
 from fastapi import APIRouter, Body, Path
 from fastapi.responses import JSONResponse
 
-from app.schemas.patients import PatientCardOut
 from app.schemas.product import (
-    AppConfigOut, ChargeOtpIn, ChargeOut, ConsentsIn, CreditRecordOut, CreditShareOut, CustomerBalance,
-    CustomerCreate, CustomerCreated, CustomerMoneyIn, CustomerPhoneIn, CustomerPlanIn, DeleteIn, DeleteOut,
-    DemoSignInIn, DemoSmsIn, DemoSmsOut, DemoThreadOut, DeviceOut, ExportOut, ExportStarted, LegalOut,
+    AppConfigOut, ChargeOtpIn, ChargeOut, ConsentsIn, CreditRecordOut, CreditShareOut, CustomerPhoneIn, DeleteIn,
+    DeleteOut, DemoSignInIn, DemoSmsIn, DemoSmsOut, DemoThreadOut, DeviceOut, ExportOut, ExportStarted, LegalOut,
     OtpChallengeOut, OtpRequestIn, OtpVerifyIn, PlusOtpIn, PlusOut, PlusSubscribeIn, Problem, RefreshIn, ShareIn,
     SignedInOut, SmsStatusOut, SupportReportIn, SupportReportOut, TelemetryIn, TokenPairOut, UsageOut,
 )
@@ -49,10 +47,6 @@ ROUTES: list[tuple[str, str, Any, Any, int, str]] = [
     # Daily screens
     ("GET", f"{P}/usage", None, UsageOut, 200, "I"),
     # Customers
-    ("POST", f"{P}/customers", CustomerCreate, CustomerCreated, 201, "I"),
-    ("POST", f"{P}/customers/{{code}}/sales", CustomerMoneyIn, CustomerBalance, 201, "I"),
-    ("POST", f"{P}/customers/{{code}}/payments", CustomerMoneyIn, CustomerBalance, 201, "I"),
-    ("PUT", f"{P}/customers/{{code}}/plan", CustomerPlanIn, PatientCardOut, 200, "I"),
     ("POST", f"{P}/customers/{{code}}/phone", CustomerPhoneIn, SmsStatusOut, 202, "I"),
     ("DELETE", f"{P}/customers/{{code}}/phone", None, SmsStatusOut, 200, "I"),
     ("POST", f"{P}/customers/{{code}}/remind", None, SmsStatusOut, 202, "I"),

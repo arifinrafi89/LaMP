@@ -1,6 +1,6 @@
 # LaMP progress tracker
 
-*How much of the build plan is done. Task ids and details are in [`LaMP-Build-Plan.md`](LaMP-Build-Plan.md), section 7 (the stages) and its Applink track. Last updated: 29 Nov 2026 (I2.2 parts 1 and 2).*
+*How much of the build plan is done. Task ids and details are in [`LaMP-Build-Plan.md`](LaMP-Build-Plan.md), section 7 (the stages) and its Applink track. Last updated: 29 Nov 2026 (I2.2 built).*
 
 **How we work (since 28 Nov)**
 
@@ -26,12 +26,13 @@
   - `POST /auth/otp/request` and `/auth/otp/verify` on the Applink mock (the code is `123456`), then a 15-minute bearer token and a rotating refresh token;
   - every `/pharmacies/{pid}/*` route takes its shop from the token (`api/deps.py`), and another shop's id answers 404;
   - LaMP.ai's PIN unlock (`/pharmacies/{pid}/session`, `owner_session`) is gone; the PIN is only asked at loan approval, until I3.3 retires loan applications.
-- **In progress:** flow step 4, **I2.2 Core routes**, in three PRs. The plan, task by task, is [`docs/superpowers/plans/2026-11-28-i2-2-core-routes.md`](superpowers/plans/2026-11-28-i2-2-core-routes.md).
-  - **Part 1 (branch `ayon/I2.2-core-routes`, PR #26):** `GET` and `PATCH /me`, `POST /pharmacies`, `PATCH /pharmacies/{pid}`, `POST /pharmacies/{pid}/setup/complete`. Code in `api/me.py`, `api/shop.py` and `engines/shops.py`; tests in `tests/api/test_me_and_shop.py`.
-  - **Part 2 (branch `ayon/I2.2-setup-today`, stacked on Part 1, PR #27):** suppliers (`GET`, `POST`, `PATCH`, `DELETE`, a removed one is hidden, not erased), opening cash, typed stock batches, monthly expenses, supplier payments, sales-book days and `GET /today`. Migration 0004 adds supplier `phone`, `payment_days` and `deleted_at`, stock batch `strength`, and payment `method`. Code in `api/setup.py`, `api/money.py`, `engines/books.py` and `engines/today.py`. The app's Today screen now uses the contract's one-thing kinds (`setup`, `approve`, `remind`, `scan`, `none`).
-  - **Open question for the team:** build plan 2.2 says payments and sales days "replace the simulated wallet" but not how a real shop's cash moves after the opening. Today `cash_on_hand` changes only with the opening, so `cash_now` stays at the opening figure. Decide before MP3.
-  - **Part 3 (`ayon/I2.2-customers`):** customers, with migration 0005 (`plan_amount`, `plan_set_on`) for `trusted`. Its PR ticks I2.2.
-  - `GET /customers` must move from `PatientDueOut` to `CustomerRow`, with `join: {text: "LAMP " + code without dashes, to: "21213"}`.
+- **I2.2 Core routes (flow step 4) is built, in three stacked PRs. Merge them in order: #26, then #27, then #28.** The plan, task by task, is [`docs/superpowers/plans/2026-11-28-i2-2-core-routes.md`](superpowers/plans/2026-11-28-i2-2-core-routes.md).
+  - **#26 (`ayon/I2.2-core-routes`):** `GET` and `PATCH /me`, `POST /pharmacies`, `PATCH /pharmacies/{pid}`, `POST /pharmacies/{pid}/setup/complete` (`api/me.py`, `api/shop.py`, `engines/shops.py`).
+  - **#27 (`ayon/I2.2-setup-today`):** suppliers (a removed one is hidden, not erased), opening cash, typed stock, monthly expenses, supplier payments, sales-book days and `GET /today` (`api/setup.py`, `api/money.py`, `engines/books.py`, `engines/today.py`). Migration 0004. The app's Today screen uses the contract's one-thing kinds.
+  - **#28 (`ayon/I2.2-customers`):** `GET /customers` as `CustomerRow` (with `join` and `trusted`), adding a card, sales, payments and the plan set at the counter (`api/customers.py`, `engines/patients.py`). Migration 0005 adds `plan_amount` and `plan_set_on`, so `trusted` can mean "all parts paid on time".
+  - Still contract stubs: the customer phone and remind routes (A2.2 part 2, flow step 9), `/usage`, and `/me` export and delete (flow step 17).
+- **Open question for the team:** build plan 2.2 says payments and sales days "replace the simulated wallet" but not how a real shop's cash moves after the opening. Today `cash_on_hand` changes only with the opening, so `cash_now` stays at the opening figure. Decide before MP3 (flow step 12).
+- **Next:** flow step 5, **per-shop History**. Every audit event carries its shop (`audit_log.pharmacy_id`), there is one hash chain per shop, and `/logs*` show only the caller's shop. Then remove the strict xfail in `tests/tenancy/test_tenancy_routes.py`. The I2.2 engines already pass `pharmacy=pid` to every `log(...)` call they make.
 - **Traps hit today:**
   - The clone path "Applink Hackathon" has a space. `alembic.ini` now lists migration folders one per line; keep it that way.
   - FastAPI here wraps included routers lazily (`_IncludedRouter`). To list every route, walk them the way `tests/tenancy/test_tenancy_routes.py` does.
@@ -58,7 +59,7 @@ Each step needs the ones before it. Tick here and in the stage lists below.
 1. [x] **Contract for the 27 Nov plan:** `/demo/sms` and `GET /demo/sms/thread`; `join: {text, to}` on new customers and customer rows; `family_join_routes` in `/me`; `POST /plus/otp` and `OTP_SENT`; the `join_by_text` error. Ayon's app already calls these. · on `main` (28 Nov)
 2. [x] **A1.2 Sign-in:** OTP sign-in (mock), tokens, refresh rotation, devices, demo sign-in, rate limits, `current_owner`; `POST /me/consents`. The `applink` migration branch starts here. · on `main` (28 Nov): `app/auth/`, `applink/otp.py`, migration `a001`
 3. [x] **I2.1 One shop per session:** a shared dependency gives every owner route its `pharmacy_id` from the token (404 for another shop's id); tenancy test harness. · on `main` (28 Nov): `api/deps.py`, `tests/tenancy/`; the PIN unlock retired (core migration `0003`)
-4. [ ] **I2.2 Core routes:** `/me`, create and set up a shop, suppliers, opening, stock, expenses, `/today`, payments, sales days, customers.
+4. [x] **I2.2 Core routes:** `/me`, create and set up a shop, suppliers, opening, stock, expenses, `/today`, payments, sales days, customers. · on `main` (PRs #26, #27, #28)
 5. [ ] **Per-shop History:** every audit event carries its shop (`audit_log.pharmacy_id`), one hash chain per shop, and `/logs*` (list, export, verify, stream) show only the caller's shop. Then remove the strict xfail in `tests/tenancy/test_tenancy_routes.py`.
 6. [ ] **A1.3 Jobs:** table, runner inside the web service, scheduler (Asia/Dhaka), tick endpoint; `/ready`.
 7. [ ] **A1.4 part 2, CI:** server tests on Postgres, and the migration check (up, down one, up).
@@ -86,12 +87,12 @@ Each step needs the ones before it. Tick here and in the stage lists below.
 |---|---|---|---|
 | Stage 0: repo, accounts, Applink forms | 16 | 10 | 21 |
 | Stage 1: foundations | 11 | 11 | 16 |
-| Stage 2: core flows in mock mode | 6 | 6 | 13 |
+| Stage 2: core flows in mock mode | 7 | 7 | 13 |
 | Stage 3: money, Plus, AI, families | 4 | 4 | 16 |
 | Stage 4: test, fix, record | 1 | 1 | 11 |
 | Stage 5: submit | 0 | 0 | 5 |
 | Applink track | 1 | 0 | 9 |
-| **All** | **39** | **32** | **91** |
+| **All** | **40** | **33** | **91** |
 
 ## Stage 0: the repo, accounts and Applink forms
 
@@ -139,7 +140,7 @@ Each step needs the ones before it. Tick here and in the stage lists below.
 ## Stage 2: the core flows, end to end in mock mode
 
 - [x] **I2.1** One shared `pharmacy_id` dependency; tenancy harness · **[I]** · on `main` (28 Nov)
-- [ ] **I2.2** New routes: `/me`, setup, suppliers, opening, stock, expenses, `/today`, payments, sales days, customers · **[I]**
+- [x] **I2.2** New routes: `/me`, setup, suppliers, opening, stock, expenses, `/today`, payments, sales days, customers · **[I]** · on `main` (PRs #26, #27, #28)
 - [ ] **I2.3** Capture changes (`stored_file`, idempotency, free-plan count, `ai_usage`) · **[I]**
 - [ ] **A2.1** The four Applink callbacks and the subscription mirror · **[A]**
 - [ ] **A2.2** Families by SMS: `family/commands.py`, `join.py`, both join routes, templates, delivery reports · **[A]** · part 1 (reading texts, SMS templates in English and Bangla) on `main` (PR #13); joining and delivery reports need the migrations
