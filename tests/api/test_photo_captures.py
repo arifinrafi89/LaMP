@@ -49,7 +49,7 @@ def test_injection_photo_is_flagged_and_does_nothing(client):
     # a critical alert, a log entry, and no action of any kind
     alerts = client.get(f"{P}/alerts").json()
     assert any(a["kind"] == "suspicious_document" and a["severity"] == "critical" for a in alerts)
-    assert "suspicious_text_flagged" in [e["event"] for e in client.get("/api/v1/logs").json()]
+    assert "suspicious_text_flagged" in [e["event"] for e in client.get("/api/v1/pharmacies/green-life/logs").json()]
     assert client.get(f"{P}/actions").json() == actions_before
     assert cap["status"] == "needs_review"
 

@@ -21,6 +21,7 @@ from . import registry
 from .common import as_of, get_pharmacy, r2
 from .expiry import get_expiry, get_trim
 from .lenders import active_consent
+from . import logbus
 from .logbus import log
 
 EXTENSION_DAYS = 20
@@ -67,8 +68,10 @@ def _check_payload(proposal: ActionProposal) -> None:
 
 
 def propose_action(db: Session, pid: str, proposal: ActionProposal, proposed_by: str) -> ActionOut:
-    """Store a proposal. It does nothing until the owner approves it."""
+    """Store a proposal. It does nothing until the owner approves it. The chat and the
+    follow-up runner call this in-process, so it names the shop its events belong to."""
     get_pharmacy(db, pid)
+    logbus.set_shop(db, pid)
     if proposed_by not in ("owner", "agent", "lamp-scheduler"):
         raise HTTPException(422, "Only the owner or LaMP can suggest a step.")
     from .policy import check_borrowing_ceiling, check_can_propose
@@ -210,6 +213,7 @@ def supplier_reply(db: Session, aid: str, outcome: str | bool) -> ActionOut:
     a = db.get(m.Action, aid)
     if a is None or a.kind != "extension_request":
         raise HTTPException(404, "That request for more days wasn't found.")
+    logbus.set_shop(db, a.pharmacy_id)  # a demo control with no shop in the path
     if a.status != "executed" or (a.result or {}).get("status") != "awaiting_supplier":
         raise HTTPException(409, "The supplier has already replied to this request.")
     order = db.get(m.PlannedOrder, a.result["order_id"])

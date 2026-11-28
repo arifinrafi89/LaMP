@@ -63,7 +63,7 @@ def propose(c, kind, **payload):
 
 
 def money_moved(c) -> list[str]:
-    return [e["event"] for e in c.get("/api/v1/logs").json() if e["event"] in MONEY_EVENTS]
+    return [e["event"] for e in c.get("/api/v1/pharmacies/green-life/logs").json() if e["event"] in MONEY_EVENTS]
 
 
 # --- A. Direct HTTP calls (the 10 cases of tests/api/test_auth.py, as attacks) ---------------
@@ -96,7 +96,7 @@ def http_cases():
         ("A2", "Read owner data with a lender key", status(403, lambda o, a: a.get(f"{P}/passport", headers=WL))),
         ("A3", "Use the chat with no session", status(401, lambda o, a: a.post("/api/v1/chat", json={
             "trigger": "submit-message", "id": "x", "messages": []}))),
-        ("A4", "Open the live log stream with no session", status(401, lambda o, a: a.get("/api/v1/logs/stream"))),
+        ("A4", "Open the live log stream with no session", status(401, lambda o, a: a.get("/api/v1/pharmacies/green-life/logs/stream"))),
         ("A5", "Approve an action with no session", status(401, lambda o, a: a.post(
             f"{P}/actions/{loan(o)['id']}/approve", json={"pin": PIN}))),
         ("A6", "Approve an action with a lender key", status(403, lambda o, a: a.post(

@@ -35,9 +35,9 @@ def test_03_chat_without_session_is_401(anon):
 
 
 def test_04_log_stream_without_session_is_401(anon):
-    assert anon.get("/api/v1/logs/stream?once=true").status_code == 401
-    assert anon.get("/api/v1/logs").status_code == 401
-    assert anon.get("/api/v1/logs/export").status_code == 401
+    assert anon.get("/api/v1/pharmacies/green-life/logs/stream?once=true").status_code == 401
+    assert anon.get("/api/v1/pharmacies/green-life/logs").status_code == 401
+    assert anon.get("/api/v1/pharmacies/green-life/logs/export").status_code == 401
 
 
 def test_05_approve_without_session_is_401(client, anon):
@@ -74,7 +74,7 @@ def test_10_spoofed_proposed_by_is_recorded_as_the_caller(client):
     r = client.post(f"{P}/actions?proposed_by=agent",
                     json={"kind": "set_aside", "payload": {}, "proposed_by": "agent"})
     assert r.json()["proposed_by"] == "owner"
-    ev = [e for e in client.get("/api/v1/logs").json() if e["event"] == "action_proposed"][-1]
+    ev = [e for e in client.get("/api/v1/pharmacies/green-life/logs").json() if e["event"] == "action_proposed"][-1]
     assert ev["data"]["by"] == "owner"
 
 
@@ -113,7 +113,7 @@ def test_loan_approval_needs_the_pin_again(client):
     assert client.post(f"{P}/actions/{a['id']}/approve").status_code == 401
     assert client.post(f"{P}/actions/{a['id']}/approve", json={"pin": "1111"}).status_code == 401
     assert client.post(f"{P}/actions/{a['id']}/approve", json={"pin": PIN}).json()["status"] == "executed"
-    assert "approval_pin_rejected" in [e["event"] for e in client.get("/api/v1/logs").json()]
+    assert "approval_pin_rejected" in [e["event"] for e in client.get("/api/v1/pharmacies/green-life/logs").json()]
 
 
 def test_other_actions_dont_need_the_pin(client):
@@ -157,7 +157,7 @@ def test_pause_blocks_the_copilot_but_not_the_owner(client, api_db):
     assert client.post(f"{P}/actions/{early.id}/approve").status_code == 409
     owner_own = client.post(f"{P}/actions", json={"kind": "set_aside", "payload": {}}).json()
     assert client.post(f"{P}/actions/{owner_own['id']}/approve").json()["status"] == "executed"
-    events = [e["event"] for e in client.get("/api/v1/logs").json()]
+    events = [e["event"] for e in client.get("/api/v1/pharmacies/green-life/logs").json()]
     assert {"agent_paused", "proposal_refused_paused", "approval_refused_paused"} <= set(events)
     client.post(f"{P}/pause", json={"paused": False})
     assert client.post(f"{P}/actions/{early.id}/approve").json()["status"] == "executed"

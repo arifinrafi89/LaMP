@@ -10,6 +10,7 @@ from app.db import models as m
 from app.schemas import ApplicationOut, ConsentIn, ConsentOut, LenderOut
 
 from .common import as_of, get_pharmacy
+from . import logbus
 from .logbus import log
 
 MAX_DEFAULT_PROBABILITY = 0.05
@@ -146,6 +147,7 @@ def decide(db: Session, lender_id: str, app_id: str) -> ApplicationOut:
     a = db.get(m.Application, app_id)
     if a is None or a.lender_id != lender_id:
         raise HTTPException(404, "That loan application wasn't found.")
+    logbus.set_shop(db, a.pharmacy_id)  # the decision goes to the shop's History
     if a.status != "pending":
         raise HTTPException(409, f"This application is already {a.status}.")
     if active_consent(db, a.pharmacy_id, lender_id) is None:

@@ -8,7 +8,7 @@ P = "/api/v1/pharmacies/green-life"
 @pytest.mark.parametrize("path", [
     "/api/v1/health", P, f"{P}/accounts", f"{P}/dues", f"{P}/forecast", f"{P}/alerts",
     f"{P}/expiry", f"{P}/orders", f"{P}/orders/o-1/trim", f"{P}/passport", f"{P}/actions",
-    f"{P}/consents", "/api/v1/lenders", "/api/v1/logs", f"{P}/captures/cap-demo",
+    f"{P}/consents", "/api/v1/lenders", "/api/v1/pharmacies/green-life/logs", f"{P}/captures/cap-demo",
 ])
 def test_get_endpoints(client, path):
     assert client.get(path).status_code == 200

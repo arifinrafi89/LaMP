@@ -4,7 +4,8 @@ route can forget its check.
 - Owner routes (/pharmacies/{pid}/*): the signed-in owner (app.auth.deps.current_owner, a
   bearer token). `pid` must be the owner's own shop; any other id answers **404, not 403**,
   so shop ids can't be probed. No token → 401 `session_expired`; a lender key instead → 403.
-- Log routes (/logs*): any signed-in owner.
+  The session's events are logged as that shop's (logbus.set_shop), so its History
+  (/pharmacies/{pid}/logs*) holds them.
 - Lender routes (/lenders/{lid}/*): that lender's X-Lender-Key.
 - Dev routes (/dev/*): 404 unless DEV_MODE is on.
 
@@ -22,7 +23,7 @@ from app.auth.deps import CurrentOwner, current_owner
 from app.config import settings
 from app.db.models import Pharmacy
 from app.db.session import get_db
-from app.engines import auth
+from app.engines import auth, logbus
 
 
 @dataclass
@@ -55,6 +56,7 @@ def require_owner(pid: str, request: Request, db: Session = Depends(get_db)) -> 
     ph = db.get(Pharmacy, pid)
     if ph is None or ph.deleted_at is not None:
         raise not_found()
+    logbus.set_shop(db, pid)
     return Caller("owner", pharmacy_id=pid, owner_id=me.owner_id)
 
 

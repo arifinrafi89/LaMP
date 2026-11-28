@@ -36,7 +36,7 @@ def test_no_reply_proposes_the_loan_as_lamp_scheduler_and_notifies(client):
     assert loan["requires_pin"] is True
     [f] = client.get(f"{P}/followups").json()
     assert (f["status"], f["fired_action_id"]) == ("fired", loan["id"])
-    [n] = [e for e in client.get("/api/v1/logs").json() if e["event"] == "notify"]
+    [n] = [e for e in client.get("/api/v1/pharmacies/green-life/logs").json() if e["event"] == "notify"]
     assert n["component"] == "NOTIFY" and n["data"]["audience"] == "owner"
     assert "8,200" in n["data"]["body"] and "181.97" in n["data"]["body"]
 
@@ -87,15 +87,17 @@ def test_suspicious_photo_notifies_the_owner(client, monkeypatch):
 
     monkeypatch.setattr(routes, "_extract", fake)
     client.post(f"{P}/captures", files={"file": ("x.jpg", b"x", "image/jpeg")}, data={"kind": "invoice"})
-    [n] = [e for e in client.get("/api/v1/logs").json() if e["event"] == "notify"]
+    [n] = [e for e in client.get("/api/v1/pharmacies/green-life/logs").json() if e["event"] == "notify"]
     assert n["data"]["audience"] == "owner" and "ignored" in n["data"]["body"]
 
 
 def test_blocked_chat_answer_notifies_the_admin(client, api_db):
     from app.engines.fidelity import report_blocked, trace
+    from app.engines.logbus import shop
 
-    report_blocked(trace("Your net profit was BDT 14,000.", [{"net_profit": 13500}]), api_db)
+    with shop(api_db, "green-life"):  # as inside the chat, whose session carries the shop
+        report_blocked(trace("Your net profit was BDT 14,000.", [{"net_profit": 13500}]), api_db)
     api_db.commit()
-    [n] = [e for e in client.get("/api/v1/logs").json() if e["event"] == "notify"]
+    [n] = [e for e in client.get("/api/v1/pharmacies/green-life/logs").json() if e["event"] == "notify"]
     assert n["data"]["audience"] == "admin" and "BDT 14,000" in n["data"]["body"]
-    assert "answer_blocked_untraced" in [e["event"] for e in client.get("/api/v1/logs").json()]
+    assert "answer_blocked_untraced" in [e["event"] for e in client.get("/api/v1/pharmacies/green-life/logs").json()]

@@ -23,7 +23,7 @@ from app.schemas import PatientCardOut, PatientPlan, PlanOption, PlanPart
 from app.schemas.product import CustomerBalance, CustomerRow, JoinText
 
 from .common import as_of, get_pharmacy, r2
-from .logbus import log, notify
+from .logbus import log, notify, set_shop
 
 PLAN_PARTS = (1, 2, 4)
 PART_GAP_DAYS = 7          # the parts of a plan fall due a week apart
@@ -90,6 +90,7 @@ def set_plan(db: Session, code: str, parts: int, first_on: date, *,
         raise HTTPException(422, f"Pick a first payment date within {FIRST_PART_WITHIN_DAYS} days")
     d.plan_parts, d.plan_first_on = parts, first_on
     d.plan_amount, d.plan_set_on = r2(d.amount), today
+    set_shop(db, d.pharmacy_id)  # the family card has no shop in its path: the card says whose it is
     log("T1", "PATIENT", "plan_set", db, customer=d.label, amount=r2(d.amount), parts=parts, first_on=first_on,
         by=by)
     if by == "family":

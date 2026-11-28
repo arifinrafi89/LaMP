@@ -30,6 +30,7 @@ async def chat_endpoint(request: Request, db: Session = Depends(get_db),
     if pid is None or body.get("pharmacy_id") not in (None, pid):
         raise not_found()
     engines.get_pharmacy(db, pid)  # 404 for a shop that's gone
+    engines.logbus.set_shop(db, pid)  # the chat's events, tools included, go to this shop's History
     model = chat.model_for_mode()
     engines.log("T1", "CHAT", "chat_message", db, pharmacy=pid, mode=model.model_name.split(":")[0]
                 if ":" in model.model_name else "live", prompt_version=chat.PROMPT_VERSION, lang=lang)

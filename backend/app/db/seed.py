@@ -159,8 +159,9 @@ def load_seed(db: Session, with_demo_captures: bool = False, path: Path | None =
         db.add(m.StatementLine(pharmacy_id=pid, date=_d(line["date"]), amount=line["amount"], payee=line["payee"],
                                ref=line["ref"]))
     db.flush()
-    from app.engines.logbus import log
+    from app.engines.logbus import log, set_shop
 
+    set_shop(db, pid)  # the seed's events are the demo shop's History
     log("T0", "DEV", "reset", db, pharmacy=pid, with_demo_captures=with_demo_captures)
     if with_demo_captures:
         for name in DEMO_CAPTURES:

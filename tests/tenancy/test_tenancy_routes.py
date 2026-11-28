@@ -19,7 +19,7 @@ from tenancy_support import A, B, B_MARKERS
 CLASSES: list[tuple[str, str]] = [
     ("owner", r"^/api/v1/pharmacies/\{pid\}(/.*)?$"),        # A's shop only, 404 otherwise
     ("session", r"^/api/v1/pharmacies$"),                     # creating a shop: signed in, no shop yet
-    ("session", r"^/api/v1/(me(/.*)?|chat|logs(/.*)?|auth/(sign-out|devices(/.*)?))$"),
+    ("session", r"^/api/v1/(me(/.*)?|chat|auth/(sign-out|devices(/.*)?))$"),
     ("signin", r"^/api/v1/auth/(otp/request|otp/verify|refresh|demo)$"),
     ("public", r"^/api/v1/(health|ready|legal/.*|cards/\{code\}(/plan)?|app/config|lenders)$"),
     ("public", r"^/api/v1/(support/reports|telemetry/events)$"),
@@ -30,9 +30,6 @@ CLASSES: list[tuple[str, str]] = [
     ("ops", r"^/api/v1/internal/.*$"),
     ("docs", r"^/(openapi\.json|docs(/oauth2-redirect)?|redoc)$"),
 ]
-
-# Known gap, tracked: the History log is still one chain for every shop (PROGRESS.md, the flow).
-GLOBAL_UNTIL_PER_SHOP_HISTORY = {"/api/v1/logs", "/api/v1/logs/export", "/api/v1/logs/stream", "/api/v1/logs/verify"}
 
 
 def _walk(routes):
@@ -132,7 +129,7 @@ def test_as_lists_hold_no_b_rows(two_shops):
     for method, path, route in all_routes():
         if method != "GET" or classify(path) != "owner" or not built(route) or path.count("{") != 1:
             continue
-        r = client.get(_fill(path, ids, A))
+        r = client.get(_fill(path, ids, A), params={"once": "true"})  # History's stream sends its backlog and closes
         read += r.status_code == 200
         if not _no_b(r.text):
             leaks.append(path)
@@ -147,17 +144,17 @@ def test_b_sees_its_own_figures_not_as(two_shops):
     assert not {row["code"] for row in a} & set(ids["codes"])
 
 
-@pytest.mark.xfail(strict=True, reason="History is one chain for every shop until the per-shop History step")
 def test_as_history_holds_no_b_events(two_shops):
-    client, _ = two_shops
-    client.post(f"/api/v1/pharmacies/{B}/pause", json={"paused": True}, headers=two_shops[1]["b_headers"])
-    events = client.get("/api/v1/logs").json()
-    assert all(e["data"].get("pharmacy") in (None, A) for e in events)
+    client, ids = two_shops
+    client.post(f"/api/v1/pharmacies/{B}/pause", json={"paused": True}, headers=ids["b_headers"])
+    events = client.get(f"/api/v1/pharmacies/{A}/logs").json()
+    assert events and all(e["data"].get("pharmacy") in (None, A) for e in events)
+    assert _no_b(str(events))
 
 
-def test_the_known_global_routes_are_exactly_the_log_routes():
-    session_routes = {p for _, p, r in all_routes() if classify(p) == "session" and p.startswith("/api/v1/logs")}
-    assert session_routes == GLOBAL_UNTIL_PER_SHOP_HISTORY
+def test_history_is_only_under_a_shop():
+    """No History route outside /pharmacies/{pid}: the old global /logs* are gone (flow step 5)."""
+    assert [p for _, p, _ in all_routes() if "/logs" in p and not p.startswith("/api/v1/pharmacies/{pid}/logs")] == []
 
 
 def test_routes_list_sees_hidden_routes_too():

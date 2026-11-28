@@ -6,7 +6,7 @@ Endpoints (all under /api/v1):
 - GET  /pharmacies/{pid}/pause          PauseOut
 - GET  /pharmacies/{pid}/followups      list[FollowUpOut]
 - GET  /pharmacies/{pid}/shelf-life-credit  ShelfLifeCreditOut
-- GET  /logs/verify                     VerifyOut
+- GET  /pharmacies/{pid}/logs/verify   VerifyOut (that shop's own chain)
 - POST /pharmacies/{pid}/actions/{aid}/approve  body ApprovalIn (pin needed when ActionOut.requires_pin)
 
 Notify events travel on the existing log stream as LogEvent rows with component "NOTIFY",

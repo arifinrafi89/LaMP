@@ -84,8 +84,8 @@ def main() -> None:
     out["account"] = get(f"{p}/account")
     out["value"] = get(f"{p}/value")
     out["consent_preview"] = get(f"{p}/consents/preview?lender_id=wallet-lender&scopes=passport.summary")
-    out["logs_verify"] = get("/api/v1/logs/verify")
-    out["logs"] = get("/api/v1/logs")
+    out["logs_verify"] = get("/api/v1/pharmacies/green-life/logs/verify")
+    out["logs"] = get("/api/v1/pharmacies/green-life/logs")
     for name, data in out.items():
         write(ROOT / "contracts" / "examples" / f"{name}.json", data)
     print(f"Wrote contracts/openapi.json and {len(out)} examples")

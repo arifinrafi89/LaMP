@@ -78,9 +78,12 @@ def add_shop_b(db) -> dict:
                                      for ln in o["lines"]]))
     db.flush()
     from app.engines import actions as action_engine
+    from app.engines.logbus import shop
     from app.schemas import ActionProposal
 
-    action = action_engine.propose_action(db, B, ActionProposal(kind="set_aside", payload={"amount": 777}), "owner")
+    with shop(db, B):
+        action = action_engine.propose_action(db, B, ActionProposal(kind="set_aside", payload={"amount": 777}),
+                                              "owner")
     db.commit()
     return {"codes": codes, "orders": orders, "action": action.id}
 
@@ -102,3 +105,10 @@ def two_shops(owner_headers):
             app.dependency_overrides.pop(get_db, None)
         else:
             app.dependency_overrides[get_db] = previous
+
+
+@pytest.fixture
+def tenancy_db():
+    """A session on the tenancy tests' database."""
+    with TenancySession() as s:
+        yield s
