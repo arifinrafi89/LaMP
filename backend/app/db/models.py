@@ -56,6 +56,11 @@ class Supplier(Base):
     name: Mapped[str]
     verified: Mapped[bool] = mapped_column(Boolean, default=False)
     return_cutoff_days: Mapped[int] = mapped_column(Integer, default=30)
+    # A business contact, used only for the share-to-supplier draft (build plan 2.2).
+    phone: Mapped[str | None] = mapped_column(String, nullable=True)
+    payment_days: Mapped[int] = mapped_column(Integer, default=30, server_default="30")
+    # Removed by the owner. Kept, because invoices and stock batches point at it.
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
 
 class Invoice(Base):
@@ -98,6 +103,7 @@ class Payment(Base):
     pharmacy_id: Mapped[str] = mapped_column(ForeignKey("pharmacy.id"))  # copied from the parent on flush
     amount: Mapped[float] = mapped_column(Float)
     paid_on: Mapped[date] = mapped_column(Date)
+    method: Mapped[str | None] = mapped_column(String, nullable=True)  # cash | bkash | nagad | other
     invoice: Mapped[Invoice] = relationship(back_populates="payments")
 
 
@@ -157,6 +163,7 @@ class StockBatch(Base):
     pharmacy_id: Mapped[str] = mapped_column(ForeignKey("pharmacy.id"))
     supplier_id: Mapped[int] = mapped_column(ForeignKey("supplier.id"))
     product: Mapped[str]
+    strength: Mapped[str | None] = mapped_column(String, nullable=True)
     batch_no: Mapped[str]
     expiry_date: Mapped[date] = mapped_column(Date)
     qty: Mapped[int]

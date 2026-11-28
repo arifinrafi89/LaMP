@@ -52,6 +52,21 @@ void main() {
         findsOneWidget);
   });
 
+  for (final (kind, words) in [
+    ('setup', 'Finish setting up your shop'),
+    ('remind', 'Remind a customer whose payment is due'),
+    ('scan', 'Scan a supplier bill'),
+    ('none', 'Nothing urgent today.'),
+  ]) {
+    testWidgets('the one thing "$kind", as contract v1 names it', (tester) async {
+      body = body.replaceFirst(RegExp(r'"one_thing": \{[^}]*\}'),
+          '"one_thing": {"kind": "$kind", "action_id": null, "title_key": "today.one_thing.$kind"}');
+      await open(tester);
+      expect(find.text(words), findsOneWidget);
+      expect(find.byKey(const ValueKey('one-thing')), kind == 'none' ? findsNothing : findsOneWidget);
+    });
+  }
+
   testWidgets('in Bangla, amounts and dates use Bangla digits', (tester) async {
     await open(tester, locale: const Locale('bn'));
     expect(find.text('৳৩৯,১৫০'), findsOneWidget);

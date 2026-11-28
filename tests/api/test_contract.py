@@ -25,7 +25,7 @@ def test_the_today_shape_matches_the_apps_fixture():
                                        "one_thing", "alerts"}
 
 
-@pytest.mark.parametrize("method,path", [("POST", "/me/export"), ("GET", "/pharmacies/green-life/today"),
+@pytest.mark.parametrize("method,path", [("POST", "/me/export"), ("GET", "/pharmacies/green-life/usage"),
                                          ("GET", "/app/config")])
 def test_unbuilt_routes_answer_not_built(anon, method, path):
     r = anon.request(method, f"{API_PREFIX}{path}")

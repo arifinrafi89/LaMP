@@ -22,8 +22,9 @@ from app.schemas.product import Entitlements, MeOut, MePatch, PharmacyCreate
 
 from .deps import signed_in_owner
 from .shop import pharmacy_out
+from .problems import ERRORS
 
-router = APIRouter()
+router = APIRouter(responses=ERRORS)
 
 # The free plan's scans a month (build plan 2.2, captures; D1). I2.3 enforces it at capture time.
 FREE_SCANS_PER_MONTH = 10

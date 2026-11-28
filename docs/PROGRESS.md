@@ -1,6 +1,6 @@
 # LaMP progress tracker
 
-*How much of the build plan is done. Task ids and details are in [`LaMP-Build-Plan.md`](LaMP-Build-Plan.md), section 7 (the stages) and its Applink track. Last updated: 29 Nov 2026 (I2.2 part 1).*
+*How much of the build plan is done. Task ids and details are in [`LaMP-Build-Plan.md`](LaMP-Build-Plan.md), section 7 (the stages) and its Applink track. Last updated: 29 Nov 2026 (I2.2 parts 1 and 2).*
 
 **How we work (since 28 Nov)**
 
@@ -28,7 +28,8 @@
   - LaMP.ai's PIN unlock (`/pharmacies/{pid}/session`, `owner_session`) is gone; the PIN is only asked at loan approval, until I3.3 retires loan applications.
 - **In progress:** flow step 4, **I2.2 Core routes**, in three PRs. The plan, task by task, is [`docs/superpowers/plans/2026-11-28-i2-2-core-routes.md`](superpowers/plans/2026-11-28-i2-2-core-routes.md).
   - **Part 1 (branch `ayon/I2.2-core-routes`, PR #26):** `GET` and `PATCH /me`, `POST /pharmacies`, `PATCH /pharmacies/{pid}`, `POST /pharmacies/{pid}/setup/complete`. Code in `api/me.py`, `api/shop.py` and `engines/shops.py`; tests in `tests/api/test_me_and_shop.py`.
-  - **Part 2, next (`ayon/I2.2-setup-today`):** suppliers, opening, stock batches, expenses, payments, sales days and `/today`, with migration 0004. Each I2.2 route is built as build plan 2.2 writes it and no more. The plan doesn't say how a real shop's cash moves after the opening, so ask the team, don't decide it in code.
+  - **Part 2 (branch `ayon/I2.2-setup-today`, stacked on Part 1, PR #27):** suppliers (`GET`, `POST`, `PATCH`, `DELETE`, a removed one is hidden, not erased), opening cash, typed stock batches, monthly expenses, supplier payments, sales-book days and `GET /today`. Migration 0004 adds supplier `phone`, `payment_days` and `deleted_at`, stock batch `strength`, and payment `method`. Code in `api/setup.py`, `api/money.py`, `engines/books.py` and `engines/today.py`. The app's Today screen now uses the contract's one-thing kinds (`setup`, `approve`, `remind`, `scan`, `none`).
+  - **Open question for the team:** build plan 2.2 says payments and sales days "replace the simulated wallet" but not how a real shop's cash moves after the opening. Today `cash_on_hand` changes only with the opening, so `cash_now` stays at the opening figure. Decide before MP3.
   - **Part 3 (`ayon/I2.2-customers`):** customers, with migration 0005 (`plan_amount`, `plan_set_on`) for `trusted`. Its PR ticks I2.2.
   - `GET /customers` must move from `PatientDueOut` to `CustomerRow`, with `join: {text: "LAMP " + code without dashes, to: "21213"}`.
 - **Traps hit today:**

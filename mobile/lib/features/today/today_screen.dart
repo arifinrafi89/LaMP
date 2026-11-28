@@ -165,10 +165,10 @@ class _OneThingCard extends StatelessWidget {
   final OneThing? oneThing;
 
   static (String Function(L10n), String)? _target(String kind) => switch (kind) {
+        'setup' => ((l) => l.oneSetup, '/setup'),
         'approve' => ((l) => l.oneApprove, '/approvals'),
-        'return_stock' => ((l) => l.oneReturn, '/stock'),
-        'scan_bill' => ((l) => l.oneScan, '/scan'),
-        'finish_setup' => ((l) => l.oneSetup, '/setup'),
+        'remind' => ((l) => l.oneRemind, '/customers'),
+        'scan' => ((l) => l.oneScan, '/scan'),
         _ => null,
       };
 
