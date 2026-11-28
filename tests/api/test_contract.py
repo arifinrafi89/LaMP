@@ -4,6 +4,7 @@ built yet answer 501 not_built, and a built route of Ishmam's is removed from th
 import pytest
 
 from app.api.contract import ROUTES
+from app.schemas.product import CustomerRow
 from app.main import API_PREFIX, app
 
 
@@ -41,3 +42,21 @@ def test_built_routes_are_removed_from_the_stub_list():
     built = [(m, p) for m, p, *_, owner in ROUTES
              if owner == "I" and not ops.get((m, p), "contract_").startswith("contract_")]
     assert built == []
+
+
+def test_the_27_nov_plan_is_in_the_contract():
+    """No USSD: families join by text, the drawn phone texts 21213, and Plus starts with an OTP."""
+    ops = _spec_ops()
+    for route in [("POST", "/demo/sms"), ("GET", "/demo/sms/thread"), ("POST", "/demo/reset"),
+                  ("POST", "/pharmacies/{pid}/plus/otp")]:
+        assert route in ops, route
+    assert not any("ussd" in path for _, path in ops)
+    schemas = app.openapi()["components"]["schemas"]
+    assert schemas["JoinText"]["required"] == ["text", "to"]
+    assert "join" in schemas["CustomerCreated"]["required"]
+    assert CustomerRow.model_fields["join"].is_required()  # GET /customers moves to it in I2.2
+    assert "family_join_routes" in schemas["MeOut"]["required"]
+    assert "OTP_SENT" in schemas["PlusOut"]["properties"]["status"]["enum"]
+    assert "join_by_text" in schemas["Problem"]["properties"]["code"]["enum"]
+    assert schemas["DemoSmsOut"]["properties"]["replies"]["items"]["$ref"].endswith("/DemoReply")
+    assert set(schemas["DemoMessage"]["required"]) == {"direction", "text", "at"}

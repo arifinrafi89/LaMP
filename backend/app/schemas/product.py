@@ -16,7 +16,8 @@ from .patients import PatientPlan
 
 Lang = Literal["en", "bn"]
 Plan = Literal["free", "plus"]
-PlusStatus = Literal["NONE", "PENDING", "ACTIVE", "BLOCKED", "STOPPED"]
+PlusStatus = Literal["NONE", "OTP_SENT", "PENDING", "ACTIVE", "BLOCKED", "STOPPED"]
+JoinRoute = Literal["text", "counter"]  # how a family can join SMS (plan 3.4, FAMILY_JOIN_ROUTES)
 SmsStatus = Literal["NONE", "PENDING", "ON", "STOPPED", "FAILED"]
 PayMethod = Literal["cash", "bkash", "nagad", "other"]
 
@@ -24,7 +25,7 @@ PayMethod = Literal["cash", "bkash", "nagad", "other"]
 ErrorCode = Literal[
     "otp_wrong", "otp_expired", "otp_too_many", "not_banglalink", "session_expired", "plus_required",
     "scan_limit_reached", "ai_budget_reached", "update_required", "rate_limited", "applink_down",
-    "charge_failed", "not_found", "invalid", "not_built",
+    "charge_failed", "join_by_text", "not_found", "invalid", "not_built",
 ]
 
 
@@ -121,6 +122,7 @@ class MeOut(Model):
     plus_status: PlusStatus
     entitlements: Entitlements
     demo_tools: bool  # demo and team-test shops only
+    family_join_routes: list[JoinRoute] = Field(examples=[["text"]])  # "counter" only while masking is off
     consents_needed: list[Literal["terms", "privacy"]]
 
 
@@ -268,6 +270,13 @@ class UsageOut(Model):
 
 # Customers (free) — amounts only, never names or medicines
 
+class JoinText(Model):
+    """What a family texts to join SMS (plan 3.4): shown in the app, read out, written on the bill."""
+
+    text: str = Field(examples=["LAMP GL7KQM4XPA"])
+    to: str = Field(examples=["21213"])
+
+
 class CustomerRow(Model):
     code: str = Field(examples=["GL-7KQM-4XPA"])
     label: str = Field(examples=["Customer 003"])
@@ -277,6 +286,7 @@ class CustomerRow(Model):
     status: Literal["planned", "no_plan"]
     plan: PatientPlan | None
     sms_status: SmsStatus
+    join: JoinText
     trusted: bool  # every part so far paid on time
 
 
@@ -288,6 +298,7 @@ class CustomerCreate(Model):
 class CustomerCreated(Model):
     code: str
     label: str
+    join: JoinText
 
 
 class CustomerMoneyIn(Model):
@@ -368,6 +379,12 @@ class PlusSubscribeIn(Model):
     consent: PlusConsentIn
 
 
+class PlusOtpIn(Model):
+    """The code Banglalink texted for the Plus app (plan 3.3)."""
+
+    otp: str = Field(min_length=4, max_length=8)
+
+
 class PlusOut(Model):
     status: PlusStatus
     renews_on: ISODate | None = None
@@ -402,3 +419,27 @@ class TelemetryEvent(Model):
 
 class TelemetryIn(Model):
     events: list[TelemetryEvent] = Field(max_length=100)
+
+
+# The demo shop's drawn phone (plan 5.7): texts to 21213 run the real SMS command code (3.5)
+
+class DemoSmsIn(Model):
+    text: str = Field(min_length=1, max_length=160, examples=["LAMP GL7KQM4XPA"])
+
+
+class DemoReply(Model):
+    text: str
+
+
+class DemoSmsOut(Model):
+    replies: list[DemoReply]  # what LaMP texted back, in order (often one, sometimes none)
+
+
+class DemoMessage(Model):
+    direction: Literal["in", "out"]  # in: the phone texted 21213 · out: LaMP texted the phone
+    text: str
+    at: Timestamp
+
+
+class DemoThreadOut(Model):
+    messages: list[DemoMessage]  # oldest first, including what the owner's actions sent

@@ -2189,6 +2189,27 @@
         }
       }
     },
+    "/api/v1/legal/current": {
+      "get": {
+        "tags": [
+          "legal"
+        ],
+        "summary": "Current",
+        "operationId": "current_api_v1_legal_current_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegalCurrent"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/auth/otp/request": {
       "post": {
         "tags": [
@@ -2730,87 +2751,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SignedInOut"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Problem"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Problem"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Problem"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Content",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Problem"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "Too Many Requests",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Problem"
-                }
-              }
-            }
-          },
-          "501": {
-            "description": "Not Implemented",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Problem"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/legal/current": {
-      "get": {
-        "tags": [
-          "contract v1: not built yet"
-        ],
-        "summary": "Contract Get Legal Current",
-        "operationId": "contract_get_legal_current_api_v1_legal_current_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LegalOut"
                 }
               }
             }
@@ -6200,6 +6140,108 @@
         }
       }
     },
+    "/api/v1/pharmacies/{pid}/plus/otp": {
+      "post": {
+        "tags": [
+          "contract v1: not built yet"
+        ],
+        "summary": "Contract Post Pharmacies Pid Plus Otp",
+        "operationId": "contract_post_pharmacies_pid_plus_otp_api_v1_pharmacies__pid__plus_otp_post",
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Pid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlusOtpIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlusOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          }
+        }
+      }
+    },
     "/api/v1/pharmacies/{pid}/plus/cancel": {
       "post": {
         "tags": [
@@ -6481,6 +6523,252 @@
           },
           "required": true
         },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Not Implemented",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/demo/sms": {
+      "post": {
+        "tags": [
+          "contract v1: not built yet"
+        ],
+        "summary": "Contract Post Demo Sms",
+        "operationId": "contract_post_demo_sms_api_v1_demo_sms_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DemoSmsIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DemoSmsOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Not Implemented",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/demo/sms/thread": {
+      "get": {
+        "tags": [
+          "contract v1: not built yet"
+        ],
+        "summary": "Contract Get Demo Sms Thread",
+        "operationId": "contract_get_demo_sms_thread_api_v1_demo_sms_thread_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DemoThreadOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Not Implemented",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/demo/reset": {
+      "post": {
+        "tags": [
+          "contract v1: not built yet"
+        ],
+        "summary": "Contract Post Demo Reset",
+        "operationId": "contract_post_demo_reset_api_v1_demo_reset_post",
         "responses": {
           "204": {
             "description": "Successful Response"
@@ -7660,13 +7948,17 @@
           "label": {
             "type": "string",
             "title": "Label"
+          },
+          "join": {
+            "$ref": "#/components/schemas/JoinText"
           }
         },
         "additionalProperties": false,
         "type": "object",
         "required": [
           "code",
-          "label"
+          "label",
+          "join"
         ],
         "title": "CustomerCreated"
       },
@@ -7881,6 +8173,49 @@
         ],
         "title": "DeleteOut"
       },
+      "DemoMessage": {
+        "properties": {
+          "direction": {
+            "type": "string",
+            "enum": [
+              "in",
+              "out"
+            ],
+            "title": "Direction"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "direction",
+          "text",
+          "at"
+        ],
+        "title": "DemoMessage"
+      },
+      "DemoReply": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "title": "Text"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "title": "DemoReply"
+      },
       "DemoSignInIn": {
         "properties": {
           "demo_code": {
@@ -7894,6 +8229,59 @@
           "demo_code"
         ],
         "title": "DemoSignInIn"
+      },
+      "DemoSmsIn": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Text",
+            "examples": [
+              "LAMP GL7KQM4XPA"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "title": "DemoSmsIn"
+      },
+      "DemoSmsOut": {
+        "properties": {
+          "replies": {
+            "items": {
+              "$ref": "#/components/schemas/DemoReply"
+            },
+            "type": "array",
+            "title": "Replies"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "replies"
+        ],
+        "title": "DemoSmsOut"
+      },
+      "DemoThreadOut": {
+        "properties": {
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/DemoMessage"
+            },
+            "type": "array",
+            "title": "Messages"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "messages"
+        ],
+        "title": "DemoThreadOut"
       },
       "DeviceIn": {
         "properties": {
@@ -8895,7 +9283,33 @@
         "type": "object",
         "title": "HTTPValidationError"
       },
-      "LegalOut": {
+      "JoinText": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "title": "Text",
+            "examples": [
+              "LAMP GL7KQM4XPA"
+            ]
+          },
+          "to": {
+            "type": "string",
+            "title": "To",
+            "examples": [
+              "21213"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "text",
+          "to"
+        ],
+        "title": "JoinText",
+        "description": "What a family texts to join SMS (plan 3.4): shown in the app, read out, written on the bill."
+      },
+      "LegalCurrent": {
         "properties": {
           "terms_version": {
             "type": "string",
@@ -8914,7 +9328,6 @@
             "title": "Privacy Url"
           }
         },
-        "additionalProperties": false,
         "type": "object",
         "required": [
           "terms_version",
@@ -8922,7 +9335,7 @@
           "terms_url",
           "privacy_url"
         ],
-        "title": "LegalOut"
+        "title": "LegalCurrent"
       },
       "LenderOut": {
         "properties": {
@@ -9098,6 +9511,7 @@
             "type": "string",
             "enum": [
               "NONE",
+              "OTP_SENT",
               "PENDING",
               "ACTIVE",
               "BLOCKED",
@@ -9111,6 +9525,22 @@
           "demo_tools": {
             "type": "boolean",
             "title": "Demo Tools"
+          },
+          "family_join_routes": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "text",
+                "counter"
+              ]
+            },
+            "type": "array",
+            "title": "Family Join Routes",
+            "examples": [
+              [
+                "text"
+              ]
+            ]
           },
           "consents_needed": {
             "items": {
@@ -9133,6 +9563,7 @@
           "plus_status",
           "entitlements",
           "demo_tools",
+          "family_join_routes",
           "consents_needed"
         ],
         "title": "MeOut"
@@ -10109,12 +10540,30 @@
         ],
         "title": "PlusConsentIn"
       },
+      "PlusOtpIn": {
+        "properties": {
+          "otp": {
+            "type": "string",
+            "maxLength": 8,
+            "minLength": 4,
+            "title": "Otp"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "otp"
+        ],
+        "title": "PlusOtpIn",
+        "description": "The code Banglalink texted for the Plus app (plan 3.3)."
+      },
       "PlusOut": {
         "properties": {
           "status": {
             "type": "string",
             "enum": [
               "NONE",
+              "OTP_SENT",
               "PENDING",
               "ACTIVE",
               "BLOCKED",
@@ -10232,6 +10681,7 @@
               "rate_limited",
               "applink_down",
               "charge_failed",
+              "join_by_text",
               "not_found",
               "invalid",
               "not_built"

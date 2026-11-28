@@ -7,8 +7,8 @@ whole Phase 1 contract from today and Ayon can run a mock of it:
 Until a route is built it answers 501 with code `not_built`. Building a route means writing
 it in its own module and deleting its line here; a test fails if both exist.
 
-Sign-in, /legal, /me/consents and /demo/ussd belong to Arifin (plan 0.5): their lines here
-are dropped as soon as his packages define them.
+Lines marked "A" (sign-in, /legal, /me/consents, /plus/otp, /demo) are served by the auth and
+applink packages; each stub steps aside on its own once a real route is mounted.
 """
 
 import inspect
@@ -23,16 +23,18 @@ from app.schemas.pharmacy import PharmacyOut
 from app.schemas.product import (
     AppConfigOut, ChargeOtpIn, ChargeOut, ConsentsIn, CreditRecordOut, CreditShareOut, CustomerBalance,
     CustomerCreate, CustomerCreated, CustomerMoneyIn, CustomerPhoneIn, CustomerPlanIn, DeleteIn, DeleteOut,
-    DemoSignInIn, DeviceOut, ExpenseIn, ExportOut, ExportStarted, LegalOut, MeOut, MePatch, OpeningIn,
-    OtpChallengeOut, OtpRequestIn, OtpVerifyIn, PaymentIn, PharmacyCreate, PharmacyPatch, PlusOut,
-    PlusSubscribeIn, Problem, RefreshIn, SalesDayIn, Saved, ShareIn, SignedInOut, SmsStatusOut, StockBatchIn,
-    SupplierIn, SupplierOut, SupportReportIn, SupportReportOut, TelemetryIn, TodayOut, TokenPairOut, UsageOut,
+    DemoSignInIn, DemoSmsIn, DemoSmsOut, DemoThreadOut, DeviceOut, ExpenseIn, ExportOut, ExportStarted, LegalOut,
+    MeOut, MePatch, OpeningIn, OtpChallengeOut, OtpRequestIn, OtpVerifyIn, PaymentIn, PharmacyCreate, PharmacyPatch,
+    PlusOtpIn, PlusOut, PlusSubscribeIn, Problem, RefreshIn, SalesDayIn, Saved, ShareIn, SignedInOut, SmsStatusOut,
+    StockBatchIn, SupplierIn, SupplierOut, SupportReportIn, SupportReportOut, TelemetryIn, TodayOut, TokenPairOut,
+    UsageOut,
 )
 
 P = "/pharmacies/{pid}"
 
 # (method, path, request body, response model, success status, owner)
-#   owner: "I" Ishmam (core) or "A" Arifin (auth, legal, demo); A's lines go once his routers exist.
+#   owner: "I" core routes or "A" the auth and applink packages (sign-in, legal, demo). A test checks that
+#   a built "I" route has lost its line here; an "A" stub steps aside on its own.
 ROUTES: list[tuple[str, str, Any, Any, int, str]] = [
     # Sign-in and account
     ("POST", "/auth/otp/request", OtpRequestIn, OtpChallengeOut, 202, "A"),
@@ -83,11 +85,16 @@ ROUTES: list[tuple[str, str, Any, Any, int, str]] = [
     ("DELETE", f"{P}/credit-record/shares/{{share_id}}", None, None, 204, "I"),
     ("GET", f"{P}/plus", None, PlusOut, 200, "I"),
     ("POST", f"{P}/plus/subscribe", PlusSubscribeIn, PlusOut, 202, "I"),
+    ("POST", f"{P}/plus/otp", PlusOtpIn, PlusOut, 200, "I"),
     ("POST", f"{P}/plus/cancel", None, PlusOut, 200, "I"),
     # Support and versions
     ("GET", "/app/config", None, AppConfigOut, 200, "I"),
     ("POST", "/support/reports", SupportReportIn, SupportReportOut, 201, "I"),
     ("POST", "/telemetry/events", TelemetryIn, None, 204, "I"),
+    # The demo shop's drawn phone (demo and team-test shops only)
+    ("POST", "/demo/sms", DemoSmsIn, DemoSmsOut, 200, "A"),
+    ("GET", "/demo/sms/thread", None, DemoThreadOut, 200, "A"),
+    ("POST", "/demo/reset", None, None, 204, "A"),
 ]
 
 _ERRORS = {code: {"model": Problem} for code in (401, 403, 404, 422, 429, 501)}
