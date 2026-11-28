@@ -12,11 +12,11 @@ from pathlib import Path
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from sqlalchemy import inspect
+from sqlalchemy import func, inspect, select
 
 from app.api.routes import router
 from app.config import registry_secret, settings
-from app.db.models import Base
+from app.db.models import Pharmacy
 from app.db.seed import load_seed
 from app.db.session import SessionLocal, engine, get_db
 from app.engines import logbus, mailer
@@ -24,34 +24,46 @@ from app.engines import logbus, mailer
 API_PREFIX = "/api/v1"
 
 
-def _schema_is_current() -> bool:
-    """True if every table and column of the models exists in the database."""
-    insp = inspect(engine)
-    for table in Base.metadata.sorted_tables:
-        if not insp.has_table(table.name):
-            return False
-        if {c.name for c in table.columns} - {c["name"] for c in insp.get_columns(table.name)}:
-            return False
-    return True
+def _seed_if_empty() -> None:
+    """The schema comes only from migrations (`alembic upgrade heads` in the start command,
+    build plan 4.4). A database with no shop yet gets the demo shop; nothing is ever wiped."""
+    if not inspect(engine).has_table("pharmacy"):
+        raise RuntimeError("The database has no tables. Run `alembic upgrade heads` from backend/ first.")
+    with SessionLocal() as db:
+        if db.scalar(select(func.count()).select_from(Pharmacy)) == 0:
+            load_seed(db, with_demo_captures=settings.demo_reset_with_captures)
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     try:
         registry_secret()  # refuse to start without a real REGISTRY_KEY (unless DEV_MODE)
-        # Empty database, or one left by an older version of the app: (re)load the seed pharmacy.
-        if not _schema_is_current():
-            with SessionLocal() as db:
-                load_seed(db, with_demo_captures=settings.demo_reset_with_captures)
+        _seed_if_empty()
     except Exception as exc:
         mailer.alert("startup", "[LaMP] API failed to start",
                      f"The API stopped during startup at {_now()}.\n\n{type(exc).__name__}: {exc}\n\n"
                      "Check the backend logs (docker compose logs backend) and restart it.", background=False)
         raise
     auto = asyncio.create_task(_auto_reset()) if settings.dev_mode and settings.demo_auto_reset_minutes > 0 else None
+    # Arifin's job loop runs inside the web service (plan D6): app.jobs.runner.start() / stop().
+    runner = _optional("app.jobs.runner")
+    if runner is not None and hasattr(runner, "start"):
+        await runner.start()
     yield
+    if runner is not None and hasattr(runner, "stop"):
+        await runner.stop()
     if auto:
         auto.cancel()
+
+
+def _optional(module: str):
+    """A module that may not exist yet (Arifin's packages before A0.4)."""
+    try:
+        return importlib.import_module(module)
+    except ModuleNotFoundError as exc:
+        if module.startswith(exc.name or "?"):
+            return None
+        raise
 
 
 async def _auto_reset() -> None:
@@ -121,3 +133,42 @@ try:
     app.include_router(importlib.import_module("app.agents.router").router, prefix=API_PREFIX)
 except ImportError:
     pass
+
+
+# Arifin's modules (build plan 1.2, task I0.5). Each package mounts once it exists:
+#   app.<name>.routes.api_router   mounted under /api/v1 (sign-in, /demo/ussd, the tick endpoint)
+#   app.<name>.routes.root_router  mounted at the root (Applink's callbacks: /applink/{app}/{secret}/...)
+# A package that is missing, or has no routes module yet, is skipped, so main.py never needs editing.
+PLUGGED_IN = ("auth", "applink", "jobs")
+
+
+def _mount_plugged_in() -> list[str]:
+    mounted = []
+    for name in PLUGGED_IN:
+        try:
+            mod = importlib.import_module(f"app.{name}.routes")
+        except ModuleNotFoundError as exc:
+            if exc.name not in (f"app.{name}", f"app.{name}.routes"):
+                raise  # the module exists but imports something missing: a real error
+            continue
+        if (api := getattr(mod, "api_router", None)) is not None:
+            app.include_router(api, prefix=API_PREFIX)
+            mounted.append(f"{name}:api")
+        if (root := getattr(mod, "root_router", None)) is not None:
+            app.include_router(root)
+            mounted.append(f"{name}:root")
+    return mounted
+
+
+MOUNTED = _mount_plugged_in()
+
+
+# Contract v1 (build plan 2.2): every Phase 1 route not built yet answers 501 not_built with
+# its real shapes, so contracts/openapi.json is the whole contract. Mounted last.
+def _served() -> set[tuple[str, str]]:
+    spec = app.openapi()
+    app.openapi_schema = None  # rebuilt with the contract routes below
+    return {(method.upper(), path.removeprefix(API_PREFIX)) for path, ops in spec["paths"].items() for method in ops}
+
+
+app.include_router(importlib.import_module("app.api.contract").build_router(_served()), prefix=API_PREFIX)

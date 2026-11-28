@@ -6,8 +6,13 @@ Money is stored as Float in whole or 2-decimal BDT; engines round outputs to 2 d
 
 from datetime import date, datetime
 
-from sqlalchemy import JSON, Boolean, Date, DateTime, Float, ForeignKey, Integer, String
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy import JSON, Boolean, Date, DateTime, Float, ForeignKey, Integer, String, event, false
+from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship
+
+# Pharmacy kinds (build plan 4.2). Only demo and team_test shops may keep a fixed
+# settings.as_of_date; real shops always run on today's Dhaka date.
+PHARMACY_KINDS = ("real", "demo", "team_test")
+FIXED_DATE_KINDS = ("demo", "team_test")
 
 
 class Base(DeclarativeBase):
@@ -21,6 +26,27 @@ class Pharmacy(Base):
     city: Mapped[str]
     cash_on_hand: Mapped[float] = mapped_column(Float, default=0)  # at the start of settings.as_of_date
     settings: Mapped[dict] = mapped_column(JSON)
+    kind: Mapped[str] = mapped_column(String, default="real", server_default="real")  # PHARMACY_KINDS
+    # Two letters at the start of every card code (GL-7KQM-4XPA), set when the shop is created.
+    card_prefix: Mapped[str | None] = mapped_column(String(2), nullable=True)
+    setup_complete: Mapped[bool] = mapped_column(Boolean, default=False, server_default=false())
+    created_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
+
+class Owner(Base):
+    """The person who runs a pharmacy (one per pharmacy in Phase 1). The phone number is kept
+    only as a keyed hash (to find the owner at sign-in) and encrypted (to show it masked)."""
+
+    __tablename__ = "owner"
+    id: Mapped[str] = mapped_column(String, primary_key=True)  # uuid
+    pharmacy_id: Mapped[str | None] = mapped_column(ForeignKey("pharmacy.id"), nullable=True)  # null until setup
+    subscriber_ref: Mapped[str | None] = mapped_column(String, nullable=True)  # as Applink returned it
+    phone_hash: Mapped[str] = mapped_column(String, unique=True)  # HMAC with a server pepper
+    phone_enc: Mapped[str] = mapped_column(String)                # AES-GCM
+    language: Mapped[str] = mapped_column(String, default="en")   # en | bn
+    created_at: Mapped[datetime] = mapped_column(DateTime)
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
 
 class Supplier(Base):
@@ -53,6 +79,7 @@ class InvoiceLine(Base):
     __tablename__ = "invoice_line"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     invoice_id: Mapped[int] = mapped_column(ForeignKey("invoice.id"))
+    pharmacy_id: Mapped[str] = mapped_column(ForeignKey("pharmacy.id"))  # copied from the parent on flush
     product: Mapped[str]
     strength: Mapped[str | None] = mapped_column(String, nullable=True)
     pack: Mapped[str | None] = mapped_column(String, nullable=True)
@@ -68,6 +95,7 @@ class Payment(Base):
     __tablename__ = "payment"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     invoice_id: Mapped[int] = mapped_column(ForeignKey("invoice.id"))
+    pharmacy_id: Mapped[str] = mapped_column(ForeignKey("pharmacy.id"))  # copied from the parent on flush
     amount: Mapped[float] = mapped_column(Float)
     paid_on: Mapped[date] = mapped_column(Date)
     invoice: Mapped[Invoice] = relationship(back_populates="payments")
@@ -97,6 +125,21 @@ class PatientDue(Base):
     code: Mapped[str] = mapped_column(String, unique=True)
     plan_parts: Mapped[int | None] = mapped_column(Integer, default=None)
     plan_first_on: Mapped[date | None] = mapped_column(Date, default=None)
+
+
+class PatientLedger(Base):
+    """Every sale, payment or correction on a customer card. Amounts only: no names, no
+    medicines. patient_dues.amount is the running balance these rows add up to."""
+
+    __tablename__ = "patient_ledger"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    pharmacy_id: Mapped[str] = mapped_column(ForeignKey("pharmacy.id"))
+    code: Mapped[str] = mapped_column(ForeignKey("patient_dues.code"))
+    kind: Mapped[str]  # sale | payment | adjust
+    amount: Mapped[float] = mapped_column(Float)  # + adds to what is owed, - reduces it
+    on_date: Mapped[date] = mapped_column(Date)
+    method: Mapped[str | None] = mapped_column(String, nullable=True)  # cash | bkash | nagad | other
+    created_at: Mapped[datetime] = mapped_column(DateTime)
 
 
 class ExpenseSchedule(Base):
@@ -144,6 +187,7 @@ class PlannedOrderLine(Base):
     __tablename__ = "planned_order_line"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     order_id: Mapped[str] = mapped_column(ForeignKey("planned_order.id"))
+    pharmacy_id: Mapped[str] = mapped_column(ForeignKey("pharmacy.id"))  # copied from the parent on flush
     product: Mapped[str]
     qty: Mapped[int]
     unit_cost: Mapped[float] = mapped_column(Float)
@@ -309,6 +353,8 @@ class OwnerSession(Base):
 class AuditLog(Base):
     __tablename__ = "audit_log"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    # The shop an event belongs to (null for system events). The per-shop hash chain comes later.
+    pharmacy_id: Mapped[str | None] = mapped_column(String, nullable=True)
     ts: Mapped[datetime] = mapped_column(DateTime)
     tier: Mapped[str]
     component: Mapped[str]
@@ -317,3 +363,29 @@ class AuditLog(Base):
     # Hash chain: hash = sha256(prev_hash + canonical event). Editing any row breaks it.
     prev_hash: Mapped[str] = mapped_column(String, default="")
     hash: Mapped[str] = mapped_column(String, default="")
+
+
+# Child rows carry their shop's id, so every pharmacy table can be filtered (and, in Phase 2,
+# locked by row-level security) on pharmacy_id alone. The id comes from the parent row.
+_CHILD_PARENT = {InvoiceLine: "invoice", Payment: "invoice", PlannedOrderLine: "order"}
+
+
+@event.listens_for(Session, "before_flush")
+def _shop_rules(session: Session, _ctx, _instances) -> None:
+    for obj in list(session.new) + list(session.dirty):
+        parent_attr = _CHILD_PARENT.get(type(obj))
+        if parent_attr and obj.pharmacy_id is None:
+            parent = getattr(obj, parent_attr)
+            if parent is not None:
+                obj.pharmacy_id = parent.pharmacy_id
+        if isinstance(obj, Pharmacy):
+            check_pharmacy(obj)
+
+
+def check_pharmacy(ph: Pharmacy) -> None:
+    """A real shop never has a fixed date: its "today" is always today in Dhaka."""
+    kind = ph.kind or "real"
+    if kind not in PHARMACY_KINDS:
+        raise ValueError(f"Unknown pharmacy kind {kind!r}.")
+    if kind not in FIXED_DATE_KINDS and (ph.settings or {}).get("as_of_date"):
+        raise ValueError("A real pharmacy can't have a fixed date (settings.as_of_date).")
