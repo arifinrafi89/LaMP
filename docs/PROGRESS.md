@@ -1,6 +1,6 @@
 # LaMP progress tracker
 
-*How much of the build plan is done. Task ids and details are in [`LaMP-Build-Plan.md`](LaMP-Build-Plan.md), section 7 (the stages) and its Applink track. Last updated: 29 Nov 2026 (per-shop History).*
+*How much of the build plan is done. Task ids and details are in [`LaMP-Build-Plan.md`](LaMP-Build-Plan.md), section 7 (the stages) and its Applink track. Last updated: 29 Nov 2026 (A1.3 jobs).*
 
 **How we work (since 28 Nov)**
 
@@ -27,13 +27,21 @@
   - every `/pharmacies/{pid}/*` route takes its shop from the token (`api/deps.py`), and another shop's id answers 404;
   - LaMP.ai's PIN unlock (`/pharmacies/{pid}/session`, `owner_session`) is gone; the PIN is only asked at loan approval, until I3.3 retires loan applications.
 - **I2.2 Core routes (flow step 4) is on `main`** (PRs #26, #27, #28). Still contract stubs: the customer phone and remind routes (A2.2 part 2, flow step 9), `/usage`, and `/me` export and delete (flow step 17).
-- **Per-shop History (flow step 5), branch `ayon/per-shop-history`, PR open:**
+- **Per-shop History (flow step 5), PR #29 (`ayon/per-shop-history`):**
   - History moved under the shop, as build plan 2.2 writes it: `GET /pharmacies/{pid}/logs`, `/logs/export`, `/logs/verify`, `/logs/stream`. The global `/logs*` routes are gone.
   - Every event gets its shop in `audit_log.pharmacy_id`, and each shop has its own hash chain from GENESIS. Events with no shop (system errors) form their own chain and show in no shop's History.
   - The shop comes from `pharmacy=` in the event, or else from the session: `require_owner` calls `logbus.set_shop(db, pid)`. So do the chat router, `propose_action`, `set_plan` (the family card), the supplier-reply simulator, the lender decision and the seed.
   - `scripts/export_trace.py` now signs in through `POST /auth/demo` (set `DEMO_CODE`) and exports the demo shop's own History.
 - **Open question for the team:** build plan 2.2 says payments and sales days "replace the simulated wallet" but not how a real shop's cash moves after the opening. Today `cash_on_hand` changes only with the opening, so `cash_now` stays at the opening figure. Decide before MP3 (flow step 12).
-- **Next:** flow step 6, **A1.3 Jobs**: the job table, a runner inside the web service, the scheduler (Asia/Dhaka), the tick endpoint, and `/ready` (build plan 1.4 C, 2.2, 4.3). A job that logs for a shop must call `logbus.set_shop(db, pid)` first (or pass `pharmacy=`), or its events land in the system chain.
+- **A1.3 Jobs (flow step 6), PR #30 (`ayon/A1.3-jobs`, stacked on #29):**
+  - `app/jobs/`: the `job` table (applink migration a002); `@job(kind, max_attempts)` and `enqueue(db, kind, payload, run_at, dedupe_key)` in `registry.py`; `runner.py`; `scheduler.py` (`daily(kind, "HH:MM")` in Dhaka time); `config.py`.
+  - **The runner:** jobs are claimed with `FOR UPDATE SKIP LOCKED`. Each runs in its own transaction, with retries after 1, 4 and 16 minutes, then `failed`. A job left `running` is put back after 10 minutes.
+  - **Where it runs:** the loop runs inside the web service every `JOBS_POLL_SECONDS`. `POST /api/v1/internal/jobs/tick` with `X-Tick-Secret: $JOBS_TICK_SECRET` is the backstop; a missing or wrong secret answers 404.
+  - `GET /api/v1/ready`: database, migrations at head, and the loop's heartbeat under 2 minutes; 503 otherwise.
+  - **For handlers:** a handler is `fn(db, payload)`, so its work and the job's `done` commit together. A handler that logs for a shop calls `logbus.set_shop(db, pid)` first.
+  - **Not yet:** no job kinds exist; A3.3 adds them (flow step 16), together with the demo reseed that replaces `_auto_reset` in `main.py`. `tick.yml` is a parked A1.4 item (GitHub settings).
+  - **Secrets:** a server with `DEV_MODE=false` now needs `JOBS_TICK_SECRET` (32+ characters) to start. Tests set `JOBS_LOOP=false`.
+- **Next:** flow step 7, **A1.4 part 2, CI**: the server tests on Postgres in `server.yml` (a `TEST_DATABASE_URL` service), and the migration check (up, down one, up). The jobs' `SKIP LOCKED` and the per-shop chain then get tested on Postgres too.
 - **Traps hit today:**
   - The clone path "Applink Hackathon" has a space. `alembic.ini` now lists migration folders one per line; keep it that way.
   - FastAPI here wraps included routers lazily (`_IncludedRouter`). To list every route, walk them the way `tests/tenancy/test_tenancy_routes.py` does.
@@ -62,7 +70,7 @@ Each step needs the ones before it. Tick here and in the stage lists below.
 3. [x] **I2.1 One shop per session:** a shared dependency gives every owner route its `pharmacy_id` from the token (404 for another shop's id); tenancy test harness. · on `main` (28 Nov): `api/deps.py`, `tests/tenancy/`; the PIN unlock retired (core migration `0003`)
 4. [x] **I2.2 Core routes:** `/me`, create and set up a shop, suppliers, opening, stock, expenses, `/today`, payments, sales days, customers. · on `main` (PRs #26, #27, #28)
 5. [x] **Per-shop History:** every audit event carries its shop (`audit_log.pharmacy_id`), one hash chain per shop, and `/logs*` (list, export, verify, stream) show only the caller's shop. Then remove the strict xfail in `tests/tenancy/test_tenancy_routes.py`. · on `main` (PR #29)
-6. [ ] **A1.3 Jobs:** table, runner inside the web service, scheduler (Asia/Dhaka), tick endpoint; `/ready`.
+6. [x] **A1.3 Jobs:** table, runner inside the web service, scheduler (Asia/Dhaka), tick endpoint; `/ready`. · on `main` (PR #30)
 7. [ ] **A1.4 part 2, CI:** server tests on Postgres, and the migration check (up, down one, up).
 8. [ ] **A2.1 Callbacks:** the four Applink callbacks (answer first, dedupe, secret, IP list, redaction) and the subscription mirror.
 9. [ ] **A2.2 part 2, families by SMS:** the facade (`applink/services.py`), `join.py`, both join routes, delivery reports.
@@ -87,13 +95,13 @@ Each step needs the ones before it. Tick here and in the stage lists below.
 | Stage | Done | Of those, on `main` | Total |
 |---|---|---|---|
 | Stage 0: repo, accounts, Applink forms | 16 | 10 | 21 |
-| Stage 1: foundations | 11 | 11 | 16 |
+| Stage 1: foundations | 12 | 12 | 16 |
 | Stage 2: core flows in mock mode | 7 | 7 | 13 |
 | Stage 3: money, Plus, AI, families | 4 | 4 | 16 |
 | Stage 4: test, fix, record | 1 | 1 | 11 |
 | Stage 5: submit | 0 | 0 | 5 |
 | Applink track | 1 | 0 | 9 |
-| **All** | **40** | **33** | **91** |
+| **All** | **41** | **34** | **91** |
 
 ## Stage 0: the repo, accounts and Applink forms
 
@@ -128,7 +136,7 @@ Each step needs the ones before it. Tick here and in the stage lists below.
 - [ ] **I0.6** Farhan's written OK, screenshot in `docs/PRIOR_WORK.md` · **[I]**
 - [x] **A1.1** Applink config, phone helpers, status-code table, client and mock · **[A]** · on `main` (PRs #11 and #12)
 - [x] **A1.2** `auth/`: OTP sign-in, tokens, refresh, devices, rate limits · **[A]** · on `main` (28 Nov)
-- [ ] **A1.3** `jobs/`: table, runner inside the web service, scheduler, tick endpoint · **[A]**
+- [x] **A1.3** `jobs/`: table, runner inside the web service, scheduler, tick endpoint · **[A]** · on `main` (PR #30)
 - [ ] **A1.4** `render.yaml`, `backup.yml`, `tick.yml`, `server.yml` · **[A]** · `server.yml` with the secret scan on `main` (PR #14); the Postgres tests join it with the migrations; `render.yaml` waits for the migrations, `tick.yml` for A1.3, `backup.yml` for its secrets
 - [x] **Y1.1** App shell: go_router, theme, ARB en and bn, digits, `ApiClient` · **[Y]** · on `main`
 - [x] **Y1.2** Welcome, number, code, token store (app side; server sign-in is A1.2) · **[Y]** · on `main`

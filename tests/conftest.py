@@ -14,6 +14,7 @@ import pytest
 os.environ.setdefault("DEV_MODE", "true")
 os.environ["BREVO_API_KEY"] = ""
 os.environ["ASK_OWNER_PIN"] = "true"
+os.environ["JOBS_LOOP"] = "false"  # tests run the job loop's passes themselves
 
 
 @pytest.fixture

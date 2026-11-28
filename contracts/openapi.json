@@ -25,6 +25,27 @@
         }
       }
     },
+    "/api/v1/ready": {
+      "get": {
+        "summary": "Ready",
+        "description": "Ready to serve (build plan 2.2, 13.2): the database answers, its migrations are at head,\nand the job loop made a pass in the last 2 minutes. 503 if any one isn't.",
+        "operationId": "ready_api_v1_ready_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Ready Api V1 Ready Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/cards/{code}": {
       "get": {
         "summary": "Get Customer Card",

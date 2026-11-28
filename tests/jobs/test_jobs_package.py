@@ -1,4 +1,4 @@
-"""The jobs package's router and runner shape (build plan A0.4; the loop comes in A1.3)."""
+"""The jobs package's router and runner shape (build plan A0.4, A1.3)."""
 import asyncio
 import inspect
 
