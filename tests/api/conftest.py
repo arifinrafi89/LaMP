@@ -31,8 +31,6 @@ def _get_db():
 app.dependency_overrides[get_db] = _get_db
 
 
-from api_support import PIN  # noqa: E402
-
 
 @pytest.fixture
 def anon():
@@ -43,10 +41,11 @@ def anon():
 
 
 @pytest.fixture
-def client(anon):
-    """Signed in as the owner of green-life. Lender calls pass headers=lender_headers(...)."""
-    r = anon.post("/api/v1/pharmacies/green-life/session", json={"pin": PIN})
-    assert r.status_code == 200, r.text
+def client(anon, owner_headers):
+    """Signed in as the owner of green-life (the same client as `anon`, now carrying the
+    owner's bearer token). Lender calls pass headers=lender_headers(...)."""
+    with TestSession() as s:
+        anon.headers.update(owner_headers(s))
     return anon
 
 

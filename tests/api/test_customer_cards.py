@@ -55,7 +55,7 @@ def test_plan_date_and_parts_are_checked(anon):
     assert anon.post(f"{C}/{CODE}/plan", json={"parts": 3, "first_on": "2026-10-20"}).status_code == 422
 
 
-def test_owner_list_needs_the_pin(anon):
+def test_owner_list_needs_a_session(anon):
     assert anon.get(f"{P}/customers").status_code == 401
 
 

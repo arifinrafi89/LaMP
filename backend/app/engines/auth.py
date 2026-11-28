@@ -1,16 +1,16 @@
-"""Owner sessions, the owner PIN and lender keys (win plan CORE-13).
+"""The owner PIN at loan approval, and lender keys (win plan CORE-13).
 
-- The owner unlocks with a PIN. Only its scrypt hash is stored, in pharmacy settings
-  (`owner_pin`, "scrypt$<salt>$<hex>"). A correct PIN issues a random session token,
-  stored in `owner_session` and sent to the browser as an HttpOnly cookie.
-- Loan approvals re-ask the same PIN. That is re-authentication at the point of
-  approval, not a second factor.
+Owners sign in with their phone (app.auth, build plan 2.1); the PIN unlock and its
+`owner_session` cookie are retired (I2.1).
+
+- Loan approvals re-ask the owner PIN (with ASK_OWNER_PIN on): re-authentication at the
+  point of approval, not a second factor. Only its scrypt hash is stored, in pharmacy
+  settings (`owner_pin`, "scrypt$<salt>$<hex>"). Retired with loan applications (I3.3).
 - Lenders call their own endpoints with a key; only its sha256 is stored on the lender.
 """
 
 import hashlib
 import hmac
-import secrets
 from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import select
@@ -18,8 +18,6 @@ from sqlalchemy.orm import Session
 
 from app.db import models as m
 
-SESSION_COOKIE = "lamp_session"
-SESSION_HOURS = 12
 # Wrong-PIN lockout: after MAX_PIN_FAILURES wrong tries in a row, PIN checks are refused for
 # LOCKOUT_MINUTES (a 4-digit PIN otherwise falls to 10,000 guesses).
 MAX_PIN_FAILURES = 5
@@ -75,34 +73,6 @@ def check_pin(db: Session, ph: m.Pharmacy, pin: str | None) -> bool:
     ph.settings = st  # reassigned so SQLAlchemy sees the JSON change
     db.flush()
     return ok
-
-
-def create_session(db: Session, pid: str) -> m.OwnerSession:
-    """A new owner session for this pharmacy, valid for SESSION_HOURS."""
-    now = _now()
-    row = m.OwnerSession(token=secrets.token_urlsafe(32), pharmacy_id=pid, created_at=now,
-                         expires_at=now + timedelta(hours=SESSION_HOURS))
-    db.add(row)
-    db.flush()
-    return row
-
-
-def session_for(db: Session, token: str | None) -> m.OwnerSession | None:
-    """The live session for this cookie value, or None (missing, unknown or expired)."""
-    if not token:
-        return None
-    row = db.get(m.OwnerSession, token)
-    if row is None or row.expires_at <= _now():
-        return None
-    return row
-
-
-def end_session(db: Session, token: str | None) -> None:
-    """Sign out: the cookie value stops working at once."""
-    row = db.get(m.OwnerSession, token) if token else None
-    if row is not None:
-        db.delete(row)
-        db.flush()
 
 
 def lender_for_key(db: Session, key: str | None) -> m.Lender | None:

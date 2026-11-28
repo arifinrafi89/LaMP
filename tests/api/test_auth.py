@@ -1,4 +1,5 @@
-"""The closed API (win plan CORE-13): the 10 direct-HTTP cases, plus the PIN and the session."""
+"""The closed API (win plan CORE-13, build plan 2.1): the 10 direct-HTTP cases, the owner's
+shop from the session (404 for any other), and the loan-approval PIN."""
 
 import pytest
 
@@ -41,13 +42,13 @@ def test_04_log_stream_without_session_is_401(anon):
 
 def test_05_approve_without_session_is_401(client, anon):
     a = client.post(f"{P}/actions", json={"kind": "set_aside", "payload": {"amount": 500}}).json()
-    anon.cookies.clear()
+    anon.headers.pop("Authorization")
     assert anon.post(f"{P}/actions/{a['id']}/approve", json={"pin": PIN}).status_code == 401
 
 
 def test_06_approve_with_lender_key_is_403(client):
     a = client.post(f"{P}/actions", json={"kind": "set_aside", "payload": {"amount": 500}}).json()
-    client.cookies.clear()
+    client.headers.pop("Authorization")
     r = client.post(f"{P}/actions/{a['id']}/approve", json={"pin": PIN}, headers=lender_headers())
     assert r.status_code == 403
 
@@ -77,19 +78,33 @@ def test_10_spoofed_proposed_by_is_recorded_as_the_caller(client):
     assert ev["data"]["by"] == "owner"
 
 
-# --- PIN, session and approval ---------------------------------------------------------------
+# --- The shop comes from the session; approvals and the PIN -------------------------------
 
-def test_wrong_pin_is_401_and_logged(anon):
-    assert anon.post(f"{P}/session", json={"pin": "0000"}).status_code == 401
-    assert anon.get(f"{P}/accounts").status_code == 401
-    assert anon.post(f"{P}/session", json={"pin": PIN}).status_code == 200
-    assert "unlock_failed" in [e["event"] for e in anon.get("/api/v1/logs").json()]
+def test_another_shops_id_is_404_not_403(client, api_db):
+    from app.db import models as m
+
+    api_db.add(m.Pharmacy(id="other-shop", name="Other", city="Dhaka", cash_on_hand=0, settings={}, kind="real"))
+    api_db.commit()
+    for path in ("/api/v1/pharmacies/other-shop/accounts", "/api/v1/pharmacies/other-shop",
+                 "/api/v1/pharmacies/no-such-shop/accounts"):
+        r = client.get(path)
+        assert r.status_code == 404 and r.json()["code"] == "not_found", path
+    assert client.get(f"{P}/accounts").status_code == 200
 
 
-def test_session_cookie_is_httponly(anon):
-    r = anon.post(f"{P}/session", json={"pin": PIN})
-    assert r.json()["role"] == "owner"
-    assert "httponly" in r.headers["set-cookie"].lower()
+def test_an_owner_without_a_shop_gets_404(anon, api_db):
+    from app.auth import sessions, signin
+
+    owner = signin.shop_owner(api_db, "green-life")
+    owner.pharmacy_id = None
+    s, _ = sessions.create(api_db, owner, {"id": "d1", "name": "Phone", "os": "android", "app_version": "1"})
+    token, _ = sessions.access_for(api_db, owner, s)
+    api_db.commit()
+    assert anon.get(f"{P}/accounts", headers={"Authorization": f"Bearer {token}"}).status_code == 404
+
+
+def test_a_retired_pin_unlock_is_gone(anon):
+    assert anon.post(f"{P}/session", json={"pin": PIN}).status_code in (404, 405)
 
 
 def test_loan_approval_needs_the_pin_again(client):
@@ -111,9 +126,15 @@ def test_pin_hash_is_not_exposed(client):
     assert "owner_pin" not in client.get(P).json()["settings"]
 
 
-def test_reset_keeps_the_owner_signed_in(client):
+def test_reset_keeps_the_owner_signed_in(client, api_db):
+    from sqlalchemy import func, select
+
+    from app.auth.models import AuthSession
+
+    before = api_db.scalar(select(func.count()).select_from(AuthSession))
     assert client.post("/api/v1/dev/reset").status_code == 200
     assert client.get(f"{P}/accounts").status_code == 200
+    assert api_db.scalar(select(func.count()).select_from(AuthSession)) == before
 
 
 # --- Pause (CORE-08) -------------------------------------------------------------------------
@@ -142,26 +163,24 @@ def test_pause_blocks_the_copilot_but_not_the_owner(client, api_db):
     assert client.post(f"{P}/actions/{early.id}/approve").json()["status"] == "executed"
 
 
-def test_five_wrong_pins_lock_the_unlock(anon):
+def test_five_wrong_approval_pins_lock_loan_approvals(client):
+    a = _loan_proposal(client)
     for _ in range(5):
-        assert anon.post(f"{P}/session", json={"pin": "0000"}).status_code == 401
-    r = anon.post(f"{P}/session", json={"pin": PIN})  # even the right PIN waits out the lockout
+        assert client.post(f"{P}/actions/{a['id']}/approve", json={"pin": "0000"}).status_code == 401
+    r = client.post(f"{P}/actions/{a['id']}/approve", json={"pin": PIN})  # even the right PIN waits
     assert r.status_code == 429 and r.json()["detail"] == "Too many wrong PINs. Try again in 15 minutes."
 
 
-def test_a_right_pin_resets_the_count(anon):
+def test_a_right_approval_pin_resets_the_count(client):
+    first, second = _loan_proposal(client), None
     for _ in range(4):
-        anon.post(f"{P}/session", json={"pin": "0000"})
-    assert anon.post(f"{P}/session", json={"pin": PIN}).status_code == 200
+        client.post(f"{P}/actions/{first['id']}/approve", json={"pin": "0000"})
+    assert client.post(f"{P}/actions/{first['id']}/approve", json={"pin": PIN}).json()["status"] == "executed"
+    second = client.post(f"{P}/actions", json={"kind": "loan_application", "payload": {
+        "lender_id": "wallet-lender", "product_key": "wallet_loan", "amount": 5000}}).json()
     for _ in range(4):
-        assert anon.post(f"{P}/session", json={"pin": "0000"}).status_code == 401
-    assert anon.post(f"{P}/session", json={"pin": PIN}).status_code == 200
-
-
-def test_lock_ends_the_session(client):
-    assert client.delete(f"{P}/session").status_code == 204
-    assert client.get(f"{P}/passport").status_code == 401
-    assert client.delete(f"{P}/session").status_code == 204  # already locked: still fine
+        assert client.post(f"{P}/actions/{second['id']}/approve", json={"pin": "0000"}).status_code == 401
+    assert client.post(f"{P}/actions/{second['id']}/approve", json={"pin": PIN}).status_code == 200
 
 
 def test_reset_can_default_to_the_demo_captures(client, monkeypatch):

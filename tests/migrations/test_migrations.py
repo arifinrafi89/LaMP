@@ -33,10 +33,12 @@ def test_heads_match_the_models(db_url):
     assert diff == []
 
 
-def test_down_and_up_again(db_url):
+@pytest.mark.parametrize("branch", ["core", "applink"])
+def test_down_and_up_again(db_url, branch):
+    """Each branch steps down one revision and back up (plan 4.4), then everything goes."""
     cfg = _cfg(db_url)
     command.upgrade(cfg, "heads")
-    command.downgrade(cfg, "-1")
+    command.downgrade(cfg, f"{branch}@-1")
     command.upgrade(cfg, "heads")
     command.downgrade(cfg, "base")
 

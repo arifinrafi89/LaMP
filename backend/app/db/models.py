@@ -342,14 +342,6 @@ class FollowUp(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime)
 
 
-class OwnerSession(Base):
-    __tablename__ = "owner_session"
-    token: Mapped[str] = mapped_column(String, primary_key=True)
-    pharmacy_id: Mapped[str] = mapped_column(ForeignKey("pharmacy.id"))
-    created_at: Mapped[datetime] = mapped_column(DateTime)
-    expires_at: Mapped[datetime] = mapped_column(DateTime)
-
-
 class AuditLog(Base):
     __tablename__ = "audit_log"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)

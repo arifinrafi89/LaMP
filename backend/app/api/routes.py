@@ -7,7 +7,7 @@ import math
 from datetime import datetime, timezone
 from typing import Literal
 
-from fastapi import APIRouter, Body, Depends, File, Form, HTTPException, Request, Response, UploadFile
+from fastapi import APIRouter, Body, Depends, File, Form, HTTPException, Response, UploadFile
 from fastapi.responses import PlainTextResponse, StreamingResponse
 from sqlalchemy import func, select
 from sqlalchemy.exc import OperationalError, ProgrammingError
@@ -56,8 +56,6 @@ from app.schemas import (
     PolicyOut,
     PharmacyOut,
     PharmacySettings,
-    SessionIn,
-    SessionOut,
     ShelfLifeCreditOut,
     SupplierReply,
     TrimOut,
@@ -66,7 +64,7 @@ from app.schemas import (
 )
 
 from . import examples as ex
-from .deps import Caller, dev_only, require_any_owner, require_lender, require_owner
+from .deps import dev_only, require_any_owner, require_lender, require_owner
 
 router = APIRouter()   # public: health, owner unlock, lender catalogue
 owner = APIRouter()    # /pharmacies/{pid}/*: owner session for that pharmacy
@@ -93,20 +91,39 @@ def dev_reset(with_demo_captures: bool | None = None, db: Session = Depends(get_
 
 
 def reset_demo(db: Session, with_demo_captures: bool) -> str:
-    """Reload the seed, keeping owners signed in. Used by /dev/reset and the auto-reset."""
-    try:
-        sessions = [(s.token, s.pharmacy_id, s.created_at, s.expires_at) for s in db.scalars(select(m.OwnerSession))]
-    except (OperationalError, ProgrammingError):  # brand-new database: no tables yet
-        sessions = []
-    # End this read transaction: on PostgreSQL its lock on owner_session would block the
-    # DROP TABLE that load_seed runs on another connection.
+    """Reload the seed, keeping everyone signed in: owners, their sessions, the subscription
+    mirror and consents are put back. Used by /dev/reset and the auto-reset (DEV_MODE only)."""
+    kept = _snapshot(db)
+    # End this read transaction: on PostgreSQL its locks would block the DROP TABLE that
+    # load_seed runs on another connection.
     db.rollback()
     pid = load_seed(db, with_demo_captures=with_demo_captures)
-    for token, sp, created, expires in sessions:
-        if db.get(m.Pharmacy, sp) is not None:
-            db.add(m.OwnerSession(token=token, pharmacy_id=sp, created_at=created, expires_at=expires))
+    shops = set(db.scalars(select(m.Pharmacy.id)))
+    for table, rows in kept:
+        for row in rows:
+            if table.name == "owner" and row.get("pharmacy_id") not in shops:
+                row["pharmacy_id"] = None
+            db.execute(table.insert().values(**row))
     db.commit()
     return pid
+
+
+# Sign-in state that a demo reset must not wipe, parents first.
+_KEPT_TABLES = ("owner", "auth_session", "subscriber", "applink_consent")
+
+
+def _snapshot(db: Session) -> list:
+    out = []
+    for name in _KEPT_TABLES:
+        table = m.Base.metadata.tables.get(name)
+        if table is None:
+            continue
+        try:
+            out.append((table, [dict(r._mapping) for r in db.execute(table.select())]))
+        except (OperationalError, ProgrammingError):  # brand-new database: no tables yet
+            db.rollback()
+            out.append((table, []))
+    return out
 
 
 @dev.post("/dev/simulate/supplier-reply", response_model=ActionOut)
@@ -115,50 +132,13 @@ def simulate_supplier_reply(body: SupplierReply, db: Session = Depends(get_db)):
     return engines.supplier_reply(db, body.action_id, body.resolved())
 
 
-# --- Owner unlock -------------------------------------------------------------------------
-
-@router.delete("/pharmacies/{pid}/session", status_code=204)
-def end_session(pid: str, request: Request, response: Response, db: Session = Depends(get_db)):
-    """Lock the app: ends this session and clears the cookie. Safe to call when signed out."""
-    s = auth.session_for(db, request.cookies.get(auth.SESSION_COOKIE))
-    if s is not None and s.pharmacy_id == pid:
-        auth.end_session(db, s.token)
-        engines.log("T1", "AUTH", "owner_locked", db, pharmacy=pid)
-        db.commit()
-    response.delete_cookie(auth.SESSION_COOKIE, path="/")
+# --- The loan-approval PIN (LaMP.ai's; retired with loan applications in I3.3) ------------
 
 def _refuse_if_locked(ph) -> None:
     until = auth.locked_until(ph)
     if until:
         minutes = max(1, math.ceil((until - auth._now()).total_seconds() / 60))
         raise HTTPException(429, f"Too many wrong PINs. Try again in {minutes} minute{'s' if minutes > 1 else ''}.")
-
-
-@router.post("/pharmacies/{pid}/session", response_model=SessionOut)
-def create_session(pid: str, body: SessionIn, response: Response, db: Session = Depends(get_db)):
-    """Opens the owner's side: sets the HttpOnly session cookie. With ASK_OWNER_PIN on, only
-    the right PIN opens it."""
-    ph = engines.get_pharmacy(db, pid)
-    if not settings.ask_owner_pin:
-        s = auth.create_session(db, pid)
-        engines.log("T1", "AUTH", "owner_opened", db, pharmacy=pid)
-        db.commit()
-        response.set_cookie(auth.SESSION_COOKIE, s.token, max_age=auth.SESSION_HOURS * 3600,
-                            httponly=True, samesite="lax", path="/")
-        return {"pharmacy_id": pid, "role": "owner", "expires_at": s.expires_at}
-    if not body.pin:  # the app asking whether it needs a PIN: not a wrong try
-        raise HTTPException(401, "Enter your PIN.")
-    _refuse_if_locked(ph)
-    if not auth.check_pin(db, ph, body.pin):
-        engines.log("T1", "AUTH", "unlock_failed", db, pharmacy=pid)
-        db.commit()
-        raise HTTPException(401, "Wrong PIN")
-    s = auth.create_session(db, pid)
-    engines.log("T1", "AUTH", "owner_unlocked", db, pharmacy=pid)
-    db.commit()
-    response.set_cookie(auth.SESSION_COOKIE, s.token, max_age=auth.SESSION_HOURS * 3600,
-                        httponly=True, samesite="lax", path="/")
-    return {"pharmacy_id": pid, "role": "owner", "expires_at": s.expires_at}
 
 
 # --- Customer cards (public: the code on the customer's slip is the key) ------------------
@@ -255,8 +235,8 @@ def _get_capture(db: Session, pid: str, cid: str) -> m.Capture:
 
 @owner.get("/pharmacies/{pid}/captures/{cid}", response_model=CaptureOut)
 def get_capture(pid: str, cid: str, db: Session = Depends(get_db)):
-    if cid == ex.CAPTURE_INVOICE["id"]:
-        return ex.CAPTURE_INVOICE
+    if cid == ex.CAPTURE_INVOICE["id"] and engines.get_pharmacy(db, pid).kind == "demo":
+        return ex.CAPTURE_INVOICE  # the demo shop's worked example; no other shop has it
     return _capture_out(_get_capture(db, pid, cid))
 
 
@@ -494,8 +474,8 @@ async def stream_logs(once: bool = False, db: Session = Depends(get_db)):
     `once=true` sends the backlog and closes (for tests). After /dev/reset the log ids restart
     at lg-1, so the stream closes; the browser's EventSource reconnects and gets the new log."""
     factory = sessionmaker(bind=db.get_bind())
-    # End the sign-in check's read transaction now. Held open for the whole stream, its lock
-    # on owner_session blocks the DROP TABLE of a demo reset on PostgreSQL.
+    # End the sign-in check's read transaction now. Held open for the whole stream, its locks
+    # would block the DROP TABLE of a demo reset on PostgreSQL.
     db.close()
 
     async def gen():

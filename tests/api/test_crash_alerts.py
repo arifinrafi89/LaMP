@@ -30,7 +30,7 @@ def _crash(client):
 
 
 def test_an_unhandled_error_is_a_500_with_one_email(sent, client):
-    c = TestClient(app, raise_server_exceptions=False, cookies=client.cookies)
+    c = TestClient(app, raise_server_exceptions=False, headers=client.headers)
     r = _crash(c)
     assert r.status_code == 500 and len(r.json()["request_id"]) == 12
     import time

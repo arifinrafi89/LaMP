@@ -82,10 +82,16 @@ def demo_owner(db: Session, code: str) -> Owner:
                      .order_by(Pharmacy.created_at))
     if shop is None:
         raise ApiProblem(404, "not_found", "The demo shop isn't set up yet.")
-    digest = crypto.phone_hash(f"demo:{shop.id}")
+    return shop_owner(db, shop.id)
+
+
+def shop_owner(db: Session, pid: str) -> Owner:
+    """The phoneless owner of a demo or test shop, made on first use. Real owners only
+    ever come from a verified code (`owner_for`)."""
+    digest = crypto.phone_hash(f"demo:{pid}")
     owner = db.scalar(select(Owner).where(Owner.phone_hash == digest))
     if owner is None:
-        owner = Owner(id=str(uuid.uuid4()), pharmacy_id=shop.id, phone_hash=digest,
+        owner = Owner(id=str(uuid.uuid4()), pharmacy_id=pid, phone_hash=digest,
                       phone_enc=crypto.seal(DEMO_PHONE, purpose=OWNER_PHONE), language="en", created_at=_now())
         db.add(owner)
         db.flush()

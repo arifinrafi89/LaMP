@@ -46,7 +46,17 @@ def main() -> None:
         return r.json()
 
     out = {"health": get("/api/v1/health"), "reset": post("/api/v1/dev/reset?with_demo_captures=true")}
-    out["session"] = post(f"{p}/session", {"pin": "2468"})
+    # Sign in as the demo shop's owner, the way /auth/demo does (contracts/examples/session.json retired).
+    from app.auth import sessions, signin
+    from app.db.session import SessionLocal
+
+    with SessionLocal() as db:
+        owner = signin.shop_owner(db, "green-life")
+        s, _ = sessions.create(db, owner, {"id": "export-script", "name": "Export script", "os": "script",
+                                           "app_version": "-"})
+        token, _ = sessions.access_for(db, owner, s)
+        db.commit()
+    c.headers["Authorization"] = f"Bearer {token}"
     out |= {"pharmacy": get(p), "accounts": get(f"{p}/accounts"), "dues": get(f"{p}/dues"),
             "forecast": get(f"{p}/forecast"), "alerts": get(f"{p}/alerts"), "expiry": get(f"{p}/expiry"),
             "orders": get(f"{p}/orders"), "trim": get(f"{p}/orders/o-1/trim"),

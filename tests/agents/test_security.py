@@ -78,13 +78,13 @@ def test_share_plan_reads_nothing_and_changes_nothing():
 
 
 def test_chat_needs_the_owner_session(client, monkeypatch):
-    """Without the session cookie the chat answers 401; nothing reaches the model."""
+    """Without the owner's token the chat answers 401; nothing reaches the model."""
     from app.api import deps
     from app.main import app
 
     # tests/conftest.py lifts the owner check for chat tests until it is removed; not here.
     monkeypatch.delitem(app.dependency_overrides, deps.require_any_owner, raising=False)
-    client.cookies.clear()
+    client.headers.pop("Authorization", None)
     r = client.post("/api/v1/chat", json={"trigger": "submit-message", "id": "c1", "messages": [],
                                           "pharmacy_id": "green-life"})
     assert r.status_code == 401

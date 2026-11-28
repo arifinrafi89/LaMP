@@ -1,6 +1,6 @@
 # LaMP progress tracker
 
-*How much of the build plan is done. Task ids and details are in [`LaMP-Build-Plan.md`](LaMP-Build-Plan.md), section 7 (the stages) and its Applink track. Last updated: 28 Nov 2026.*
+*How much of the build plan is done. Task ids and details are in [`LaMP-Build-Plan.md`](LaMP-Build-Plan.md), section 7 (the stages) and its Applink track. Last updated: 28 Nov 2026, evening.*
 
 **How we work (since 28 Nov)**
 
@@ -16,16 +16,28 @@
 - **Hand over before you stop.** When a limit is near, finish or back out the task in hand (never leave `main` red), then rewrite "Where to pick up" for the next person.
 - **Rules that stay:** no AI attribution in commits; never commit `.env` or keys (gitleaks checks every push); tests never call Applink or OpenAI (`APPLINK_MODE=mock`, `LLM_MODE=replay`); no customer names or medicines anywhere, amounts only.
 
-## Where to pick up (28 Nov)
+## Where to pick up (28 Nov, evening handover)
 
-- **On `main`:**
-  - Ishmam's setup (merged 28 Nov): Alembic with the `core` and `applink` branches, the `owner` table and shop kinds, contract v1 (every unbuilt route answers 501 `not_built`), real Dhaka dates, and the engine stubs for jobs;
-  - the Applink client and its mock, the families' text parser, every SMS in English and Bangla;
-  - the terms, privacy policy and consent wordings (`/legal/*`);
-  - all of Ayon's screens, through Stage 3, plus Settings, Help, the SMS phone and the family's web card.
-
-  662 server tests pass, and CI is green.
-- **Next:** the first open task in "The flow" below.
+- **Done today, all on `main`, CI green (716 server tests pass):**
+  - Ishmam's setup merged: Alembic (`core` and `applink` branches), the `owner` table and shop kinds, contract v1, real Dhaka dates, the engine stubs for jobs.
+  - Flow steps 1–3 below: the contract for the 27 Nov plan; owner sign-in (A1.2); one shop per session with the tenancy harness (I2.1).
+- **How owners sign in now:**
+  - `POST /auth/otp/request` and `/auth/otp/verify` on the Applink mock (the code is `123456`), then a 15-minute bearer token and a rotating refresh token;
+  - every `/pharmacies/{pid}/*` route takes its shop from the token (`api/deps.py`), and another shop's id answers 404;
+  - LaMP.ai's PIN unlock (`/pharmacies/{pid}/session`, `owner_session`) is gone; the PIN is only asked at loan approval, until I3.3 retires loan applications.
+- **Next:** flow step 4, **I2.2 Core routes**. Build each route in its own module under `backend/app/api/`, and delete its "I" line in `api/contract.py` (a test checks this). Notes for it:
+  - `/me`: `consents_needed` comes from `app.auth.consents.needed()`, and `family_join_routes` from `app.applink.config.get_settings().join_routes`;
+  - `plan` and `plus_status`: read the `subscriber` mirror (`app.auth.sessions.plan_of()` shows how);
+  - `POST /pharmacies` must set `owner.pharmacy_id`, so the next request finds the new shop (tokens don't carry it);
+  - `GET /customers` must move from `PatientDueOut` to `CustomerRow`, with `join: {text: "LAMP " + code without dashes, to: "21213"}`.
+- **Traps hit today:**
+  - The clone path "Applink Hackathon" has a space. `alembic.ini` now lists migration folders one per line; keep it that way.
+  - FastAPI here wraps included routers lazily (`_IncludedRouter`). To list every route, walk them the way `tests/tenancy/test_tenancy_routes.py` does.
+  - Errors go through `app/api/problems.py` (`raise ApiProblem(status, code, detail)`). Wrong codes answer 400, never 401: the app treats 401 as "refresh and retry".
+  - In tests, `owner_headers(db, pid)` (in `tests/conftest.py`) signs in any shop's owner. The API `client` fixture already carries green-life's token.
+  - Test helper modules need unique names (`api_support.py`, `tenancy_support.py`): there are no `__init__.py` files, so `from conftest import …` picks the wrong folder's conftest.
+  - With `DEV_MODE=true`, the empty `JWT_SECRET`, `PHONE_PEPPER` and `PII_KEY` fall back to dev values. Without it, the server won't start until they are set (`.env.example`).
+  - History (`/logs*`) is still one chain for every shop. A strict xfail test in the tenancy harness marks it; flow step 5 fixes it.
 - **Parked, for later:** everything on a website dashboard: Render, the Applink portal, UptimeRobot, GitHub settings. Until then, everything is built and tested in mock mode on a laptop.
 
 **For a coding agent picking up**
@@ -43,23 +55,24 @@ Each step needs the ones before it. Tick here and in the stage lists below.
 
 1. [x] **Contract for the 27 Nov plan:** `/demo/sms` and `GET /demo/sms/thread`; `join: {text, to}` on new customers and customer rows; `family_join_routes` in `/me`; `POST /plus/otp` and `OTP_SENT`; the `join_by_text` error. Ayon's app already calls these. · on `main` (28 Nov)
 2. [x] **A1.2 Sign-in:** OTP sign-in (mock), tokens, refresh rotation, devices, demo sign-in, rate limits, `current_owner`; `POST /me/consents`. The `applink` migration branch starts here. · on `main` (28 Nov): `app/auth/`, `applink/otp.py`, migration `a001`
-3. [ ] **I2.1 One shop per session:** a shared dependency gives every owner route its `pharmacy_id` from the token (404 for another shop's id); tenancy test harness.
+3. [x] **I2.1 One shop per session:** a shared dependency gives every owner route its `pharmacy_id` from the token (404 for another shop's id); tenancy test harness. · on `main` (28 Nov): `api/deps.py`, `tests/tenancy/`; the PIN unlock retired (core migration `0003`)
 4. [ ] **I2.2 Core routes:** `/me`, create and set up a shop, suppliers, opening, stock, expenses, `/today`, payments, sales days, customers.
-5. [ ] **A1.3 Jobs:** table, runner inside the web service, scheduler (Asia/Dhaka), tick endpoint; `/ready`.
-6. [ ] **A1.4 part 2, CI:** server tests on Postgres, and the migration check (up, down one, up).
-7. [ ] **A2.1 Callbacks:** the four Applink callbacks (answer first, dedupe, secret, IP list, redaction) and the subscription mirror.
-8. [ ] **A2.2 part 2, families by SMS:** the facade (`applink/services.py`), `join.py`, both join routes, delivery reports.
-9. [ ] **A2.3 The plan SMS; `/demo/sms`**, the drawn phone's thread, `/demo/reset`.
-10. [ ] **I2.3 Capture changes:** `stored_file`, idempotency, the free plan's 10 scans, `ai_usage`.
-11. [ ] **MP3 locally:** sign in (mock OTP), set up a shop, scan a demo bill, and Today shows the figures, with the app against a local server.
-12. [ ] **A3.1 + I3.2 Credit record:** the CaaS state machine and charging notification; preview, PDF, shares, `/r/{token}`, `on_paid`.
-13. [ ] **A3.2 + I3.1 LaMP Plus and Ask:** consent, the OTP on the Plus app, cancel, entitlements; chat with `pid` from the session, the Plus gate, per-shop budget.
-14. [ ] **I3.3 Approvals;** `/dev`, `/lenders` and `/consents` not mounted in production.
-15. [ ] **A3.3 Jobs that run every day:** 8 AM brief, reminders, nightly reconcile, stuck charges, demo reseed.
-16. [ ] **Account and support routes:** `/me` export and delete, `/app/config`, `/support/reports`, `/telemetry/events`, `/usage`.
-17. [ ] **I3.4 Tenancy tests for every route.**
-18. [ ] **Stage 4 checks:** cross-testing pass (9.5) and P0/P1 fixes; I4.1 eval, red team and golden tests on Postgres; A4.3 secret scan of the whole history; Y4.2 integration tests against a local server.
-19. [ ] **Words:** I4.2 README declarations; proposal drafts (I3.5, A3.5), screenshots (Y3.5), proposal compiled (I4.3).
+5. [ ] **Per-shop History:** every audit event carries its shop (`audit_log.pharmacy_id`), one hash chain per shop, and `/logs*` (list, export, verify, stream) show only the caller's shop. Then remove the strict xfail in `tests/tenancy/test_tenancy_routes.py`.
+6. [ ] **A1.3 Jobs:** table, runner inside the web service, scheduler (Asia/Dhaka), tick endpoint; `/ready`.
+7. [ ] **A1.4 part 2, CI:** server tests on Postgres, and the migration check (up, down one, up).
+8. [ ] **A2.1 Callbacks:** the four Applink callbacks (answer first, dedupe, secret, IP list, redaction) and the subscription mirror.
+9. [ ] **A2.2 part 2, families by SMS:** the facade (`applink/services.py`), `join.py`, both join routes, delivery reports.
+10. [ ] **A2.3 The plan SMS; `/demo/sms`**, the drawn phone's thread, `/demo/reset`.
+11. [ ] **I2.3 Capture changes:** `stored_file`, idempotency, the free plan's 10 scans, `ai_usage`.
+12. [ ] **MP3 locally:** sign in (mock OTP), set up a shop, scan a demo bill, and Today shows the figures, with the app against a local server.
+13. [ ] **A3.1 + I3.2 Credit record:** the CaaS state machine and charging notification; preview, PDF, shares, `/r/{token}`, `on_paid`.
+14. [ ] **A3.2 + I3.1 LaMP Plus and Ask:** consent, the OTP on the Plus app, cancel, entitlements; chat with `pid` from the session, the Plus gate, per-shop budget.
+15. [ ] **I3.3 Approvals;** `/dev`, `/lenders` and `/consents` not mounted in production.
+16. [ ] **A3.3 Jobs that run every day:** 8 AM brief, reminders, nightly reconcile, stuck charges, demo reseed.
+17. [ ] **Account and support routes:** `/me` export and delete, `/app/config`, `/support/reports`, `/telemetry/events`, `/usage`.
+18. [ ] **I3.4 Tenancy tests for every route.**
+19. [ ] **Stage 4 checks:** cross-testing pass (9.5) and P0/P1 fixes; I4.1 eval, red team and golden tests on Postgres; A4.3 secret scan of the whole history; Y4.2 integration tests against a local server.
+20. [ ] **Words:** I4.2 README declarations; proposal drafts (I3.5, A3.5), screenshots (Y3.5), proposal compiled (I4.3).
 
 **Done by people, not code:** I0.6 Farhan's written OK; the video (11.1); submitting (Stage 5).
 
@@ -71,12 +84,12 @@ Each step needs the ones before it. Tick here and in the stage lists below.
 |---|---|---|---|
 | Stage 0: repo, accounts, Applink forms | 16 | 10 | 21 |
 | Stage 1: foundations | 11 | 11 | 16 |
-| Stage 2: core flows in mock mode | 5 | 5 | 13 |
+| Stage 2: core flows in mock mode | 6 | 6 | 13 |
 | Stage 3: money, Plus, AI, families | 4 | 4 | 16 |
 | Stage 4: test, fix, record | 1 | 1 | 11 |
 | Stage 5: submit | 0 | 0 | 5 |
 | Applink track | 1 | 0 | 9 |
-| **All** | **38** | **31** | **91** |
+| **All** | **39** | **32** | **91** |
 
 ## Stage 0: the repo, accounts and Applink forms
 
@@ -123,7 +136,7 @@ Each step needs the ones before it. Tick here and in the stage lists below.
 
 ## Stage 2: the core flows, end to end in mock mode
 
-- [ ] **I2.1** One shared `pharmacy_id` dependency; tenancy harness · **[I]**
+- [x] **I2.1** One shared `pharmacy_id` dependency; tenancy harness · **[I]** · on `main` (28 Nov)
 - [ ] **I2.2** New routes: `/me`, setup, suppliers, opening, stock, expenses, `/today`, payments, sales days, customers · **[I]**
 - [ ] **I2.3** Capture changes (`stored_file`, idempotency, free-plan count, `ai_usage`) · **[I]**
 - [ ] **A2.1** The four Applink callbacks and the subscription mirror · **[A]**

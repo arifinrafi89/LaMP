@@ -25,87 +25,6 @@
         }
       }
     },
-    "/api/v1/pharmacies/{pid}/session": {
-      "delete": {
-        "summary": "End Session",
-        "description": "Lock the app: ends this session and clears the cookie. Safe to call when signed out.",
-        "operationId": "end_session_api_v1_pharmacies__pid__session_delete",
-        "parameters": [
-          {
-            "name": "pid",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Pid"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Successful Response"
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "summary": "Create Session",
-        "description": "Opens the owner's side: sets the HttpOnly session cookie. With ASK_OWNER_PIN on, only\nthe right PIN opens it.",
-        "operationId": "create_session_api_v1_pharmacies__pid__session_post",
-        "parameters": [
-          {
-            "name": "pid",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Pid"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SessionIn"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SessionOut"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/v1/cards/{code}": {
       "get": {
         "summary": "Get Customer Card",
@@ -2175,7 +2094,7 @@
     "/api/v1/chat": {
       "post": {
         "summary": "Chat Endpoint",
-        "description": "Body: the AI SDK's chat request, plus `pharmacy_id` (default `green-life`) and `lang`\n(\"en\" by default, or \"bn\" for answers in Bangla).\nNeeds the owner session (401 without it), and only for that owner's own pharmacy (403).",
+        "description": "Body: the AI SDK's chat request, plus `lang` (\"en\" by default, or \"bn\" for answers in\nBangla). The shop comes from the session (plan 2.2), never the body: a `pharmacy_id` in\nthe body that isn't the caller's own answers 404. No session: 401.",
         "operationId": "chat_endpoint_api_v1_chat_post",
         "responses": {
           "200": {
@@ -10914,50 +10833,6 @@
         ],
         "title": "Saved",
         "description": "What a setup step answers: how many rows it saved."
-      },
-      "SessionIn": {
-        "properties": {
-          "pin": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Pin"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "title": "SessionIn"
-      },
-      "SessionOut": {
-        "properties": {
-          "pharmacy_id": {
-            "type": "string",
-            "title": "Pharmacy Id"
-          },
-          "role": {
-            "type": "string",
-            "const": "owner",
-            "title": "Role"
-          },
-          "expires_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Expires At"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "pharmacy_id",
-          "role",
-          "expires_at"
-        ],
-        "title": "SessionOut"
       },
       "ShareIn": {
         "properties": {

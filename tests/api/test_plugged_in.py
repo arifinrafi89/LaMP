@@ -34,14 +34,21 @@ def test_missing_packages_are_skipped():
 def test_routers_mount_under_api_and_root(monkeypatch):
     from app import main
 
+    names = ("app.auth", "app.auth.routes", "app.applink", "app.applink.routes")
+    real_modules = {k: sys.modules.get(k) for k in names}
+    real_routes = list(main.app.router.routes)
     _fake_package("auth", api=True, root=False)
     _fake_package("applink", api=True, root=True)
     try:
         mounted = main._mount_plugged_in()
         c = TestClient(main.app)
         answers = [c.get(p).status_code for p in ("/api/v1/auth-probe", "/api/v1/applink-probe", "/applink-root-probe")]
-    finally:
-        for k in ("app.auth", "app.auth.routes", "app.applink", "app.applink.routes"):
-            sys.modules.pop(k, None)
+    finally:  # put the real packages and routes back, so later tests see the real app
+        for k, mod in real_modules.items():
+            if mod is None:
+                sys.modules.pop(k, None)
+            else:
+                sys.modules[k] = mod
+        main.app.router.routes[:] = real_routes
     assert {"auth:api", "applink:api", "applink:root"} <= set(mounted)
     assert answers == [200, 200, 200]
