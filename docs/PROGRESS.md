@@ -1,6 +1,6 @@
 # LaMP progress tracker
 
-*How much of the build plan is done. Task ids and details are in [`LaMP-Build-Plan.md`](LaMP-Build-Plan.md), section 7 (the stages) and its Applink track. Last updated: 27 Nov 2026.*
+*How much of the build plan is done. Task ids and details are in [`LaMP-Build-Plan.md`](LaMP-Build-Plan.md), section 7 (the stages) and its Applink track. Last updated: 28 Nov 2026.*
 
 **How to tick**
 
@@ -74,13 +74,13 @@
 | Stage | Done | Of those, on `main` | Total |
 |---|---|---|---|
 | Stage 0: repo, accounts, Applink forms | 15 | 5 | 21 |
-| Stage 1: foundations | 8 | 4 | 15 |
-| Stage 2: core flows in mock mode | 1 | 1 | 12 |
-| Stage 3: money, Plus, AI, families | 0 | 0 | 16 |
-| Stage 4: test, fix, record | 0 | 0 | 11 |
+| Stage 1: foundations | 9 | 5 | 16 |
+| Stage 2: core flows in mock mode | 5 | 5 | 13 |
+| Stage 3: money, Plus, AI, families | 4 | 4 | 16 |
+| Stage 4: test, fix, record | 1 | 1 | 11 |
 | Stage 5: submit | 0 | 0 | 5 |
 | Applink track | 1 | 0 | 9 |
-| **All** | **25** | **10** | **89** |
+| **All** | **35** | **20** | **91** |
 
 > **Waiting to reach `main`:** Ishmam's branch `ishmam/I0.3-day0-setup` holds I0.2, I0.3, I0.4, I0.5 and I1.1–I1.4 (PRs #4 and #5 were merged into his own branches, not into `main`). Until it's merged, `main` has no Alembic, no Stage 0 packages, no `owner` table and no contract v1, and Arifin's and Ayon's server-side work can't build on them.
 
@@ -122,6 +122,7 @@
 - [x] **Y1.1** App shell: go_router, theme, ARB en and bn, digits, `ApiClient` · **[Y]** · on `main`
 - [x] **Y1.2** Welcome, number, code, token store (app side; server sign-in is A1.2) · **[Y]** · on `main`
 - [x] **Y1.3** Today · **[Y]** · on `main` (PR #1)
+- [x] **G3** Terms, privacy policy and consent wordings in English and Bangla; `/legal/current` · **[A]** · on `main` (PR #24)
 - [ ] **MP1** Contract v1 frozen (approved by Ayon and Arifin) · signed off by **[I]**
 - [ ] **MP2** Interfaces in 1.4 merged as stubs · signed off by **[A]** and **[I]**
 - [ ] **I0.6 follow-up** If Farhan says no: engines rewritten (cut order 15.1) · **[I]** · only if needed
@@ -136,9 +137,10 @@
 - [ ] **A2.3** The plan SMS; `/demo/sms` and the drawn phone's thread · **[A]**
 - [ ] **A2.4** Sandbox items 1–7 as soon as the apps are approved · **[A]**
 - [x] **Y2.1** Setup flow · **[Y]** · on `main` (PR #3)
-- [ ] **Y2.2** Scan · **[Y]**
-- [ ] **Y2.3** Stock · **[Y]**
-- [ ] **Y2.4** Offline cache, error and empty states · **[Y]**
+- [x] **Y2.2** Scan · **[Y]** · on `main` (PR #17)
+- [x] **Y2.3** Stock · **[Y]** · on `main` (PR #17)
+- [x] **Y2.4** Offline cache, error and empty states · **[Y]** · on `main` (PR #17)
+- [x] **Y-card** The family's web card `/me/<code>`: what they owe and a plan they choose · **[Y]** · on `main` (PR #23)
 - [ ] **MP3** First end-to-end on the production service in mock mode · signed off by **[I]** and **[Y]**
 
 ## Stage 3: money, Plus, AI and families
@@ -153,10 +155,10 @@
 - [ ] **A3.3** Jobs: 8 AM brief, reminders, reconcile, stuck charges, demo reseed · **[A]**
 - [ ] **A3.4** Sandbox checklist run 1 · **[A]**
 - [ ] **A3.5** Proposal P6 draft · **[A]**
-- [ ] **Y3.1** Customers: add with the join text, sale, payment, plan, SMS status · **[Y]**
-- [ ] **Y3.2** Cash, Plan, Approvals · **[Y]**
-- [ ] **Y3.3** Ask with the stream parser · **[Y]**
-- [ ] **Y3.4** Credit record and LaMP Plus screens · **[Y]**
+- [x] **Y3.1** Customers: add with the join text, sale, payment, plan, SMS status · **[Y]** · on `main` (PR #18)
+- [x] **Y3.2** Cash, Plan, Approvals · **[Y]** · on `main` (PR #19)
+- [x] **Y3.3** Ask with the stream parser · **[Y]** · on `main` (PR #21)
+- [x] **Y3.4** Credit record and LaMP Plus screens · **[Y]** · on `main` (PR #20)
 - [ ] **Y3.5** Screenshots for P3, P4, P8 · **[Y]**
 - [ ] **MP4** Phase 1 feature freeze; proposal drafts in · signed off by **[I]**
 
@@ -166,7 +168,7 @@
 - [ ] **A4.1** Production to sandbox; Sentry and UptimeRobot alerts; backup checked · **[A]**
 - [ ] **A4.2** Sandbox checklist run 2 · **[A]**
 - [ ] **A4.3** Secret scan of the whole history · **[A]**
-- [ ] **Y4.1** Settings, Help, report a problem, the SMS phone mock-up · **[Y]**
+- [x] **Y4.1** Settings, Help, report a problem, the SMS phone mock-up · **[Y]** · on `main` (PR #22: Settings, Help, the update gate, the drawn SMS phone)
 - [ ] **Y4.2** Web build on Render, signed APK, integration tests · **[Y]**
 - [ ] **I4.1** Eval, red team, golden tests on Postgres · **[I]**
 - [ ] **I4.2** README declarations · **[I]**
