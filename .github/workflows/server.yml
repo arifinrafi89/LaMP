@@ -43,6 +43,7 @@ jobs:
   postgres:
     name: migrations and tests on Postgres
     runs-on: ubuntu-latest
+    timeout-minutes: 20  # a lock wait used to hang this job until it was cancelled
     services:
       postgres:
         image: postgres:16
@@ -72,11 +73,16 @@ jobs:
           cache: pip
           cache-dependency-path: backend/pyproject.toml
       - run: pip install -e ".[dev]"
-      - name: A database of its own for the migration check
+      # Dhaka time, not UTC: an aware timestamp stored in a naive column then shows up as
+      # a wrong time (and a broken History hash) instead of passing by luck. A lock wait
+      # fails after 10 s instead of hanging the job.
+      - name: The test database on Dhaka time, and a database of its own for the migration check
         run: >-
           python -c "import psycopg;
-          psycopg.connect('postgresql://lamp:lamp@localhost:5432/lamp_test', autocommit=True)
-          .execute('CREATE DATABASE lamp_migrations')"
+          c = psycopg.connect('postgresql://lamp:lamp@localhost:5432/lamp_test', autocommit=True);
+          c.execute(\"ALTER DATABASE lamp_test SET timezone TO 'Asia/Dhaka'\");
+          c.execute(\"ALTER DATABASE lamp_test SET lock_timeout TO '10s'\");
+          c.execute('CREATE DATABASE lamp_migrations')"
       - name: Migrations go up, down one on each branch, and up again
         env:
           DATABASE_URL: postgresql://lamp:lamp@localhost:5432/lamp_migrations

@@ -29,10 +29,18 @@ ON_POSTGRES = _URL.startswith("postgresql")
 def factory():
     engine = (create_engine(_URL, connect_args={"check_same_thread": False}, poolclass=StaticPool)
               if _URL.startswith("sqlite") else create_engine(_URL))
+    _drop_alembic_version(engine)
     m.Base.metadata.drop_all(engine)
     m.Base.metadata.create_all(engine)
     yield sessionmaker(bind=engine, expire_on_commit=False)
+    _drop_alembic_version(engine)  # on a shared Postgres it would outlive the test, and the run
     engine.dispose()
+
+
+def _drop_alembic_version(engine) -> None:
+    """test_ready_reports_each_part makes this table; it isn't one of the models' tables."""
+    with engine.begin() as conn:
+        conn.execute(text("DROP TABLE IF EXISTS alembic_version"))
 
 
 @pytest.fixture(autouse=True)
