@@ -6,24 +6,41 @@ LaMP helps small pharmacies in Bangladesh keep track of bills, stock, cash and w
 
 1. Pull `main`.
 2. Read **[`docs/PROGRESS.md`](docs/PROGRESS.md)**: "How we work", then "Where to pick up", then "The flow".
-3. Take the **first unticked step in "The flow"**. The [A]/[I]/[Y] tags show who the plan first gave a task to. They no longer say who does it: whoever is working takes the next step.
+3. Take the **first unticked step in "The flow"** that has no open PR yet (`gh pr list`). The [A]/[I]/[Y] tags show who the plan first gave a task to. They no longer say who does it: whoever is working takes the next step.
 
 ## The loop, for every step
 
-1. Build the step and its tests. PROGRESS.md names the plan sections to read.
-2. Run the server tests: `cd backend && pytest -q`. To set up once: Python 3.12+, `pip install -e ".[dev]"`. For `mobile/` changes, also run `flutter analyze` and `flutter test` in `mobile/`.
-3. Commit straight to `main` and push. There are no branches and no PRs.
-4. Tick the step in `docs/PROGRESS.md`, in the same commit or the next one. Update the summary table and "Last updated" too.
-5. Read the CI run on `main` once. Fix anything red before you start the next step.
+Every step gets its own branch and its own pull request. Nobody pushes to `main` directly, not even for docs.
+
+1. **Branch.** Pull `main`, then `git switch -c <name>/<task>`, for example `ayon/I2.2-core-routes`. A big step may be split into parts, with one branch and one PR per part.
+2. **Build the step and its tests.** PROGRESS.md names the plan sections to read.
+3. **Run the tests:** `cd backend && pytest -q`. To set up once: Python 3.12+, `pip install -e ".[dev]"`. For `mobile/` changes, also run `flutter analyze` and `flutter test` in `mobile/`. Never say a step is done or passing until you have seen these commands pass.
+4. **Tick** the step in `docs/PROGRESS.md` on the same branch, as "on `main` (PR #n)". Update the summary table and "Last updated" too.
+5. **Open the PR.** Read your own diff first. Then push the branch and open a PR to `main` with `gh pr create`. Say what changed, why, and how it was tested. CODEOWNERS asks the right teammate to review it.
+6. **Get it green and approved.** Read the CI run on the PR, and fix anything red on the branch. Check each review comment against the code before you change anything.
+7. **Merge** once CI is green and a teammate has approved. Then delete the branch, pull `main`, and start the next step on a new branch.
+
+### Superpowers skills: use them when they help
+
+The `superpowers` plugin for Claude Code has skills for some of these steps. They are optional: use one when the step needs it, and skip it for small or obvious changes.
+
+- `superpowers:brainstorming`: when a step has open design questions.
+- `superpowers:writing-plans`, then `superpowers:executing-plans`: for a big step with many parts.
+- `superpowers:test-driven-development`: for new logic that's easy to get wrong.
+- `superpowers:systematic-debugging`: when a test or a CI run fails and the cause isn't obvious.
+- `superpowers:requesting-code-review` and `superpowers:receiving-code-review`: for a large diff, or a review with many comments.
+- `superpowers:finishing-a-development-branch`: a checklist for merging and cleaning up.
 
 ## Before you stop (limit near, end of the day)
 
-Finish the step or back it out, so `main` stays green. Then rewrite "Where to pick up" in `docs/PROGRESS.md`. Say what's done, what's half-done and where it is, what the next step is, and any traps you hit. That box is the only handover the next person's agent gets.
+Commit what you have to the step's branch and push it. If the step isn't finished, open its PR as a draft (`gh pr create --draft`). Never merge anything red into `main`. Then rewrite "Where to pick up" in `docs/PROGRESS.md`, on that branch. Say what's done, what's half-done (the branch and the PR), what the next step is, and any traps you hit. That box is the only handover the next person's agent gets.
 
 ## Hard rules
 
 - Never commit `.env`, keys or tokens, and never print a secret in chat or in logs. gitleaks checks every push.
-- No AI attribution in commits: no `Co-Authored-By` lines.
+- No AI attribution in commits or PRs: no `Co-Authored-By` lines.
+- Never push to `main` directly, and never merge a PR whose CI is red. Every change goes through a branch and a PR.
+- Start each commit message with its area (`api:`, `auth:`, `applink:`, `mobile:`, `docs:` …).
 - Tests never call Applink or OpenAI: use `APPLINK_MODE=mock` and `LLM_MODE=replay`.
 - Tests and staging use test data only. Real shops' and families' data exists only in production.
 - Every Applink call is made from the server, never from the app. Credentials come only from the server's environment.
