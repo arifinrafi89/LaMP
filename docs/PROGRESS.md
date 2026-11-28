@@ -2,95 +2,89 @@
 
 *How much of the build plan is done. Task ids and details are in [`LaMP-Build-Plan.md`](LaMP-Build-Plan.md), section 7 (the stages) and its Applink track. Last updated: 28 Nov 2026.*
 
-**How to tick**
+**How we work (since 28 Nov)**
 
-- Tick `[x]` when a task is done and pushed, and write where it is: **on `main`** (merged), **PR #n** (waiting for review), or **on a branch** (pushed but no PR to `main` yet).
-- For settings and forms (Render, Applink, GitHub), tick when it's done and checked.
-- Update the summary table in the same commit, and change the "Last updated" date. "Of those, on `main`" counts only ticked tasks whose work is merged into `main`.
-- Each person ticks their own tasks. Arifin ticks in the same PR as the work.
+- **One flow, not three lanes.** The [I]/[A]/[Y] tags below say who the plan first gave a task to. They no longer decide who builds it. Whoever is working (a teammate or their coding agent) takes the **first open task in "The flow"** below.
+- **One task at a time, straight to `main`:**
+  1. pull `main`;
+  2. build the task and its tests;
+  3. run the whole server suite (`cd backend && pytest -q`), and `flutter test` for `mobile/` changes;
+  4. commit to `main` and push; there are no branches or PRs;
+  5. tick the task here, in the same commit or the next one;
+  6. read the CI run on `main` once, and fix anything red before the next task.
+- **Ticks:** `[x]` once the work is on `main`, or for a setting or form once it is done and checked. Update the summary table and the "Last updated" date in the same commit.
+- **Hand over before you stop.** When a limit is near, finish or back out the task in hand (never leave `main` red), then rewrite "Where to pick up" for the next person.
+- **Rules that stay:** no AI attribution in commits; never commit `.env` or keys (gitleaks checks every push); tests never call Applink or OpenAI (`APPLINK_MODE=mock`, `LLM_MODE=replay`); no customer names or medicines anywhere, amounts only.
 
-## Where to pick up (27 Nov, end of day)
-
-**For everyone, and your coding agents**
+## Where to pick up (28 Nov)
 
 - **On `main`:**
-  - the 27 Nov plan (no USSD; build order in stages) and this tracker;
-  - Arifin's `applink/`, `auth/` and `jobs/` packages;
-  - the Applink client and its mock (`backend/app/applink/client/`);
-  - the families' text parser (`applink/family/commands.py`) and every SMS in English and Bangla (`applink/templates/`);
-  - a gitleaks secret scan on every PR (`server.yml`).
+  - Ishmam's setup (merged 28 Nov): Alembic with the `core` and `applink` branches, the `owner` table and shop kinds, contract v1 (every unbuilt route answers 501 `not_built`), real Dhaka dates, and the engine stubs for jobs;
+  - the Applink client and its mock, the families' text parser, every SMS in English and Bangla;
+  - the terms, privacy policy and consent wordings (`/legal/*`);
+  - all of Ayon's screens, through Stage 3, plus Settings, Help, the SMS phone and the family's web card.
 
-  617 server tests pass.
-- **Live:** `https://lamp-api-k2xf.onrender.com` runs the callback stub. `/health` is up, and all five Applink callback addresses answer S1000.
-- **Rules so far:**
-  - one branch per task (`<name>/<task>`), with a PR to `main`;
-  - tick here in the same PR as the work;
-  - no AI attribution in commits or PRs;
-  - never commit secrets (gitleaks checks every PR);
-  - only touch your own folders (CODEOWNERS).
+  662 server tests pass, and CI is green.
+- **Next:** the first open task in "The flow" below.
+- **Parked, for later:** everything on a website dashboard: Render, the Applink portal, UptimeRobot, GitHub settings. Until then, everything is built and tested in mock mode on a laptop.
 
-**Ishmam: the main blocker**
-
-1. **Merge `ishmam/I0.3-day0-setup` into `main`.** It holds I0.2–I0.5 and I1.1–I1.4: Alembic, the `owner` table and contract v1. Arifin's code was tested merged with it, and 650 tests pass.
-2. **Update the contract for the 27 Nov plan:**
-   1. `/demo/ussd` becomes `/demo/sms`, plus `GET /demo/sms/thread`.
-   2. `CustomerCreated` and the customer rows get `join: {text, to}`.
-   3. `MeOut` gets `family_join_routes`.
-   4. Add `POST /plus/otp`, and `PlusStatus` gets `OTP_SENT`.
-   5. Add the error `join_by_text` (403), for when the counter route is off.
-
-**Ayon**
-
-- Next is Stage 2: Y2.2 Scan, Y2.3 Stock and Y2.4 offline.
-- Customers (Y3.1) shows the join text: `LAMP <code>` to 21213.
-- The drawn phone (Y4.1) is now an SMS phone that calls `/demo/sms`.
-
-**Arifin: next, in order**
-
-1. **UptimeRobot (A0.1e):** sign in, then add the check.
-2. **Once Ishmam's branch is on `main`:**
-   - A1.3 jobs;
-   - A1.2 sign-in;
-   - A2.1 callbacks;
-   - A2.2 part 2: joining and delivery reports;
-   - the rest of A1.4: `render.yaml`, the Postgres tests and `tick.yml`.
-3. **Your calls:**
-   - send both Applink apps for approval (the drafts are ready);
-   - add the two backup secrets to GitHub;
-   - choose how to protect `main` (requiring Ishmam's review would block Arifin's own merges).
-
-**For a coding agent picking up Arifin's part**
+**For a coding agent picking up**
 
 - **Read first:**
-  - `backend/app/applink/client/base.py`: the rules for every Applink call;
-  - `client/mock.py`: the test scenarios, keyed on a number's last two digits;
-  - `family/commands.py`: the parser for families' texts.
+  - the task's lines in [`LaMP-Build-Plan.md`](LaMP-Build-Plan.md): section 2.2 for routes, 3 for Applink, 4.3 for tables;
+  - `backend/app/api/contract.py`: the routes not built yet, with their shapes. Building one means deleting its line there;
+  - `backend/app/applink/client/base.py` and `client/mock.py`: the rules for every Applink call, and the test scenarios keyed on a number's last two digits.
 - **Run the tests:** `cd backend && pytest -q`.
-- **Before merging:** also test with any unmerged teammate branch that `main` will soon depend on.
 - **Secrets:** never print them. The user pastes them from their clipboard.
+
+## The flow: what to build next, in order
+
+Each step needs the ones before it. Tick here and in the stage lists below.
+
+1. [ ] **Contract for the 27 Nov plan:** `/demo/sms` and `GET /demo/sms/thread`; `join: {text, to}` on new customers and customer rows; `family_join_routes` in `/me`; `POST /plus/otp` and `OTP_SENT`; the `join_by_text` error. Ayon's app already calls these.
+2. [ ] **A1.2 Sign-in:** OTP sign-in (mock), tokens, refresh rotation, devices, demo sign-in, rate limits, `current_owner`; `POST /me/consents`. The `applink` migration branch starts here.
+3. [ ] **I2.1 One shop per session:** a shared dependency gives every owner route its `pharmacy_id` from the token (404 for another shop's id); tenancy test harness.
+4. [ ] **I2.2 Core routes:** `/me`, create and set up a shop, suppliers, opening, stock, expenses, `/today`, payments, sales days, customers.
+5. [ ] **A1.3 Jobs:** table, runner inside the web service, scheduler (Asia/Dhaka), tick endpoint; `/ready`.
+6. [ ] **A1.4 part 2, CI:** server tests on Postgres, and the migration check (up, down one, up).
+7. [ ] **A2.1 Callbacks:** the four Applink callbacks (answer first, dedupe, secret, IP list, redaction) and the subscription mirror.
+8. [ ] **A2.2 part 2, families by SMS:** the facade (`applink/services.py`), `join.py`, both join routes, delivery reports.
+9. [ ] **A2.3 The plan SMS; `/demo/sms`**, the drawn phone's thread, `/demo/reset`.
+10. [ ] **I2.3 Capture changes:** `stored_file`, idempotency, the free plan's 10 scans, `ai_usage`.
+11. [ ] **MP3 locally:** sign in (mock OTP), set up a shop, scan a demo bill, and Today shows the figures, with the app against a local server.
+12. [ ] **A3.1 + I3.2 Credit record:** the CaaS state machine and charging notification; preview, PDF, shares, `/r/{token}`, `on_paid`.
+13. [ ] **A3.2 + I3.1 LaMP Plus and Ask:** consent, the OTP on the Plus app, cancel, entitlements; chat with `pid` from the session, the Plus gate, per-shop budget.
+14. [ ] **I3.3 Approvals;** `/dev`, `/lenders` and `/consents` not mounted in production.
+15. [ ] **A3.3 Jobs that run every day:** 8 AM brief, reminders, nightly reconcile, stuck charges, demo reseed.
+16. [ ] **Account and support routes:** `/me` export and delete, `/app/config`, `/support/reports`, `/telemetry/events`, `/usage`.
+17. [ ] **I3.4 Tenancy tests for every route.**
+18. [ ] **Stage 4 checks:** cross-testing pass (9.5) and P0/P1 fixes; I4.1 eval, red team and golden tests on Postgres; A4.3 secret scan of the whole history; Y4.2 integration tests against a local server.
+19. [ ] **Words:** I4.2 README declarations; proposal drafts (I3.5, A3.5), screenshots (Y3.5), proposal compiled (I4.3).
+
+**Done by people, not code:** I0.6 Farhan's written OK; the video (11.1); submitting (Stage 5).
+
+**Parked (website dashboards), for later:** A0.0b Ishmam made an admin, A0.0c protecting `main`, A0.1e UptimeRobot, A0.2b and A0.2c sending both Applink apps for approval, A1.4 `render.yaml`, `backup.yml` and `tick.yml`, A2.4, A3.4, A4.1 and A4.2 (sandbox), Y4.2's web build on Render and signed APK, and the Applink track. Applink's approval takes about 2 days, so while it is parked, Phase 1 is shown in mock mode.
 
 ## Summary
 
 | Stage | Done | Of those, on `main` | Total |
 |---|---|---|---|
-| Stage 0: repo, accounts, Applink forms | 15 | 5 | 21 |
-| Stage 1: foundations | 9 | 5 | 16 |
+| Stage 0: repo, accounts, Applink forms | 16 | 10 | 21 |
+| Stage 1: foundations | 9 | 9 | 16 |
 | Stage 2: core flows in mock mode | 5 | 5 | 13 |
 | Stage 3: money, Plus, AI, families | 4 | 4 | 16 |
 | Stage 4: test, fix, record | 1 | 1 | 11 |
 | Stage 5: submit | 0 | 0 | 5 |
 | Applink track | 1 | 0 | 9 |
-| **All** | **35** | **20** | **91** |
-
-> **Waiting to reach `main`:** Ishmam's branch `ishmam/I0.3-day0-setup` holds I0.2, I0.3, I0.4, I0.5 and I1.1–I1.4 (PRs #4 and #5 were merged into his own branches, not into `main`). Until it's merged, `main` has no Alembic, no Stage 0 packages, no `owner` table and no contract v1, and Arifin's and Ayon's server-side work can't build on them.
+| **All** | **36** | **29** | **91** |
 
 ## Stage 0: the repo, accounts and Applink forms
 
 - [x] **I0.1** Import commit (D14), pytest workflow, `CODEOWNERS` · **[I]** · on `main` (PR #2)
-- [x] **I0.2** Defaults in 0.2 accepted · **[I]** · on a branch (`ishmam/I0.3-day0-setup`)
-- [x] **I0.3** Stage 0 dependencies, Alembic skeleton · **[I]** · on a branch (`ishmam/I0.3-day0-setup`)
-- [x] **I0.4** Contract v0 · **[I]** · on a branch (`ishmam/I0.3-day0-setup`, as contract v1)
-- [x] **I0.5** `main.py` mounts Arifin's packages · **[I]** · on a branch (`ishmam/I0.3-day0-setup`)
+- [x] **I0.2** Defaults in 0.2 accepted · **[I]** · on `main` (merged 28 Nov)
+- [x] **I0.3** Stage 0 dependencies, Alembic skeleton · **[I]** · on `main` (merged 28 Nov)
+- [x] **I0.4** Contract v0 · **[I]** · on `main` (merged 28 Nov, as contract v1)
+- [x] **I0.5** `main.py` mounts Arifin's packages · **[I]** · on `main` (merged 28 Nov)
 - [x] **A0.0a** Ishmam and Ayon added to the repo · **[A]** · done (both have write access)
 - [ ] **A0.0b** Ishmam made an admin · **[A]**
 - [ ] **A0.0c** `main` protected (tell the others first) · **[A]**
@@ -106,14 +100,14 @@
 - [x] **A0.4** Empty `applink/`, `auth/`, `jobs/` packages with their routers · **[A]** · on `main` (PR #10)
 - [x] **Y0.1** `mobile/` created, design system copied, design lint tests green · **[Y]** · on `main`
 - [x] **Y0.2** `mobile.yml` · **[Y]** · on `main`
-- [ ] **MP0** New repo ready: tests pass in CI, CODEOWNERS in, the empty modules mounted, `mobile/` builds · signed off by **[I]**
+- [x] **MP0** New repo ready: tests pass in CI, CODEOWNERS in, the empty modules mounted, `mobile/` builds · signed off by **[I]** · checked 28 Nov: `pytest`, `server` and `mobile` green on `main`; `auth`, `applink` and `jobs` mounted
 
 ## Stage 1: foundations
 
-- [x] **I1.1** Alembic baseline 0001 + 0002 (`owner`, `pharmacy_id` on child tables, `patient_ledger`) · **[I]** · on a branch (`ishmam/I0.3-day0-setup`)
-- [x] **I1.2** Real Dhaka date, `on_date`, demo seed shifted by whole weeks · **[I]** · on a branch (`ishmam/I0.3-day0-setup`)
-- [x] **I1.3** Contract v1 for every Phase 1 screen · **[I]** · on a branch (`ishmam/I0.3-day0-setup`)
-- [x] **I1.4** Stubs for the core functions in 1.4 B · **[I]** · on a branch (`ishmam/I0.3-day0-setup`)
+- [x] **I1.1** Alembic baseline 0001 + 0002 (`owner`, `pharmacy_id` on child tables, `patient_ledger`) · **[I]** · on `main` (merged 28 Nov)
+- [x] **I1.2** Real Dhaka date, `on_date`, demo seed shifted by whole weeks · **[I]** · on `main` (merged 28 Nov)
+- [x] **I1.3** Contract v1 for every Phase 1 screen · **[I]** · on `main` (merged 28 Nov)
+- [x] **I1.4** Stubs for the core functions in 1.4 B · **[I]** · on `main` (merged 28 Nov)
 - [ ] **I0.6** Farhan's written OK, screenshot in `docs/PRIOR_WORK.md` · **[I]**
 - [x] **A1.1** Applink config, phone helpers, status-code table, client and mock · **[A]** · on `main` (PRs #11 and #12)
 - [ ] **A1.2** `auth/`: OTP sign-in, tokens, refresh, devices, rate limits · **[A]**
