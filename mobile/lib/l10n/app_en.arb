@@ -122,7 +122,7 @@
   },
   "todayOneThing": "The one thing to do",
   "oneApprove": "Approve the plan for the short day",
-  "oneReturn": "Send back stock that can still go back",
+  "oneRemind": "Remind a customer whose payment is due",
   "oneScan": "Scan a supplier bill",
   "oneSetup": "Finish setting up your shop",
   "oneNothing": "Nothing urgent today.",

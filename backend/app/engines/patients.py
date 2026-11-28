@@ -124,3 +124,11 @@ def parts_due(db: Session, due_on: date) -> list[DuePart]:
                       .order_by(m.PatientDue.pharmacy_id, m.PatientDue.code))
     return [DuePart(d.pharmacy_id, d.code, p.n, p.amount, p.due_on)
             for d in rows if (plan := _plan(d)) for p in plan.schedule if p.due_on == due_on]
+
+
+def has_part_due(db: Session, pid: str, on: date) -> bool:
+    """Does any customer of this shop have a plan part due on or before `on`, still unpaid?
+    (Today's "remind" one thing.)"""
+    rows = db.scalars(select(m.PatientDue).where(m.PatientDue.pharmacy_id == pid,
+                                                 m.PatientDue.plan_parts.is_not(None), m.PatientDue.amount > 0))
+    return any(p.due_on <= on for d in rows if (plan := _plan(d)) for p in plan.schedule)

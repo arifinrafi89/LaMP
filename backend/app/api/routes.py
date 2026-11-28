@@ -63,7 +63,7 @@ from app.schemas import (
 )
 
 from . import examples as ex
-from . import me, shop
+from . import me, money, setup, shop
 from .deps import dev_only, require_any_owner, require_lender, require_owner
 
 router = APIRouter()   # public: health, owner unlock, lender catalogue
@@ -497,6 +497,8 @@ async def stream_logs(once: bool = False, db: Session = Depends(get_db)):
 # The I2.2 modules: each group of routes in its own file.
 router.include_router(me.router)            # /me, POST /pharmacies: the signed-in owner
 owner.include_router(shop.router)           # PATCH /pharmacies/{pid}, setup/complete
+owner.include_router(setup.router)          # suppliers, opening, stock batches, expenses
+owner.include_router(money.router)          # /today, payments, sales days
 
 router.include_router(owner, dependencies=[Depends(require_owner)])
 router.include_router(lender, dependencies=[Depends(require_lender)])

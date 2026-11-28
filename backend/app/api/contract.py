@@ -22,11 +22,9 @@ from app.schemas.patients import PatientCardOut
 from app.schemas.product import (
     AppConfigOut, ChargeOtpIn, ChargeOut, ConsentsIn, CreditRecordOut, CreditShareOut, CustomerBalance,
     CustomerCreate, CustomerCreated, CustomerMoneyIn, CustomerPhoneIn, CustomerPlanIn, DeleteIn, DeleteOut,
-    DemoSignInIn, DemoSmsIn, DemoSmsOut, DemoThreadOut, DeviceOut, ExpenseIn, ExportOut, ExportStarted, LegalOut,
-    OpeningIn, OtpChallengeOut, OtpRequestIn, OtpVerifyIn, PaymentIn,
-    PlusOtpIn, PlusOut, PlusSubscribeIn, Problem, RefreshIn, SalesDayIn, Saved, ShareIn, SignedInOut, SmsStatusOut,
-    StockBatchIn, SupplierIn, SupplierOut, SupportReportIn, SupportReportOut, TelemetryIn, TodayOut, TokenPairOut,
-    UsageOut,
+    DemoSignInIn, DemoSmsIn, DemoSmsOut, DemoThreadOut, DeviceOut, ExportOut, ExportStarted, LegalOut,
+    OtpChallengeOut, OtpRequestIn, OtpVerifyIn, PlusOtpIn, PlusOut, PlusSubscribeIn, Problem, RefreshIn, ShareIn,
+    SignedInOut, SmsStatusOut, SupportReportIn, SupportReportOut, TelemetryIn, TokenPairOut, UsageOut,
 )
 
 P = "/pharmacies/{pid}"
@@ -48,18 +46,7 @@ ROUTES: list[tuple[str, str, Any, Any, int, str]] = [
     ("POST", "/me/export", None, ExportStarted, 202, "I"),
     ("GET", "/me/export/{export_id}", None, ExportOut, 200, "I"),
     ("POST", "/me/delete", DeleteIn, DeleteOut, 202, "I"),
-    # Shop setup
-    ("GET", f"{P}/suppliers", None, list[SupplierOut], 200, "I"),
-    ("POST", f"{P}/suppliers", SupplierIn, SupplierOut, 201, "I"),
-    ("PATCH", f"{P}/suppliers/{{sid}}", SupplierIn, SupplierOut, 200, "I"),
-    ("DELETE", f"{P}/suppliers/{{sid}}", None, None, 204, "I"),
-    ("POST", f"{P}/opening", OpeningIn, Saved, 200, "I"),
-    ("POST", f"{P}/stock-batches", list[StockBatchIn], Saved, 201, "I"),
-    ("POST", f"{P}/expenses", list[ExpenseIn], Saved, 201, "I"),
     # Daily screens
-    ("GET", f"{P}/today", None, TodayOut, 200, "I"),
-    ("POST", f"{P}/payments", PaymentIn, Saved, 201, "I"),
-    ("POST", f"{P}/sales-days", SalesDayIn, Saved, 201, "I"),
     ("GET", f"{P}/usage", None, UsageOut, 200, "I"),
     # Customers
     ("POST", f"{P}/customers", CustomerCreate, CustomerCreated, 201, "I"),

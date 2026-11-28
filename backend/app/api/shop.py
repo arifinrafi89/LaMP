@@ -13,8 +13,9 @@ from app.db.session import get_db
 from app.engines import get_pharmacy, shops
 from app.schemas import PharmacyOut, PharmacySettings
 from app.schemas.product import PharmacyPatch
+from .problems import ERRORS
 
-router = APIRouter()
+router = APIRouter(responses=ERRORS)
 
 
 def pharmacy_out(ph: Pharmacy) -> dict:

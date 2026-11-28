@@ -25,7 +25,7 @@ class NextProblem {
 class OneThing {
   const OneThing({required this.kind, this.actionId});
 
-  /// `approve`, `return_stock`, `scan_bill`, `finish_setup`, …
+  /// `setup`, `approve`, `remind`, `scan` or `none` (contract v1, plan 5.2).
   final String kind;
   final String? actionId;
 

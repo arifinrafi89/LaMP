@@ -13,6 +13,11 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from app.schemas.product import Problem
+
+# The error answers a built route documents in the contract, each one a Problem body.
+ERRORS: dict = {code: {"model": Problem} for code in (401, 403, 404, 409, 422, 429)}
+
 
 class ApiProblem(Exception):
     def __init__(self, status: int, code: str, detail: str, *, retry_after: int | None = None,
