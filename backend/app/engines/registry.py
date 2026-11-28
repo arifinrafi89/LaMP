@@ -32,7 +32,7 @@ def try_lock(db: Session, value: str, application_id: str) -> bool:
     """
     insert = pg_insert if db.get_bind().dialect.name == "postgresql" else sqlite_insert
     stmt = (insert(m.RegistryLock)
-            .values(commitment=value, application_id=application_id, created_at=datetime.now(timezone.utc))
+            .values(commitment=value, application_id=application_id, created_at=datetime.now(timezone.utc).replace(tzinfo=None))
             .on_conflict_do_nothing(index_elements=["commitment"])
             .returning(m.RegistryLock.id))
     return db.execute(stmt).scalar() is not None

@@ -54,6 +54,12 @@ def shop_of(db: Session, data: dict) -> str | None:
     return pid if isinstance(pid, str) and pid else db.info.get(SHOP_KEY)
 
 
+def _utc_now() -> datetime:
+    """Naive UTC, like every other time we store. An aware time in a `timestamp without time
+    zone` column is turned into the database's local time by Postgres, which breaks the hash."""
+    return datetime.now(timezone.utc).replace(tzinfo=None, microsecond=0)
+
+
 def _jsonable(v):
     if isinstance(v, (date, datetime)):
         return v.isoformat()
@@ -71,7 +77,7 @@ def log(tier: str, component: str, event: str, db: Session | None = None, **data
     caller's transaction. Without `db` (e.g. from agents/), it is committed at once."""
     if tier not in TIERS:
         raise ValueError(f"Unknown tier {tier!r}")
-    row = m.AuditLog(ts=datetime.now(timezone.utc).replace(microsecond=0), tier=tier, component=component.upper(),
+    row = m.AuditLog(ts=_utc_now(), tier=tier, component=component.upper(),
                      event=event, data=_jsonable(data))
     if db is not None:
         row.pharmacy_id = shop_of(db, data)

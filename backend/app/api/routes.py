@@ -241,7 +241,7 @@ async def create_capture(pid: str, file: UploadFile = File(...),
     extraction = await _extract(data, kind, db, today=as_of(ph))
     n = (db.scalar(select(func.count()).select_from(m.Capture)) or 0) + 1
     cap = m.Capture(id=f"cap-{n}", pharmacy_id=pid, kind=kind, status="needs_review",
-                    extraction=extraction, created_at=datetime.now(timezone.utc))
+                    extraction=extraction, created_at=datetime.now(timezone.utc).replace(tzinfo=None))
     db.add(cap)
     suspicious = extraction.get("suspicious_text") or []
     engines.log("T1", "CAPTURE", "capture_created", db, capture=cap.id, kind=kind,

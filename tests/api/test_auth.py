@@ -132,6 +132,7 @@ def test_reset_keeps_the_owner_signed_in(client, api_db):
     from app.auth.models import AuthSession
 
     before = api_db.scalar(select(func.count()).select_from(AuthSession))
+    api_db.rollback()  # end this read: on Postgres its lock would block the reset's DROP TABLE
     assert client.post("/api/v1/dev/reset").status_code == 200
     assert client.get(f"{P}/accounts").status_code == 200
     assert api_db.scalar(select(func.count()).select_from(AuthSession)) == before

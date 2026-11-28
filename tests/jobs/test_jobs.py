@@ -1,7 +1,9 @@
 """The job table, runner, scheduler, tick endpoint and /ready (build plan D6, 1.4 C, 4.3, 2.2;
-task A1.3). Their own in-memory database; the loop is off in tests (JOBS_LOOP=false)."""
+task A1.3). Their own database: SQLite in memory, or TEST_DATABASE_URL (Postgres in CI, where
+SKIP LOCKED is real). The loop is off in tests (JOBS_LOOP=false)."""
 
 import asyncio
+import os
 from datetime import datetime, timedelta
 
 import pytest
@@ -19,11 +21,26 @@ from app.main import app
 NOW = datetime(2026, 11, 29, 2, 0, 0)  # UTC: 08:00 in Dhaka
 
 
+_URL = os.environ.get("TEST_DATABASE_URL", "sqlite://")
+ON_POSTGRES = _URL.startswith("postgresql")
+
+
 @pytest.fixture
 def factory():
-    engine = create_engine("sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool)
+    engine = (create_engine(_URL, connect_args={"check_same_thread": False}, poolclass=StaticPool)
+              if _URL.startswith("sqlite") else create_engine(_URL))
+    _drop_alembic_version(engine)
+    m.Base.metadata.drop_all(engine)
     m.Base.metadata.create_all(engine)
-    return sessionmaker(bind=engine, expire_on_commit=False)
+    yield sessionmaker(bind=engine, expire_on_commit=False)
+    _drop_alembic_version(engine)  # on a shared Postgres it would outlive the test, and the run
+    engine.dispose()
+
+
+def _drop_alembic_version(engine) -> None:
+    """test_ready_reports_each_part makes this table; it isn't one of the models' tables."""
+    with engine.begin() as conn:
+        conn.execute(text("DROP TABLE IF EXISTS alembic_version"))
 
 
 @pytest.fixture(autouse=True)
@@ -174,6 +191,23 @@ def test_two_claims_never_take_the_same_job(factory):
     with factory() as db:
         second = runner.claim(db, NOW, worker="w2")
     assert len(first) == 3 and second == []
+
+
+@pytest.mark.skipif(not ON_POSTGRES, reason="SKIP LOCKED needs Postgres (TEST_DATABASE_URL)")
+def test_skip_locked_on_postgres(factory):
+    """While one worker's claim is still open, another worker skips those rows (D6)."""
+    registry.job("test.noop")(lambda db, payload: None)
+    with factory() as db:
+        for _ in range(4):
+            registry.enqueue(db, "test.noop", run_at=NOW)
+        db.commit()
+    with factory() as holder, factory() as other:
+        held = list(holder.scalars(select(Job).where(Job.status == "queued").order_by(Job.id).limit(2)
+                                   .with_for_update(skip_locked=True)))
+        taken = runner.claim(other, NOW, worker="w2")  # the holder hasn't committed yet
+        assert len(held) == 2 and sorted(taken) == sorted(
+            j.id for j in _jobs(factory).values() if j.id not in {h.id for h in held})
+        holder.rollback()
 
 
 def test_a_job_left_running_by_a_dead_worker_comes_back(factory):

@@ -1,6 +1,6 @@
 # LaMP progress tracker
 
-*How much of the build plan is done. Task ids and details are in [`LaMP-Build-Plan.md`](LaMP-Build-Plan.md), section 7 (the stages) and its Applink track. Last updated: 29 Nov 2026 (A1.3 jobs).*
+*How much of the build plan is done. Task ids and details are in [`LaMP-Build-Plan.md`](LaMP-Build-Plan.md), section 7 (the stages) and its Applink track. Last updated: 29 Nov 2026 (A1.4 part 2, the server suite on Postgres).*
 
 **How we work (since 28 Nov)**
 
@@ -41,7 +41,8 @@
   - **For handlers:** a handler is `fn(db, payload)`, so its work and the job's `done` commit together. A handler that logs for a shop calls `logbus.set_shop(db, pid)` first.
   - **Not yet:** no job kinds exist; A3.3 adds them (flow step 16), together with the demo reseed that replaces `_auto_reset` in `main.py`. `tick.yml` is a parked A1.4 item (GitHub settings).
   - **Secrets:** a server with `DEV_MODE=false` now needs `JOBS_TICK_SECRET` (32+ characters) to start. Tests set `JOBS_LOOP=false`.
-- **Next:** flow step 7, **A1.4 part 2, CI**: the server tests on Postgres in `server.yml` (a `TEST_DATABASE_URL` service), and the migration check (up, down one, up). The jobs' `SKIP LOCKED` and the per-shop chain then get tested on Postgres too.
+- **A1.4 part 2 (flow step 7), PR #31:** `server.yml` now runs the migration check on Postgres 16 (up to every head, `alembic check`, down one on each branch, up again) and the whole server suite on Postgres (`TEST_DATABASE_URL`). The test database runs on Dhaka time with a 10-second `lock_timeout`, and the job stops after 20 minutes.
+- **Next:** flow step 8, **A2.1 Callbacks**: the four Applink callbacks (answer first, dedupe, secret, IP list, redaction) and the subscription mirror.
 - **Traps hit today:**
   - The clone path "Applink Hackathon" has a space. `alembic.ini` now lists migration folders one per line; keep it that way.
   - FastAPI here wraps included routers lazily (`_IncludedRouter`). To list every route, walk them the way `tests/tenancy/test_tenancy_routes.py` does.
@@ -49,7 +50,8 @@
   - In tests, `owner_headers(db, pid)` (in `tests/conftest.py`) signs in any shop's owner. The API `client` fixture already carries green-life's token.
   - Test helper modules need unique names (`api_support.py`, `tenancy_support.py`): there are no `__init__.py` files, so `from conftest import …` picks the wrong folder's conftest.
   - With `DEV_MODE=true`, the empty `JWT_SECRET`, `PHONE_PEPPER` and `PII_KEY` fall back to dev values. Without it, the server won't start until they are set (`.env.example`).
-  - History (`/logs*`) is still one chain for every shop. A strict xfail test in the tenancy harness marks it; flow step 5 fixes it.
+  - **Store times as naive UTC** (`datetime.now(timezone.utc).replace(tzinfo=None)`). Our columns are `timestamp without time zone`: Postgres turns an aware time into the database's local time, which broke every History hash on a Dhaka-time database. CI's test database runs on Dhaka time to catch this.
+  - **On Postgres, end a test's read before a call that drops tables** (`/dev/reset`, `load_seed`): `api_db.rollback()`. An open read holds a lock, and the DROP waits for it; CI's `lock_timeout` turns that hang into an error after 10 s.
 - **Parked, for later:** everything on a website dashboard: Render, the Applink portal, UptimeRobot, GitHub settings. Until then, everything is built and tested in mock mode on a laptop.
 
 **For a coding agent picking up**
@@ -71,7 +73,7 @@ Each step needs the ones before it. Tick here and in the stage lists below.
 4. [x] **I2.2 Core routes:** `/me`, create and set up a shop, suppliers, opening, stock, expenses, `/today`, payments, sales days, customers. · on `main` (PRs #26, #27, #28)
 5. [x] **Per-shop History:** every audit event carries its shop (`audit_log.pharmacy_id`), one hash chain per shop, and `/logs*` (list, export, verify, stream) show only the caller's shop. Then remove the strict xfail in `tests/tenancy/test_tenancy_routes.py`. · on `main` (PR #29)
 6. [x] **A1.3 Jobs:** table, runner inside the web service, scheduler (Asia/Dhaka), tick endpoint; `/ready`. · on `main` (PR #30)
-7. [ ] **A1.4 part 2, CI:** server tests on Postgres, and the migration check (up, down one, up).
+7. [x] **A1.4 part 2, CI:** server tests on Postgres, and the migration check (up, down one, up). · on `main` (PR #31)
 8. [ ] **A2.1 Callbacks:** the four Applink callbacks (answer first, dedupe, secret, IP list, redaction) and the subscription mirror.
 9. [ ] **A2.2 part 2, families by SMS:** the facade (`applink/services.py`), `join.py`, both join routes, delivery reports.
 10. [ ] **A2.3 The plan SMS; `/demo/sms`**, the drawn phone's thread, `/demo/reset`.
@@ -137,7 +139,7 @@ Each step needs the ones before it. Tick here and in the stage lists below.
 - [x] **A1.1** Applink config, phone helpers, status-code table, client and mock · **[A]** · on `main` (PRs #11 and #12)
 - [x] **A1.2** `auth/`: OTP sign-in, tokens, refresh, devices, rate limits · **[A]** · on `main` (28 Nov)
 - [x] **A1.3** `jobs/`: table, runner inside the web service, scheduler, tick endpoint · **[A]** · on `main` (PR #30)
-- [ ] **A1.4** `render.yaml`, `backup.yml`, `tick.yml`, `server.yml` · **[A]** · `server.yml` with the secret scan on `main` (PR #14); the Postgres tests join it with the migrations; `render.yaml` waits for the migrations, `tick.yml` for A1.3, `backup.yml` for its secrets
+- [ ] **A1.4** `render.yaml`, `backup.yml`, `tick.yml`, `server.yml` · **[A]** · `server.yml` on `main`: the secret scan (PR #14), the migration check and the server suite on Postgres (PR #31); `render.yaml` and `tick.yml` are parked (website settings), `backup.yml` waits for its secrets
 - [x] **Y1.1** App shell: go_router, theme, ARB en and bn, digits, `ApiClient` · **[Y]** · on `main`
 - [x] **Y1.2** Welcome, number, code, token store (app side; server sign-in is A1.2) · **[Y]** · on `main`
 - [x] **Y1.3** Today · **[Y]** · on `main` (PR #1)
