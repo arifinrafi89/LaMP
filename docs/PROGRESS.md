@@ -5,14 +5,14 @@
 **How we work (since 28 Nov)**
 
 - **One flow, not three lanes.** The [I]/[A]/[Y] tags below say who the plan first gave a task to. They no longer decide who builds it. Whoever is working (a teammate or their coding agent) takes the **first open task in "The flow"** below.
-- **One task at a time, one branch and one pull request per task.** Nobody pushes to `main` directly, not even for docs. The full loop, with the superpowers skill for each step, is in [`CLAUDE.md`](../CLAUDE.md):
+- **One task at a time, one branch and one pull request per task.** Nobody pushes to `main` directly, not even for docs. The full loop is in [`CLAUDE.md`](../CLAUDE.md):
   1. pull `main`, then branch off it: `<name>/<task>`, for example `ayon/I2.2-core-routes`;
-  2. plan the task (`superpowers:brainstorming` for anything new, `superpowers:writing-plans` for anything with several steps);
-  3. build it test first (`superpowers:test-driven-development`); for a failing test or a bug, `superpowers:systematic-debugging` before any fix;
-  4. run the whole server suite (`cd backend && pytest -q`), and `flutter analyze` and `flutter test` for `mobile/` changes, and see them pass before you call the task done (`superpowers:verification-before-completion`);
-  5. tick the task here, on the same branch;
-  6. review your own diff (`superpowers:requesting-code-review`), push the branch and open a PR to `main`;
-  7. merge once CI is green on the PR and a teammate has approved it, then delete the branch (`superpowers:finishing-a-development-branch`).
+  2. build the task and its tests;
+  3. run the whole server suite (`cd backend && pytest -q`), and `flutter analyze` and `flutter test` for `mobile/` changes, and see them pass;
+  4. tick the task here, on the same branch;
+  5. read your own diff, push the branch and open a PR to `main`;
+  6. merge once CI is green on the PR and a teammate has approved it, then delete the branch.
+- **Superpowers skills are optional.** Use one when a task needs it (planning a big task, debugging a failure with no obvious cause, reviewing a large diff). `CLAUDE.md` lists them.
 - **Ticks:** tick `[x]` in the task's own PR, written as **on `main` (PR #n)**, so the tick reaches `main` with the work. For a setting or form, tick once it is done and checked. Update the summary table and the "Last updated" date in the same PR.
 - **Hand over before you stop.** When a limit is near, commit what you have to the task's branch, push it, and open the PR as a draft if it isn't finished. Never merge anything red. Then rewrite "Where to pick up" (in that PR) for the next person: the branch, the PR, what's done and what's next.
 - **Rules that stay:** no AI attribution in commits; never commit `.env` or keys (gitleaks checks every push); tests never call Applink or OpenAI (`APPLINK_MODE=mock`, `LLM_MODE=replay`); no customer names or medicines anywhere, amounts only.
