@@ -5,11 +5,13 @@ import importlib
 import json
 import math
 from datetime import datetime, timezone
+from functools import lru_cache
+from pathlib import Path
 from typing import Literal
 
 from fastapi import APIRouter, Body, Depends, File, Form, HTTPException, Response, UploadFile
 from fastapi.responses import PlainTextResponse, StreamingResponse
-from sqlalchemy import func, select
+from sqlalchemy import func, select, text
 from sqlalchemy.exc import OperationalError, ProgrammingError
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -74,6 +76,46 @@ dev = APIRouter()      # /dev/*: only with DEV_MODE=true
 @router.get("/health")
 def health() -> dict:
     return {"status": "ok"}
+
+
+@router.get("/ready")
+def ready(response: Response, db: Session = Depends(get_db)) -> dict:
+    """Ready to serve (build plan 2.2, 13.2): the database answers, its migrations are at head,
+    and the job loop made a pass in the last 2 minutes. 503 if any one isn't."""
+    from app.jobs import runner as job_runner
+
+    checks = {"database": _database_answers(db), "migrations": _migrations_at_head(db),
+              "jobs": job_runner.healthy()}
+    ok = all(checks.values())
+    response.status_code = 200 if ok else 503
+    return {"status": "ok" if ok else "not_ready", **checks}
+
+
+def _database_answers(db: Session) -> bool:
+    try:
+        db.execute(text("SELECT 1"))
+        return True
+    except Exception:
+        db.rollback()
+        return False
+
+
+@lru_cache
+def _migration_heads() -> frozenset[str]:
+    from alembic.config import Config
+    from alembic.script import ScriptDirectory
+
+    backend = Path(__file__).resolve().parents[2]
+    return frozenset(ScriptDirectory.from_config(Config(str(backend / "alembic.ini"))).get_heads())
+
+
+def _migrations_at_head(db: Session) -> bool:
+    try:
+        current = set(db.scalars(text("SELECT version_num FROM alembic_version")))
+    except Exception:
+        db.rollback()
+        return False
+    return current == set(_migration_heads())
 
 
 # --- Demo controls ------------------------------------------------------------------
