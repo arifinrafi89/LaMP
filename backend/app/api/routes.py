@@ -49,7 +49,6 @@ from app.schemas import (
     OrderOut,
     PassportOut,
     PatientCardOut,
-    PatientDueOut,
     PatientPlanIn,
     PauseIn,
     PauseOut,
@@ -63,7 +62,7 @@ from app.schemas import (
 )
 
 from . import examples as ex
-from . import me, money, setup, shop
+from . import customers, me, money, setup, shop
 from .deps import dev_only, require_any_owner, require_lender, require_owner
 
 router = APIRouter()   # public: health, owner unlock, lender catalogue
@@ -157,12 +156,6 @@ def set_customer_plan(code: str, body: PatientPlanIn, response: Response, db: Se
     db.commit()
     response.headers["Cache-Control"] = "no-store"
     return out
-
-
-@owner.get("/pharmacies/{pid}/customers", response_model=list[PatientDueOut])
-def list_customers(pid: str, db: Session = Depends(get_db)):
-    """Customers who owe the pharmacy, with each one's card code and payment plan."""
-    return patients.list_for_owner(db, pid)
 
 
 @owner.get("/pharmacies/{pid}", response_model=PharmacyOut)
@@ -499,6 +492,7 @@ router.include_router(me.router)            # /me, POST /pharmacies: the signed-
 owner.include_router(shop.router)           # PATCH /pharmacies/{pid}, setup/complete
 owner.include_router(setup.router)          # suppliers, opening, stock batches, expenses
 owner.include_router(money.router)          # /today, payments, sales days
+owner.include_router(customers.router)      # customers: list, add, sales, payments, plan
 
 router.include_router(owner, dependencies=[Depends(require_owner)])
 router.include_router(lender, dependencies=[Depends(require_lender)])

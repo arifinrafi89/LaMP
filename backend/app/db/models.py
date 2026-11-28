@@ -131,6 +131,10 @@ class PatientDue(Base):
     code: Mapped[str] = mapped_column(String, unique=True)
     plan_parts: Mapped[int | None] = mapped_column(Integer, default=None)
     plan_first_on: Mapped[date | None] = mapped_column(Date, default=None)
+    # The plan as it was set: the balance then and the day, so "all parts paid on time" can be
+    # checked against the ledger (build plan 2.2, `trusted`).
+    plan_amount: Mapped[float | None] = mapped_column(Float, nullable=True, default=None)
+    plan_set_on: Mapped[date | None] = mapped_column(Date, nullable=True, default=None)
 
 
 class PatientLedger(Base):
