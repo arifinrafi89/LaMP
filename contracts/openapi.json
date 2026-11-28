@@ -2189,34 +2189,13 @@
         }
       }
     },
-    "/api/v1/legal/current": {
-      "get": {
-        "tags": [
-          "legal"
-        ],
-        "summary": "Current",
-        "operationId": "current_api_v1_legal_current_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LegalCurrent"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/v1/auth/otp/request": {
       "post": {
         "tags": [
-          "contract v1: not built yet"
+          "auth"
         ],
-        "summary": "Contract Post Auth Otp Request",
-        "operationId": "contract_post_auth_otp_request_api_v1_auth_otp_request_post",
+        "summary": "Otp Request",
+        "operationId": "otp_request_api_v1_auth_otp_request_post",
         "requestBody": {
           "content": {
             "application/json": {
@@ -2238,6 +2217,16 @@
               }
             }
           },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Unauthorized",
             "content": {
@@ -2288,8 +2277,8 @@
               }
             }
           },
-          "501": {
-            "description": "Not Implemented",
+          "503": {
+            "description": "Service Unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -2304,10 +2293,10 @@
     "/api/v1/auth/otp/verify": {
       "post": {
         "tags": [
-          "contract v1: not built yet"
+          "auth"
         ],
-        "summary": "Contract Post Auth Otp Verify",
-        "operationId": "contract_post_auth_otp_verify_api_v1_auth_otp_verify_post",
+        "summary": "Otp Verify",
+        "operationId": "otp_verify_api_v1_auth_otp_verify_post",
         "requestBody": {
           "content": {
             "application/json": {
@@ -2329,6 +2318,16 @@
               }
             }
           },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Unauthorized",
             "content": {
@@ -2379,8 +2378,8 @@
               }
             }
           },
-          "501": {
-            "description": "Not Implemented",
+          "503": {
+            "description": "Service Unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -2395,19 +2394,26 @@
     "/api/v1/auth/refresh": {
       "post": {
         "tags": [
-          "contract v1: not built yet"
+          "auth"
         ],
-        "summary": "Contract Post Auth Refresh",
-        "operationId": "contract_post_auth_refresh_api_v1_auth_refresh_post",
+        "summary": "Refresh",
+        "operationId": "refresh_api_v1_auth_refresh_post",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/RefreshIn"
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/RefreshIn"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "200": {
@@ -2416,6 +2422,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/TokenPairOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
                 }
               }
             }
@@ -2470,8 +2486,8 @@
               }
             }
           },
-          "501": {
-            "description": "Not Implemented",
+          "503": {
+            "description": "Service Unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -2486,13 +2502,23 @@
     "/api/v1/auth/sign-out": {
       "post": {
         "tags": [
-          "contract v1: not built yet"
+          "auth"
         ],
-        "summary": "Contract Post Auth Sign Out",
-        "operationId": "contract_post_auth_sign_out_api_v1_auth_sign_out_post",
+        "summary": "Sign Out",
+        "operationId": "sign_out_api_v1_auth_sign_out_post",
         "responses": {
           "204": {
             "description": "Successful Response"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
           },
           "401": {
             "description": "Unauthorized",
@@ -2544,8 +2570,8 @@
               }
             }
           },
-          "501": {
-            "description": "Not Implemented",
+          "503": {
+            "description": "Service Unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -2560,10 +2586,10 @@
     "/api/v1/auth/devices": {
       "get": {
         "tags": [
-          "contract v1: not built yet"
+          "auth"
         ],
-        "summary": "Contract Get Auth Devices",
-        "operationId": "contract_get_auth_devices_api_v1_auth_devices_get",
+        "summary": "Devices",
+        "operationId": "devices_api_v1_auth_devices_get",
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -2574,7 +2600,17 @@
                     "$ref": "#/components/schemas/DeviceOut"
                   },
                   "type": "array",
-                  "title": "Response Contract Get Auth Devices Api V1 Auth Devices Get"
+                  "title": "Response Devices Api V1 Auth Devices Get"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
                 }
               }
             }
@@ -2629,8 +2665,8 @@
               }
             }
           },
-          "501": {
-            "description": "Not Implemented",
+          "503": {
+            "description": "Service Unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -2645,10 +2681,10 @@
     "/api/v1/auth/devices/{device_id}": {
       "delete": {
         "tags": [
-          "contract v1: not built yet"
+          "auth"
         ],
-        "summary": "Contract Delete Auth Devices Device Id",
-        "operationId": "contract_delete_auth_devices_device_id_api_v1_auth_devices__device_id__delete",
+        "summary": "Remove Device",
+        "operationId": "remove_device_api_v1_auth_devices__device_id__delete",
         "parameters": [
           {
             "name": "device_id",
@@ -2663,6 +2699,16 @@
         "responses": {
           "204": {
             "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Bad Request"
           },
           "401": {
             "content": {
@@ -2714,7 +2760,7 @@
             },
             "description": "Too Many Requests"
           },
-          "501": {
+          "503": {
             "content": {
               "application/json": {
                 "schema": {
@@ -2722,7 +2768,7 @@
                 }
               }
             },
-            "description": "Not Implemented"
+            "description": "Service Unavailable"
           }
         }
       }
@@ -2730,10 +2776,10 @@
     "/api/v1/auth/demo": {
       "post": {
         "tags": [
-          "contract v1: not built yet"
+          "auth"
         ],
-        "summary": "Contract Post Auth Demo",
-        "operationId": "contract_post_auth_demo_api_v1_auth_demo_post",
+        "summary": "Demo",
+        "operationId": "demo_api_v1_auth_demo_post",
         "requestBody": {
           "content": {
             "application/json": {
@@ -2755,6 +2801,16 @@
               }
             }
           },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Unauthorized",
             "content": {
@@ -2805,8 +2861,8 @@
               }
             }
           },
-          "501": {
-            "description": "Not Implemented",
+          "503": {
+            "description": "Service Unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -2818,13 +2874,34 @@
         }
       }
     },
+    "/api/v1/legal/current": {
+      "get": {
+        "tags": [
+          "legal"
+        ],
+        "summary": "Current",
+        "operationId": "current_api_v1_legal_current_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegalCurrent"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/me/consents": {
       "post": {
         "tags": [
-          "contract v1: not built yet"
+          "account"
         ],
-        "summary": "Contract Post Me Consents",
-        "operationId": "contract_post_me_consents_api_v1_me_consents_post",
+        "summary": "Accept",
+        "operationId": "accept_api_v1_me_consents_post",
         "requestBody": {
           "content": {
             "application/json": {
@@ -2839,6 +2916,16 @@
           "204": {
             "description": "Successful Response"
           },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Unauthorized",
             "content": {
@@ -2889,8 +2976,8 @@
               }
             }
           },
-          "501": {
-            "description": "Not Implemented",
+          "503": {
+            "description": "Service Unavailable",
             "content": {
               "application/json": {
                 "schema": {

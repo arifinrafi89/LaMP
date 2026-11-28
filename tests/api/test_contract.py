@@ -26,10 +26,9 @@ def test_the_today_shape_matches_the_apps_fixture():
 
 
 @pytest.mark.parametrize("method,path", [("GET", "/me"), ("GET", "/pharmacies/green-life/today"),
-                                         ("POST", "/auth/otp/request")])
+                                         ("GET", "/app/config")])
 def test_unbuilt_routes_answer_not_built(anon, method, path):
-    body = {"phone": "+8801912345678", "language": "en"} if path.startswith("/auth") else None
-    r = anon.request(method, f"{API_PREFIX}{path}", json=body)
+    r = anon.request(method, f"{API_PREFIX}{path}")
     assert r.status_code == 501
     assert r.json()["code"] == "not_built"
 

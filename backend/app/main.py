@@ -14,6 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy import func, inspect, select
 
+from app.api import problems
 from app.api.routes import router
 from app.config import registry_secret, settings
 from app.db.models import Pharmacy
@@ -38,6 +39,7 @@ def _seed_if_empty() -> None:
 async def lifespan(_: FastAPI):
     try:
         registry_secret()  # refuse to start without a real REGISTRY_KEY (unless DEV_MODE)
+        _check_plugged_in()  # sign-in and Applink settings (JWT_SECRET, PHONE_PEPPER, PII_KEY, …)
         _seed_if_empty()
     except Exception as exc:
         mailer.alert("startup", "[LaMP] API failed to start",
@@ -54,6 +56,14 @@ async def lifespan(_: FastAPI):
         await runner.stop()
     if auto:
         auto.cancel()
+
+
+def _check_plugged_in() -> None:
+    """Each plugged-in package may refuse a broken setup: `app.<name>.config.check()`."""
+    for name in PLUGGED_IN:
+        config = _optional(f"app.{name}.config")
+        if config is not None and hasattr(config, "check"):
+            config.check()
 
 
 def _optional(module: str):
@@ -96,6 +106,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+problems.install(app)  # errors with a machine code for the app (plan 2.1)
 app.include_router(router, prefix=API_PREFIX)
 
 

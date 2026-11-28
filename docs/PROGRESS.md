@@ -42,7 +42,7 @@
 Each step needs the ones before it. Tick here and in the stage lists below.
 
 1. [x] **Contract for the 27 Nov plan:** `/demo/sms` and `GET /demo/sms/thread`; `join: {text, to}` on new customers and customer rows; `family_join_routes` in `/me`; `POST /plus/otp` and `OTP_SENT`; the `join_by_text` error. Ayon's app already calls these. · on `main` (28 Nov)
-2. [ ] **A1.2 Sign-in:** OTP sign-in (mock), tokens, refresh rotation, devices, demo sign-in, rate limits, `current_owner`; `POST /me/consents`. The `applink` migration branch starts here.
+2. [x] **A1.2 Sign-in:** OTP sign-in (mock), tokens, refresh rotation, devices, demo sign-in, rate limits, `current_owner`; `POST /me/consents`. The `applink` migration branch starts here. · on `main` (28 Nov): `app/auth/`, `applink/otp.py`, migration `a001`
 3. [ ] **I2.1 One shop per session:** a shared dependency gives every owner route its `pharmacy_id` from the token (404 for another shop's id); tenancy test harness.
 4. [ ] **I2.2 Core routes:** `/me`, create and set up a shop, suppliers, opening, stock, expenses, `/today`, payments, sales days, customers.
 5. [ ] **A1.3 Jobs:** table, runner inside the web service, scheduler (Asia/Dhaka), tick endpoint; `/ready`.
@@ -70,13 +70,13 @@ Each step needs the ones before it. Tick here and in the stage lists below.
 | Stage | Done | Of those, on `main` | Total |
 |---|---|---|---|
 | Stage 0: repo, accounts, Applink forms | 16 | 10 | 21 |
-| Stage 1: foundations | 10 | 10 | 16 |
+| Stage 1: foundations | 11 | 11 | 16 |
 | Stage 2: core flows in mock mode | 5 | 5 | 13 |
 | Stage 3: money, Plus, AI, families | 4 | 4 | 16 |
 | Stage 4: test, fix, record | 1 | 1 | 11 |
 | Stage 5: submit | 0 | 0 | 5 |
 | Applink track | 1 | 0 | 9 |
-| **All** | **37** | **30** | **91** |
+| **All** | **38** | **31** | **91** |
 
 ## Stage 0: the repo, accounts and Applink forms
 
@@ -110,7 +110,7 @@ Each step needs the ones before it. Tick here and in the stage lists below.
 - [x] **I1.4** Stubs for the core functions in 1.4 B · **[I]** · on `main` (merged 28 Nov)
 - [ ] **I0.6** Farhan's written OK, screenshot in `docs/PRIOR_WORK.md` · **[I]**
 - [x] **A1.1** Applink config, phone helpers, status-code table, client and mock · **[A]** · on `main` (PRs #11 and #12)
-- [ ] **A1.2** `auth/`: OTP sign-in, tokens, refresh, devices, rate limits · **[A]**
+- [x] **A1.2** `auth/`: OTP sign-in, tokens, refresh, devices, rate limits · **[A]** · on `main` (28 Nov)
 - [ ] **A1.3** `jobs/`: table, runner inside the web service, scheduler, tick endpoint · **[A]**
 - [ ] **A1.4** `render.yaml`, `backup.yml`, `tick.yml`, `server.yml` · **[A]** · `server.yml` with the secret scan on `main` (PR #14); the Postgres tests join it with the migrations; `render.yaml` waits for the migrations, `tick.yml` for A1.3, `backup.yml` for its secrets
 - [x] **Y1.1** App shell: go_router, theme, ARB en and bn, digits, `ApiClient` · **[Y]** · on `main`
