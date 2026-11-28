@@ -42,7 +42,7 @@ def test_plan_in_four_weekly_parts(anon):
 
 def test_plan_tells_the_owner(client):
     client.post(f"{C}/{CODE}/plan", json={"parts": 2, "first_on": "2026-10-16"})
-    events = client.get("/api/v1/logs").json()
+    events = client.get("/api/v1/pharmacies/green-life/logs").json()
     note = [e for e in events if e["event"] == "notify" and e["data"]["title"] == "Customer 003 set a payment plan"]
     assert note and note[-1]["data"]["body"] == "BDT 6,500 in 2 weekly parts, starting 16 Oct."
     [row] = [c for c in client.get(f"{P}/customers").json() if c["code"] == CODE]

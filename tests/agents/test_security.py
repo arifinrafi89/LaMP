@@ -42,7 +42,7 @@ def test_chat_injection_changes_nothing(client):
     assert "can't approve" in r["text"]
     assert client.get("/api/v1/pharmacies/green-life/actions").json() == []
     assert client.get("/api/v1/pharmacies/green-life/orders").json() == before
-    events = client.get("/api/v1/logs").json()
+    events = client.get("/api/v1/pharmacies/green-life/logs").json()
     assert not any(e["event"] in ("action_approved_by_owner", "action_executed", "sandbox_payout") for e in events)
 
 
@@ -51,7 +51,7 @@ def test_agent_proposals_wait_for_the_owner(client):
     actions = client.get("/api/v1/pharmacies/green-life/actions").json()
     assert actions and {a["status"] for a in actions} == {"proposed"}
     assert client.get("/api/v1/pharmacies/green-life/orders").json()[0]["total"] == 60000
-    events = client.get("/api/v1/logs").json()
+    events = client.get("/api/v1/pharmacies/green-life/logs").json()
     assert not any(e["event"] == "action_executed" for e in events)
 
 
@@ -101,7 +101,7 @@ def test_untraced_money_figure_is_blocked(client, monkeypatch):
     r = ask(client, "How did we do this month?")
     assert "99,999" not in r["text"] and r["text"] == chat.SAFE_REPLY
     assert r["trace"] == {"traced": 0, "total": 1, "blocked": True}
-    events = client.get("/api/v1/logs").json()
+    events = client.get("/api/v1/pharmacies/green-life/logs").json()
     assert any(e["event"] == "answer_blocked_untraced" for e in events)
 
 

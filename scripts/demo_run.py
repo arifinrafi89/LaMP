@@ -4,8 +4,8 @@
 
 Deterministic: it resets to the seed, enters the three demo captures from
 seed/demo_captures/ as the owner's corrected drafts (replay mode: no OpenAI
-calls), and checks every golden number on the way. It unlocks with the owner PIN
-first; the API records every proposal it makes as the owner's (the copilot proposes
+calls), and checks every golden number on the way. It signs in as the demo shop
+(POST /auth/demo, with DEMO_CODE set); the API records every proposal it makes as the owner's (the copilot proposes
 only from the chat). Loan approvals re-enter the PIN. Lender calls use the demo key.
 The server must run with DEV_MODE=true (reset and the supplier-reply simulator).
 Uses only the Python standard library.

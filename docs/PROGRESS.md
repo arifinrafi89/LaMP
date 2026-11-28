@@ -1,6 +1,6 @@
 # LaMP progress tracker
 
-*How much of the build plan is done. Task ids and details are in [`LaMP-Build-Plan.md`](LaMP-Build-Plan.md), section 7 (the stages) and its Applink track. Last updated: 29 Nov 2026 (I2.2 built).*
+*How much of the build plan is done. Task ids and details are in [`LaMP-Build-Plan.md`](LaMP-Build-Plan.md), section 7 (the stages) and its Applink track. Last updated: 29 Nov 2026 (per-shop History).*
 
 **How we work (since 28 Nov)**
 
@@ -26,13 +26,14 @@
   - `POST /auth/otp/request` and `/auth/otp/verify` on the Applink mock (the code is `123456`), then a 15-minute bearer token and a rotating refresh token;
   - every `/pharmacies/{pid}/*` route takes its shop from the token (`api/deps.py`), and another shop's id answers 404;
   - LaMP.ai's PIN unlock (`/pharmacies/{pid}/session`, `owner_session`) is gone; the PIN is only asked at loan approval, until I3.3 retires loan applications.
-- **I2.2 Core routes (flow step 4) is built, in three stacked PRs. Merge them in order: #26, then #27, then #28.** The plan, task by task, is [`docs/superpowers/plans/2026-11-28-i2-2-core-routes.md`](superpowers/plans/2026-11-28-i2-2-core-routes.md).
-  - **#26 (`ayon/I2.2-core-routes`):** `GET` and `PATCH /me`, `POST /pharmacies`, `PATCH /pharmacies/{pid}`, `POST /pharmacies/{pid}/setup/complete` (`api/me.py`, `api/shop.py`, `engines/shops.py`).
-  - **#27 (`ayon/I2.2-setup-today`):** suppliers (a removed one is hidden, not erased), opening cash, typed stock, monthly expenses, supplier payments, sales-book days and `GET /today` (`api/setup.py`, `api/money.py`, `engines/books.py`, `engines/today.py`). Migration 0004. The app's Today screen uses the contract's one-thing kinds.
-  - **#28 (`ayon/I2.2-customers`):** `GET /customers` as `CustomerRow` (with `join` and `trusted`), adding a card, sales, payments and the plan set at the counter (`api/customers.py`, `engines/patients.py`). Migration 0005 adds `plan_amount` and `plan_set_on`, so `trusted` can mean "all parts paid on time".
-  - Still contract stubs: the customer phone and remind routes (A2.2 part 2, flow step 9), `/usage`, and `/me` export and delete (flow step 17).
+- **I2.2 Core routes (flow step 4) is on `main`** (PRs #26, #27, #28). Still contract stubs: the customer phone and remind routes (A2.2 part 2, flow step 9), `/usage`, and `/me` export and delete (flow step 17).
+- **Per-shop History (flow step 5), branch `ayon/per-shop-history`, PR open:**
+  - History moved under the shop, as build plan 2.2 writes it: `GET /pharmacies/{pid}/logs`, `/logs/export`, `/logs/verify`, `/logs/stream`. The global `/logs*` routes are gone.
+  - Every event gets its shop in `audit_log.pharmacy_id`, and each shop has its own hash chain from GENESIS. Events with no shop (system errors) form their own chain and show in no shop's History.
+  - The shop comes from `pharmacy=` in the event, or else from the session: `require_owner` calls `logbus.set_shop(db, pid)`. So do the chat router, `propose_action`, `set_plan` (the family card), the supplier-reply simulator, the lender decision and the seed.
+  - `scripts/export_trace.py` now signs in through `POST /auth/demo` (set `DEMO_CODE`) and exports the demo shop's own History.
 - **Open question for the team:** build plan 2.2 says payments and sales days "replace the simulated wallet" but not how a real shop's cash moves after the opening. Today `cash_on_hand` changes only with the opening, so `cash_now` stays at the opening figure. Decide before MP3 (flow step 12).
-- **Next:** flow step 5, **per-shop History**. Every audit event carries its shop (`audit_log.pharmacy_id`), there is one hash chain per shop, and `/logs*` show only the caller's shop. Then remove the strict xfail in `tests/tenancy/test_tenancy_routes.py`. The I2.2 engines already pass `pharmacy=pid` to every `log(...)` call they make.
+- **Next:** flow step 6, **A1.3 Jobs**: the job table, a runner inside the web service, the scheduler (Asia/Dhaka), the tick endpoint, and `/ready` (build plan 1.4 C, 2.2, 4.3). A job that logs for a shop must call `logbus.set_shop(db, pid)` first (or pass `pharmacy=`), or its events land in the system chain.
 - **Traps hit today:**
   - The clone path "Applink Hackathon" has a space. `alembic.ini` now lists migration folders one per line; keep it that way.
   - FastAPI here wraps included routers lazily (`_IncludedRouter`). To list every route, walk them the way `tests/tenancy/test_tenancy_routes.py` does.
@@ -60,7 +61,7 @@ Each step needs the ones before it. Tick here and in the stage lists below.
 2. [x] **A1.2 Sign-in:** OTP sign-in (mock), tokens, refresh rotation, devices, demo sign-in, rate limits, `current_owner`; `POST /me/consents`. The `applink` migration branch starts here. · on `main` (28 Nov): `app/auth/`, `applink/otp.py`, migration `a001`
 3. [x] **I2.1 One shop per session:** a shared dependency gives every owner route its `pharmacy_id` from the token (404 for another shop's id); tenancy test harness. · on `main` (28 Nov): `api/deps.py`, `tests/tenancy/`; the PIN unlock retired (core migration `0003`)
 4. [x] **I2.2 Core routes:** `/me`, create and set up a shop, suppliers, opening, stock, expenses, `/today`, payments, sales days, customers. · on `main` (PRs #26, #27, #28)
-5. [ ] **Per-shop History:** every audit event carries its shop (`audit_log.pharmacy_id`), one hash chain per shop, and `/logs*` (list, export, verify, stream) show only the caller's shop. Then remove the strict xfail in `tests/tenancy/test_tenancy_routes.py`.
+5. [x] **Per-shop History:** every audit event carries its shop (`audit_log.pharmacy_id`), one hash chain per shop, and `/logs*` (list, export, verify, stream) show only the caller's shop. Then remove the strict xfail in `tests/tenancy/test_tenancy_routes.py`. · on `main` (PR #29)
 6. [ ] **A1.3 Jobs:** table, runner inside the web service, scheduler (Asia/Dhaka), tick endpoint; `/ready`.
 7. [ ] **A1.4 part 2, CI:** server tests on Postgres, and the migration check (up, down one, up).
 8. [ ] **A2.1 Callbacks:** the four Applink callbacks (answer first, dedupe, secret, IP list, redaction) and the subscription mirror.

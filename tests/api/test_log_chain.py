@@ -18,8 +18,8 @@ P = "/api/v1/pharmacies/green-life"
 
 def test_chain_is_intact_and_every_event_has_a_hash(client):
     client.post(f"{P}/actions", json={"kind": "set_aside", "payload": {"amount": 500}})
-    v = client.get("/api/v1/logs/verify").json()
-    events = client.get("/api/v1/logs").json()
+    v = client.get("/api/v1/pharmacies/green-life/logs/verify").json()
+    events = client.get("/api/v1/pharmacies/green-life/logs").json()
     assert v["intact"] and v["count"] == len(events) and v["first_bad_id"] is None
     assert v["head_hash"] == events[-1]["hash"] and all(len(e["hash"]) == 64 for e in events)
 
@@ -29,16 +29,16 @@ def test_one_changed_character_breaks_the_chain_at_that_row(client, api_db):
     target = rows[len(rows) // 2]
     target.event = target.event + "x"
     api_db.commit()
-    v = client.get("/api/v1/logs/verify").json()
+    v = client.get("/api/v1/pharmacies/green-life/logs/verify").json()
     assert v["intact"] is False and v["first_bad_id"] == f"lg-{target.id}"
 
 
 def test_exported_trace_verifies_offline_and_detects_an_edit(client, tmp_path):
-    jsonl = client.get("/api/v1/logs/export?format=jsonl").text
+    jsonl = client.get("/api/v1/pharmacies/green-life/logs/export?format=jsonl").text
     path = tmp_path / "trace.jsonl"
     path.write_text(jsonl, encoding="utf-8")
     ok, n, head = verify_trace.verify(path)
-    assert ok and n == len(jsonl.splitlines()) and head == client.get("/api/v1/logs/verify").json()["head_hash"]
+    assert ok and n == len(jsonl.splitlines()) and head == client.get("/api/v1/pharmacies/green-life/logs/verify").json()["head_hash"]
 
     lines = jsonl.splitlines()
     rec = json.loads(lines[3])
@@ -49,5 +49,5 @@ def test_exported_trace_verifies_offline_and_detects_an_edit(client, tmp_path):
 
 
 def test_text_trace_shows_short_hashes(client):
-    text = client.get("/api/v1/logs/export").text
+    text = client.get("/api/v1/pharmacies/green-life/logs/export").text
     assert all(" #" in line for line in text.splitlines())

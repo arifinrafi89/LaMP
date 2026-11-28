@@ -8,11 +8,17 @@ The log is a hash chain (win plan CORE-09): each row stores
 hash = sha256(prev_hash + canonical(event)), with GENESIS before the first row.
 Changing, inserting or deleting any row breaks every hash after it; verify() finds
 the first bad row. The head hash, published outside the database, anchors the chain.
+
+Every event belongs to a shop, or to none (system events), and each shop has its own
+chain (build plan 4.2; flow step 5): a shop's History lists, exports and verifies only its
+own events. The shop is `pharmacy=` in the event, or else the one the request's session
+was opened for (`shop(db, pid)`, which require_owner sets for every owner route).
 """
 
 import hashlib
 import json
-
+from collections.abc import Generator
+from contextlib import contextmanager
 from datetime import date, datetime, timezone
 from decimal import Decimal
 
@@ -24,6 +30,28 @@ from app.schemas import LogEvent, VerifyOut
 
 TIERS = {"T0", "T1", "T2", "T3"}
 GENESIS = "0" * 64
+SHOP_KEY = "lamp_pharmacy_id"  # in Session.info: the shop this session's events belong to
+
+
+def set_shop(db: Session, pid: str | None) -> None:
+    """From here on, this session's events belong to `pid` (None: system events)."""
+    db.info[SHOP_KEY] = pid
+
+
+@contextmanager
+def shop(db: Session, pid: str | None) -> Generator[None]:
+    """Events logged inside belong to `pid`; the session's shop is put back after."""
+    before = db.info.get(SHOP_KEY)
+    set_shop(db, pid)
+    try:
+        yield
+    finally:
+        set_shop(db, before)
+
+
+def shop_of(db: Session, data: dict) -> str | None:
+    pid = data.get("pharmacy")
+    return pid if isinstance(pid, str) and pid else db.info.get(SHOP_KEY)
 
 
 def _jsonable(v):
@@ -46,11 +74,13 @@ def log(tier: str, component: str, event: str, db: Session | None = None, **data
     row = m.AuditLog(ts=datetime.now(timezone.utc).replace(microsecond=0), tier=tier, component=component.upper(),
                      event=event, data=_jsonable(data))
     if db is not None:
+        row.pharmacy_id = shop_of(db, data)
         _chain(db, row)
         return
     from app.db.session import SessionLocal
 
     with SessionLocal() as own:
+        row.pharmacy_id = shop_of(own, data)
         _chain(own, row)
         own.commit()
 
@@ -74,18 +104,25 @@ def link(prev_hash: str, text: str) -> str:
     return hashlib.sha256((prev_hash + text).encode("utf-8")).hexdigest()
 
 
+def _same_shop(pid: str | None):
+    return m.AuditLog.pharmacy_id.is_(None) if pid is None else m.AuditLog.pharmacy_id == pid
+
+
 def _chain(db: Session, row: m.AuditLog) -> None:
-    last = db.scalar(select(m.AuditLog.hash).order_by(m.AuditLog.id.desc()).limit(1))
+    """Link the row to the last event of the same shop (or of the system chain)."""
+    last = db.scalar(select(m.AuditLog.hash).where(_same_shop(row.pharmacy_id))
+                     .order_by(m.AuditLog.id.desc()).limit(1))
     row.prev_hash = last or GENESIS
     row.hash = link(row.prev_hash, canonical(row.ts, row.tier, row.component, row.event, row.data))
     db.add(row)
     db.flush()
 
 
-def verify(db: Session) -> VerifyOut:
-    """Recompute the chain from GENESIS. first_bad_id is the first row that doesn't match."""
+def verify(db: Session, pid: str | None) -> VerifyOut:
+    """Recompute one shop's chain (None: the system chain) from GENESIS. first_bad_id is the
+    first row that doesn't match."""
     prev, count = GENESIS, 0
-    for row in db.scalars(select(m.AuditLog).order_by(m.AuditLog.id)):
+    for row in db.scalars(select(m.AuditLog).where(_same_shop(pid)).order_by(m.AuditLog.id)):
         count += 1
         expect = link(prev, canonical(row.ts, row.tier, row.component, row.event, row.data or {}))
         if row.prev_hash != prev or row.hash != expect:
@@ -108,9 +145,10 @@ def to_event(row: m.AuditLog) -> LogEvent:
                     data=row.data or {}, hash=row.hash or None)
 
 
-def events(db: Session, since: str | None = None, after_id: int = 0) -> list[LogEvent]:
-    """Events in order. `since` is a log id ("lg-12") or an ISO timestamp."""
-    q = select(m.AuditLog).order_by(m.AuditLog.id)
+def events(db: Session, pid: str | None, since: str | None = None, after_id: int = 0) -> list[LogEvent]:
+    """One shop's events in order (None: the system's). `since` is a log id ("lg-12") or an
+    ISO timestamp."""
+    q = select(m.AuditLog).where(_same_shop(pid)).order_by(m.AuditLog.id)
     if since and since.startswith("lg-") and since[3:].isdigit():
         after_id = max(after_id, int(since[3:]))
     elif since:

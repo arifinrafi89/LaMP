@@ -28,4 +28,4 @@ def test_loan_payout_lands_in_the_wallet(client):
     [t] = after["transactions"]
     assert (t["amount"], t["kind"], t["ref"]) == (8200, "loan_payout", d["decision"]["payout_ref"])
     assert after["counts"]["matched"] == 12
-    assert "wallet_credited" in [e["event"] for e in client.get("/api/v1/logs").json()]
+    assert "wallet_credited" in [e["event"] for e in client.get("/api/v1/pharmacies/green-life/logs").json()]

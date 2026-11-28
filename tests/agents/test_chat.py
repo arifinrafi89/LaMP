@@ -53,7 +53,7 @@ def test_tool_call_limit(client):
 
 def test_chat_is_logged(client):
     ask(client, "How did we do this month?")
-    events = client.get("/api/v1/logs").json()
+    events = client.get("/api/v1/pharmacies/green-life/logs").json()
     assert any(e["component"] == "CHAT" and e["event"] == "chat_message" for e in events)
 
 

@@ -22,11 +22,11 @@ def approve(client, aid):
 
 
 def events(client):
-    return [e["event"] for e in client.get("/api/v1/logs").json()]
+    return [e["event"] for e in client.get("/api/v1/pharmacies/green-life/logs").json()]
 
 
 def test_reset_starts_log_with_detections(client):
-    ev = client.get("/api/v1/logs").json()
+    ev = client.get("/api/v1/pharmacies/green-life/logs").json()
     assert ev[0]["event"] == "reset"
     short = next(e for e in ev if e["event"] == "shortfall_detected")
     assert short["tier"] == "T2" and short["data"]["amount"] == 19000
@@ -167,14 +167,14 @@ def test_lenders(client):
 
 def test_log_export_and_stream(client):
     approve(client, propose(client, "set_aside", amount=500)["id"])
-    text = client.get("/api/v1/logs/export").text
+    text = client.get("/api/v1/pharmacies/green-life/logs/export").text
     line = re.compile(r"^\[\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ\] \[T[0-3]:[A-Z]+\] [a-z_]+( .+)?$")
     assert all(line.match(l) for l in text.strip().splitlines()), text
     assert "[T2:CASH] set_aside_scheduled" in text
-    body = client.get("/api/v1/logs/stream?once=true").text
-    assert body.count("data: ") == len(client.get("/api/v1/logs").json())
-    last = client.get("/api/v1/logs").json()[-1]["id"]
-    assert client.get(f"/api/v1/logs?since={last}").json() == []
+    body = client.get("/api/v1/pharmacies/green-life/logs/stream?once=true").text
+    assert body.count("data: ") == len(client.get("/api/v1/pharmacies/green-life/logs").json())
+    last = client.get("/api/v1/pharmacies/green-life/logs").json()[-1]["id"]
+    assert client.get(f"/api/v1/pharmacies/green-life/logs?since={last}").json() == []
 
 
 def test_capture_logs_suspicious_text(client, monkeypatch):
@@ -194,7 +194,7 @@ def test_capture_logs_suspicious_text(client, monkeypatch):
 def test_timestamps_carry_utc(client):
     a = propose(client, "set_aside")
     c = client.post(f"{P}/consents", json={"lender_id": "wallet-lender"}).json()
-    log = client.get("/api/v1/logs").json()[-1]
+    log = client.get("/api/v1/pharmacies/green-life/logs").json()[-1]
     for ts in (a["created_at"], c["granted_at"], log["ts"]):
         assert ts.endswith("Z") or ts.endswith("+00:00"), ts
 

@@ -63,12 +63,11 @@ from app.schemas import (
 
 from . import examples as ex
 from . import customers, me, money, setup, shop
-from .deps import dev_only, require_any_owner, require_lender, require_owner
+from .deps import dev_only, require_lender, require_owner
 
 router = APIRouter()   # public: health, owner unlock, lender catalogue
 owner = APIRouter()    # /pharmacies/{pid}/*: owner session for that pharmacy
 lender = APIRouter()   # /lenders/{lid}/*: that lender's key
-logs = APIRouter()     # /logs*: any owner session
 dev = APIRouter()      # /dev/*: only with DEV_MODE=true
 
 
@@ -434,32 +433,34 @@ def decide_application(lid: str, appid: str, db: Session = Depends(get_db)):
 
 # --- Audit log ----------------------------------------------------------------------------
 
-@logs.get("/logs", response_model=list[LogEvent])
-def get_logs(since: str | None = None, db: Session = Depends(get_db)):
-    """All events, or those after `since` (a log id like lg-12, or an ISO timestamp)."""
-    return logbus.events(db, since)
+# History (build plan 2.2): each shop's own events and its own hash chain (flow step 5).
+
+@owner.get("/pharmacies/{pid}/logs", response_model=list[LogEvent])
+def get_logs(pid: str, since: str | None = None, db: Session = Depends(get_db)):
+    """The shop's events, or those after `since` (a log id like lg-12, or an ISO timestamp)."""
+    return logbus.events(db, pid, since)
 
 
-@logs.get("/logs/export", response_class=PlainTextResponse)
-def export_logs(format: Literal["text", "jsonl"] = "text", db: Session = Depends(get_db)) -> str:
-    """The audit log, one event per line: readable text (the sandbox execution trace), or
+@owner.get("/pharmacies/{pid}/logs/export", response_class=PlainTextResponse)
+def export_logs(pid: str, format: Literal["text", "jsonl"] = "text", db: Session = Depends(get_db)) -> str:
+    """The shop's History, one event per line: readable text (the sandbox execution trace), or
     JSONL with every field and both hashes, which scripts/verify_trace.py can re-check."""
-    evs = logbus.events(db)
+    evs = logbus.events(db, pid)
     if format == "jsonl":
         prevs = [logbus.GENESIS] + [e.hash for e in evs[:-1]]
         return "".join(json.dumps(logbus.as_record(e, p), ensure_ascii=False) + "\n" for e, p in zip(evs, prevs))
     return "\n".join(logbus.as_text(e) for e in evs) + "\n"
 
 
-@logs.get("/logs/verify", response_model=VerifyOut)
-def verify_logs(db: Session = Depends(get_db)):
-    """Recompute the hash chain: intact, number of events, and the head hash."""
-    return logbus.verify(db)
+@owner.get("/pharmacies/{pid}/logs/verify", response_model=VerifyOut)
+def verify_logs(pid: str, db: Session = Depends(get_db)):
+    """Recompute the shop's hash chain: intact, number of events, and the head hash."""
+    return logbus.verify(db, pid)
 
 
-@logs.get("/logs/stream")
-async def stream_logs(once: bool = False, db: Session = Depends(get_db)):
-    """Server-Sent Events: every past event, then new ones as they happen.
+@owner.get("/pharmacies/{pid}/logs/stream")
+async def stream_logs(pid: str, once: bool = False, db: Session = Depends(get_db)):
+    """Server-Sent Events: the shop's past events, then new ones as they happen.
     `once=true` sends the backlog and closes (for tests). After /dev/reset the log ids restart
     at lg-1, so the stream closes; the browser's EventSource reconnects and gets the new log."""
     factory = sessionmaker(bind=db.get_bind())
@@ -471,7 +472,7 @@ async def stream_logs(once: bool = False, db: Session = Depends(get_db)):
         last = 0
         while True:
             with factory() as s:
-                batch = logbus.events(s, after_id=last)
+                batch = logbus.events(s, pid, after_id=last)
                 reset = not batch and last and s.get(m.AuditLog, last) is None
             if reset:
                 return
@@ -496,5 +497,4 @@ owner.include_router(customers.router)      # customers: list, add, sales, payme
 
 router.include_router(owner, dependencies=[Depends(require_owner)])
 router.include_router(lender, dependencies=[Depends(require_lender)])
-router.include_router(logs, dependencies=[Depends(require_any_owner)])
 router.include_router(dev, dependencies=[Depends(dev_only)])
