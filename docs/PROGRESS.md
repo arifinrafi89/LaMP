@@ -27,7 +27,7 @@
   - every `/pharmacies/{pid}/*` route takes its shop from the token (`api/deps.py`), and another shop's id answers 404;
   - LaMP.ai's PIN unlock (`/pharmacies/{pid}/session`, `owner_session`) is gone; the PIN is only asked at loan approval, until I3.3 retires loan applications.
 - **In progress:** flow step 4, **I2.2 Core routes**, in three PRs. The plan, task by task, is [`docs/superpowers/plans/2026-11-28-i2-2-core-routes.md`](superpowers/plans/2026-11-28-i2-2-core-routes.md).
-  - **Part 1 (branch `ayon/I2.2-core-routes`, PR open):** `GET` and `PATCH /me`, `POST /pharmacies`, `PATCH /pharmacies/{pid}`, `POST /pharmacies/{pid}/setup/complete`. Code in `api/me.py`, `api/shop.py` and `engines/shops.py`; tests in `tests/api/test_me_and_shop.py`.
+  - **Part 1 (branch `ayon/I2.2-core-routes`, PR #26):** `GET` and `PATCH /me`, `POST /pharmacies`, `PATCH /pharmacies/{pid}`, `POST /pharmacies/{pid}/setup/complete`. Code in `api/me.py`, `api/shop.py` and `engines/shops.py`; tests in `tests/api/test_me_and_shop.py`.
   - **Part 2, next (`ayon/I2.2-setup-today`):** suppliers, opening, stock batches, expenses, payments, sales days and `/today`, with migration 0004. Each I2.2 route is built as build plan 2.2 writes it and no more. The plan doesn't say how a real shop's cash moves after the opening, so ask the team, don't decide it in code.
   - **Part 3 (`ayon/I2.2-customers`):** customers, with migration 0005 (`plan_amount`, `plan_set_on`) for `trusted`. Its PR ticks I2.2.
   - `GET /customers` must move from `PatientDueOut` to `CustomerRow`, with `join: {text: "LAMP " + code without dashes, to: "21213"}`.
